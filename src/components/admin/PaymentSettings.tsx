@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { QrCode, Edit, Save, Copy, RefreshCw } from 'lucide-react';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 interface PaymentSettings {
   upiId: string;
   qrCodeUrl: string;
@@ -19,7 +21,7 @@ export const PaymentSettings: React.FC = () => {
   });
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/payment-settings')
+    fetch(`${BACKEND_URL}/payment-settings`)
       .then(res => res.json())
       .then(data => {
         if (data) {
@@ -31,7 +33,7 @@ export const PaymentSettings: React.FC = () => {
   }, []);
 
   const handleSave = () => {
-    fetch('http://localhost:5000/api/payment-settings', {
+    fetch(`${BACKEND_URL}/payment-settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(tempSettings)

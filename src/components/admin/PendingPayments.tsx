@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { PaymentDetailsModal } from '../../components/admin/PaymentDetailsModal';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 interface Payment {
   _id: string;
   userId: string;
@@ -20,6 +22,7 @@ interface Payment {
   userName?: string;
   userEmail?: string;
   contentTitle?: string;
+  deleted?: boolean;
 }
 
 export const PendingPayments: React.FC = () => {
@@ -34,7 +37,7 @@ export const PendingPayments: React.FC = () => {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/payments/all');
+        const res = await fetch(`${BACKEND_URL}/payments/all`);
         const data = await res.json();
         setPayments(data);
       } catch (err) {
@@ -52,7 +55,7 @@ export const PendingPayments: React.FC = () => {
   const handleReject = async (paymentId: string) => {
     if (window.confirm('Are you sure you want to reject and delete this payment?')) {
       try {
-        const res = await fetch(`http://localhost:5000/api/payments/${paymentId}`, {
+        const res = await fetch(`${BACKEND_URL}/payments/${paymentId}`, {
           method: 'DELETE'
         });
         if (res.ok) {

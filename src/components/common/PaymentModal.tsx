@@ -3,6 +3,8 @@ import { X, QrCode, CheckCircle, Clock, Copy } from 'lucide-react';
 import { Content } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 interface PaymentModalProps {
   content: Content;
   onSuccess: () => void;
@@ -28,7 +30,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/payment-settings')
+    fetch(`${BACKEND_URL}/payment-settings`)
       .then(res => res.json())
       .then(data => setPaymentSettings(data))
       .catch(err => {
@@ -66,7 +68,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setPaymentStep('waiting');
 
     try {
-      const res = await fetch('http://localhost:5000/api/payments', {
+      const res = await fetch(`${BACKEND_URL}/payments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

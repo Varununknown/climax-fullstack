@@ -5,6 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import { PaymentModal } from './PaymentModal';
 import { Content } from '../../types';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export const VideoPlayer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -24,7 +26,7 @@ export const VideoPlayer: React.FC = () => {
     const fetchContent = async () => {
       if (!id) return;
       try {
-        const res = await fetch(`http://localhost:5000/api/contents/${id}`);
+        const res = await fetch(`${BACKEND_URL}/contents/${id}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.message);
         setContent(data);
@@ -43,7 +45,7 @@ export const VideoPlayer: React.FC = () => {
 
       try {
         const res = await fetch(
-          `http://localhost:5000/api/payments/check?userId=${user.id}&contentId=${content._id}`
+          `${BACKEND_URL}/payments/check?userId=${user.id}&contentId=${content._id}`
         );
         const data = await res.json();
         setHasPaid(data.paid);
@@ -111,7 +113,7 @@ export const VideoPlayer: React.FC = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/payments/check?userId=${user.id}&contentId=${content._id}`
+        `${BACKEND_URL}/payments/check?userId=${user.id}&contentId=${content._id}`
       );
       const data = await res.json();
       if (data.paid) {
