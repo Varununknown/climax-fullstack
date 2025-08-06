@@ -38,11 +38,18 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage, onNavigat
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center">
-            <div className="bg-blue-600 rounded p-2">
-              <Play className="w-6 h-6 text-white fill-current" />
-            </div>
-            <h1 className="ml-3 text-2xl font-bold text-white">Climax</h1>
+          <div className="flex items-center space-x-3">
+            <img
+              src="/climax-logo.png"
+              alt="Climax Logo"
+              className="h-10 w-auto object-contain"
+            />
+            <h1
+              className="text-2xl text-white tracking-wide"
+              style={{ fontFamily: "'Montserrat', sans-serif" }}
+            >
+              Climax
+            </h1>
           </div>
 
           {/* Navigation - Desktop */}
