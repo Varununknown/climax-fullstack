@@ -23,7 +23,7 @@ export const ContentGrid: React.FC<ContentGridProps> = ({
   if (contents.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400 text-lg">No content found matching your criteria.</p>
+        <p className="text-gray-400 text-lg">No content found matching your criteria @ Climax - powered by i am god</p>
       </div>
     );
   }

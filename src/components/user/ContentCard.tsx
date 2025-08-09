@@ -51,7 +51,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
 
           {content.premiumPrice === 0 && (
             <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold">
-              prime
+              Free
             </div>
           )}
 

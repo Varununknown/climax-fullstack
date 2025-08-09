@@ -98,21 +98,22 @@ export const UserDashboard: React.FC = () => {
 
         {currentPage === 'home' && !searchQuery ? (
           <div className="space-y-8">
-            {/* Prime Content */}
-            <ContentGrid 
-              contents={primeContent}
-              title="Prime - Included with Prime"
-              layout="horizontal"
-              cardSize="medium"
-              showAll={() => setCurrentPage('movies')}
-            />
 
             {/* Continue Watching */}
             <ContentGrid 
               contents={contents.slice(0, 8)}
-              title="Continue watching for User"
+              title="Continue watching "
               layout="horizontal"
               cardSize="large"
+            />
+              
+           {/* Prime Content */}
+            <ContentGrid 
+              contents={primeContent}
+              title="Free - Included with Prime"
+              layout="horizontal"
+              cardSize="large"
+              showAll={() => setCurrentPage('movies')}
             />
 
             {/* Rent Content */}
@@ -120,7 +121,7 @@ export const UserDashboard: React.FC = () => {
               contents={rentContent}
               title="Rent or buy"
               layout="horizontal"
-              cardSize="medium"
+              cardSize="large"
               showAll={() => handleCategorySelect('Action')}
             />
 
@@ -129,7 +130,7 @@ export const UserDashboard: React.FC = () => {
               contents={actionContent}
               title="Action movies"
               layout="horizontal"
-              cardSize="medium"
+              cardSize="large"
               showAll={() => handleCategorySelect('Action')}
             />
 
@@ -138,7 +139,7 @@ export const UserDashboard: React.FC = () => {
               contents={dramaContent}
               title="Drama series"
               layout="horizontal"
-              cardSize="medium"
+              cardSize="large"
               showAll={() => handleCategorySelect('Drama')}
             />
 
@@ -147,7 +148,7 @@ export const UserDashboard: React.FC = () => {
               contents={contents.filter(c => c.type === 'movie')}
               title="Movies we think you'll like"
               layout="horizontal"
-              cardSize="medium"
+              cardSize="large"
               showAll={() => setCurrentPage('movies')}
             />
 
@@ -156,7 +157,7 @@ export const UserDashboard: React.FC = () => {
               contents={contents.filter(c => c.type === 'series')}
               title="TV shows we think you'll like"
               layout="horizontal"
-              cardSize="medium"
+              cardSize="large"
               showAll={() => setCurrentPage('series')}
             />
           </div>
@@ -164,7 +165,7 @@ export const UserDashboard: React.FC = () => {
           <ContentGrid 
             contents={getFilteredContent()}
             layout="grid"
-            cardSize="medium"
+            cardSize="large"
             showCategories={currentPage === 'home'}
           />
         )}
