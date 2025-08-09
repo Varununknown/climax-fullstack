@@ -169,20 +169,22 @@ export const HeroSection: React.FC = () => {
       </div>
 
       {/* Dots Navigation */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-        {contents.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => instanceRef.current?.moveToIdx(idx)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              currentSlide === idx
-                ? "bg-white scale-125"
-                : "bg-gray-400 hover:bg-gray-300"
-            }`}
-            aria-label={`Go to slide ${idx + 1}`}
-          />
-        ))}
-      </div>
+      {/* Thin line navigation */}
+        <div className="hero-line-nav">
+          {contents.map((_, idx) => (
+            <div
+              key={idx}
+              className={currentSlide === idx ? "active" : ""}
+              onClick={() => instanceRef.current?.moveToIdx(idx)}
+              aria-label={`Go to slide ${idx + 1}`}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") instanceRef.current?.moveToIdx(idx);
+              }}
+            />
+          ))}
+        </div>
     </div>
   );
 };

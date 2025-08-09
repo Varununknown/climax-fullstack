@@ -116,3 +116,33 @@
     padding-bottom: 1rem !important;
   }
 }
+
+/* ===== NEW: Hero thinline styling ONLY ===== */
+.hero-line-nav {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px; /* adjust width as needed */
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25); /* faint white base line */
+  border-radius: 2px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+  z-index: 20;
+}
+
+.hero-line-nav > div {
+  width: 16px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
+  transition: background-color 0.3s ease;
+}
+
+.hero-line-nav > div.active {
+  background: #ffffff; /* solid white active segment */
+}
