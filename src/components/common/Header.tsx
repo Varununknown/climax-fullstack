@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage, onNavigat
             {/* Logo */}
             <div className="flex items-center space-x-3">
               <img
-                src="public/logo3.jpg"
+                src="public\logo3.jpg"
                 alt="Climax Logo"
                 className="h-8 w-auto object-contain rounded-lg"
               />
