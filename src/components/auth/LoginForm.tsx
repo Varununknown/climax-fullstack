@@ -31,7 +31,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-        <p className="text-gray-400">Sign in to your StreamFlix account</p>
+        <p className="text-gray-400">Sign in to your Climax Account</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
