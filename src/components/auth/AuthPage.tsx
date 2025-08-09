@@ -19,33 +19,40 @@ export const AuthPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-6xl flex rounded-2xl overflow-hidden shadow-2xl">
-        {/* Left side - Branding */}
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-red-600 to-red-800 p-12 items-center justify-center">
-          <div className="text-center">
+        {/* Left side - Image Background with overlay */}
+        <div
+          className="hidden lg:flex lg:w-1/2 bg-cover bg-right p-12 items-center justify-center relative"
+          style={{ backgroundImage: "url('/logo4.jpg')" }}
+        >
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black opacity-10"></div>
+          
+          {/* Content on top of image 
+
+          <div className="relative z-10 text-center text-red-100">
             <div className="flex items-center justify-center mb-8">
-              <div className="bg-white rounded-full p-4">
-                <Play className="w-12 h-12 text-red-600 fill-current" />
+              <div className="bg-black rounded-full p-4">
+                <Play className="w-12 h-12 text-white-600 fill-current" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold text-white mb-4">Climax</h1>
-            <p className="text-xl text-red-100 mb-8">
-              Premium OTT Platform
+            <h1 className="text-4xl font-bold mb-4"> </h1>
+            <p className="text-xl mb-8">
             </p>
-            <div className="space-y-4 text-red-100">
+            <div className="space-y-4">
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-red-300 rounded-full mr-3"></div>
-                <span>Unlimited Movies & Shows</span>
+                <span> </span>
               </div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-red-300 rounded-full mr-3"></div>
-                <span>Premium Content with Pay-only-if-intresed to continue Climax</span>
+                <span>  </span>
               </div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-red-300 rounded-full mr-3"></div>
-                <span>HD Quality Streaming</span>
+                <span></span>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Right side - Auth Form */}
