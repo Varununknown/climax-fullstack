@@ -91,11 +91,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
 
       <div className="mt-6 text-center">
         <p className="text-gray-400">
-          Demo Credentials: 
+          Comming Soon
           <br />
-          <span className="text-white">Admin: admin@streamflix.com / admin123</span>
+          <span className="text-white">Logging with Google</span>
           <br />
-          <span className="text-white">User: user@example.com / user123</span>
+          <span className="text-white">Logging with Apple</span>
         </p>
       </div>
 

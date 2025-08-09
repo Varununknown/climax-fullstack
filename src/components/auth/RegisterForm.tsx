@@ -38,8 +38,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
   return (
     <div className="w-full max-w-md">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-white mb-2">Join StreamFlix</h2>
-        <p className="text-gray-400">Create your account to start streaming</p>
+        <h2 className="text-3xl font-bold text-white mb-2">Join Climax</h2>
+        <p className="text-gray-400">Create your free account to start streaming</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

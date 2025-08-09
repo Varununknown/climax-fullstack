@@ -27,7 +27,7 @@ export const AuthPage: React.FC = () => {
                 <Play className="w-12 h-12 text-red-600 fill-current" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold text-white mb-4">StreamFlix</h1>
+            <h1 className="text-4xl font-bold text-white mb-4">Climax</h1>
             <p className="text-xl text-red-100 mb-8">
               Premium OTT Platform
             </p>
@@ -38,7 +38,7 @@ export const AuthPage: React.FC = () => {
               </div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-red-300 rounded-full mr-3"></div>
-                <span>Premium Content with Pay-per-View</span>
+                <span>Premium Content with Pay-only-if-intresed to continue Climax</span>
               </div>
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-red-300 rounded-full mr-3"></div>
