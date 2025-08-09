@@ -95,7 +95,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
           <br />
           <span className="text-white">Logging with Google</span>
           <br />
-          <span className="text-white">Logging with Apple</span>
+          <span className="text-white"></span>
         </p>
       </div>
 
