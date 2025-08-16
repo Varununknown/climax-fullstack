@@ -1,11 +1,17 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { ContentProvider } from './context/ContentContext';
-import { AuthPage } from './components/auth/AuthPage';
-import { UserDashboard } from './components/user/UserDashboard';
-import { AdminDashboard } from './components/admin/AdminDashboard';
-import WatchPage from './pages/WatchPage'; // ✅ Import this
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ContentProvider } from "./context/ContentContext";
+import { AuthPage } from "./components/auth/AuthPage";
+import { UserDashboard } from "./components/user/UserDashboard";
+import { AdminDashboard } from "./components/admin/AdminDashboard";
+import WatchPage from "./pages/WatchPage";
+
+// ✅ New placeholder pages for navigation
+import MoviesPage from "./components/user/MoviesPage";
+import ShowsPage from "./components/user/ShowsPage";
+import SearchPage from "./components/user/SearchPage";
+import ProfilePage from "./components/user/ProfilePage";
 
 const AppRoutes: React.FC = () => {
   const { user, isLoading } = useAuth();
@@ -24,15 +30,30 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      <Route 
-        path="/" 
-        element={user.role === 'admin' ? <AdminDashboard /> : <UserDashboard />} 
+      {/* Default Home → dashboard based on role */}
+      <Route
+        path="/"
+        element={user.role === "admin" ? <AdminDashboard /> : <UserDashboard />}
       />
-      <Route 
-        path="/admin/*" 
-        element={user.role === 'admin' ? <AdminDashboard /> : <Navigate to="/" />} 
+
+      {/* Admin-only routes */}
+      <Route
+        path="/admin/*"
+        element={
+          user.role === "admin" ? <AdminDashboard /> : <Navigate to="/" />
+        }
       />
-      <Route path="/watch/:id" element={<WatchPage />} /> {/* ✅ FIXED */}
+
+      {/* User content routes */}
+      <Route path="/movies" element={<MoviesPage />} />
+      <Route path="/shows" element={<ShowsPage />} />
+      <Route path="/search" element={<SearchPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+
+      {/* Watch page stays same */}
+      <Route path="/watch/:id" element={<WatchPage />} />
+
+      {/* Catch-all redirect */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
@@ -41,7 +62,9 @@ const AppRoutes: React.FC = () => {
 function App() {
   return (
     <ContentProvider>
-      <AppRoutes />
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </ContentProvider>
   );
 }

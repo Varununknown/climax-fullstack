@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Content, Category } from '../types';
-import API from '../services/api'; // ✅ Adjust if path differs
+import { Content, Category, User as UserType } from '../types';
+import API from '../services/api';
 
 interface ContentContextType {
   contents: Content[];
   categories: Category[];
+  user?: UserType;
+  logout: () => void;
   addContent: (content: Omit<Content, '_id' | 'createdAt'>) => void;
   updateContent: (id: string, content: Partial<Content>) => void;
   deleteContent: (id: string) => void;
@@ -16,9 +18,7 @@ const ContentContext = createContext<ContentContextType | undefined>(undefined);
 
 const useContent = () => {
   const context = useContext(ContentContext);
-  if (!context) {
-    throw new Error('useContent must be used within a ContentProvider');
-  }
+  if (!context) throw new Error('useContent must be used within a ContentProvider');
   return context;
 };
 
@@ -33,6 +33,8 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
     { id: '6', name: 'Sci-Fi', description: 'Science fiction adventures' }
   ]);
 
+  const [user, setUser] = useState<UserType | undefined>(undefined);
+
   useEffect(() => {
     const fetchContents = async () => {
       try {
@@ -44,48 +46,58 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
       }
     };
 
+    const fetchUser = async () => {
+      try {
+        const res = await API.get('/auth/me'); // ✅ endpoint to get logged-in user
+        setUser(res.data);
+      } catch (err) {
+        console.error('❌ Error loading user info:', err);
+        setUser(undefined);
+      }
+    };
+
     fetchContents();
+    fetchUser();
   }, []);
+
+  const logout = () => {
+    API.post('/auth/logout'); // optional if backend needs it
+    setUser(undefined);
+    // Optional: clear localStorage or redirect to login
+  };
 
   const addContent = async (data: Omit<Content, '_id' | 'createdAt'>) => {
     try {
       const res = await API.post('/contents', data);
-      const newContent = res.data;
-      setContents((prev) => [newContent, ...prev]);
-    } catch (error: any) {
-      console.error('❌ Error adding content:', error);
-      throw new Error(error?.response?.data?.message || 'Failed to add content');
-    }
+      setContents((prev) => [res.data, ...prev]);
+    } catch (err) { console.error(err); }
   };
 
   const updateContent = async (id: string, contentData: Partial<Content>) => {
     try {
       const res = await API.put(`/contents/${id}`, contentData);
-      const updated = res.data;
-      setContents((prev) => prev.map((c) => (c._id === id ? updated : c)));
-    } catch (err) {
-      console.error('❌ Error updating content:', err);
-    }
+      setContents((prev) => prev.map(c => (c._id === id ? res.data : c)));
+    } catch (err) { console.error(err); }
   };
 
   const deleteContent = async (id: string) => {
     try {
       await API.delete(`/contents/${id}`);
-      setContents((prev) => prev.filter((c) => c._id !== id));
-    } catch (err) {
-      console.error('❌ Error deleting content:', err);
-    }
+      setContents((prev) => prev.filter(c => c._id !== id));
+    } catch (err) { console.error(err); }
   };
 
-  const getContentById = (id: string) => contents.find((c) => c._id === id);
+  const getContentById = (id: string) => contents.find(c => c._id === id);
   const getContentsByCategory = (category: string) =>
-    contents.filter((c) => c.category === category && c.isActive);
+    contents.filter(c => c.category === category && c.isActive);
 
   return (
     <ContentContext.Provider
       value={{
         contents,
         categories,
+        user,
+        logout,
         addContent,
         updateContent,
         deleteContent,
