@@ -34,7 +34,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
 
   return (
     <div
-      className="group relative cursor-pointer transform transition-all duration-300 hover:scale-105 hover:z-10"
+      className="group relative cursor-pointer transform transition-all duration-300 hover:scale-100 hover:z-10"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => navigate(`/watch/${content._id}`)} // ✅ FIXED
@@ -48,23 +48,25 @@ export const ContentCard: React.FC<ContentCardProps> = ({
           />
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
+          
           {content.premiumPrice === 0 && (
             <div className="absolute top-2 left-2 bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold">
               Free
             </div>
           )}
+            
 
           {content.premiumPrice > 0 && (
-            <div className="absolute top-2 left-2 bg-yellow-600 text-black px-2 py-1 rounded text-xs font-bold">
-              RENT ₹{content.premiumPrice}
+            <div className="absolute top-2 left-2 bg-black/80 text-white px-1 py-1 rounded text-xs font-bold">
+              Climax  ₹{content.premiumPrice}
             </div>
           )}
 
+          {/*
           <div className="absolute top-2 right-2 bg-black/70 text-white text-xs font-medium px-2 py-1 rounded capitalize">
             {content.type}
           </div>
-
+                */}
           <div className={`absolute inset-0 flex flex-col justify-end p-4 transition-all duration-300 ${
             isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}>
@@ -124,11 +126,11 @@ export const ContentCard: React.FC<ContentCardProps> = ({
           </div>
         </div>
 
-        <div className={`p-3 transition-opacity duration-300 ${isHovered ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`p-2 transition-opacity duration-300 ${isHovered ? 'opacity-0' : 'opacity-100'}`}>
           <h3 className="text-white font-semibold text-sm mb-1 line-clamp-2">
             {content.title}
           </h3>
-          <div className="flex items-center space-x-2 text-xs text-gray-400">
+          <div className="flex items-center space-x-3 text-xs text-gray-400">
             {content.rating && (
               <div className="flex items-center space-x-1">
                 <Star className="w-3 h-3 text-yellow-400 fill-current" />

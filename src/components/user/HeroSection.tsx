@@ -44,7 +44,7 @@ export const HeroSection: React.FC = () => {
 
   return (
     <div className="relative overflow-hidden select-none">
-      <div ref={sliderRef} className="keen-slider relative h-[45vh] lg:h-[60vh]">
+      <div ref={sliderRef} className="keen-slider relative h-[25vh] lg:h-[60vh]">
         {contents.map((content, idx) => (
           <div
             key={content._id}
