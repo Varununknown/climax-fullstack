@@ -100,8 +100,10 @@ export const UserDashboard: React.FC = () => {
             <ContentGrid contents={contents.slice(0, 8)} title="Continue watching" layout="horizontal" cardSize="large" />
             <ContentGrid contents={primeContent} title="Free - Included with Prime" layout="horizontal" cardSize="large" showAll={() => setCurrentPage('movies')} />
             <ContentGrid contents={rentContent} title="Rent or buy" layout="horizontal" cardSize="large" showAll={() => handleCategorySelect('Action')} />
+            {/*
             <ContentGrid contents={actionContent} title="Action movies" layout="horizontal" cardSize="large" showAll={() => handleCategorySelect('Action')} />
-            <ContentGrid contents={dramaContent} title="Drama series" layout="horizontal" cardSize="large" showAll={() => handleCategorySelect('Drama')} />
+            <ContentGrid contents={dramaContent} title="Drama series" layout="horizontal" cardSize="large" showAll={() => handleCategorySelect('Drama')} />  
+            */}
             <ContentGrid contents={contents.filter(c => c.type === 'movie')} title="Movies we think you'll like" layout="horizontal" cardSize="large" showAll={() => setCurrentPage('movies')} />
             <ContentGrid contents={contents.filter(c => c.type === 'series')} title="TV shows we think you'll like" layout="horizontal" cardSize="large" showAll={() => setCurrentPage('series')} />
           </div>
