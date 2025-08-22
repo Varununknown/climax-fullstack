@@ -55,10 +55,10 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
             {/* Logo */}
             <div className="flex items-center space-x-3">
               <img
-                src="/logo3.jpg"
+                src="/logo6.jpg"
                 alt="Climax Logo"
-                className="h-8 w-auto object-contain rounded-lg shadow-md"
-              />
+                className="h-8 w-auto object-contain rounded-lg-400 shadow-md"
+              /> 
               <h1
                 className="text-2xl text-white font-semibold tracking-wide drop-shadow-md"
                 style={{ fontFamily: "'Montserrat', sans-serif" }}

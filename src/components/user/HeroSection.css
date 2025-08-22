@@ -1,21 +1,39 @@
+/* Slide Background with cinematic fade + zoom (Ken Burns style) */
 .slide-background {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: brightness(0.9) saturate(1.1);
-  transition: transform 0.6s ease, filter 0.6s ease;
+  filter: brightness(0.95) saturate(1.05);
   position: absolute;
   inset: 0;
   z-index: 1;
+
+  opacity: 0;
+  transform: scale(1.08); /* start zoomed in */
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 6s ease-out; /* slow cinematic zoom out */
 }
+
 .slide-background.active {
-  transform: scale(1.05);
+  opacity: 1;
+  transform: scale(1); /* zooms out smoothly */
+}
+
+/* Keen slide fade wrapper */
+.keen-slider__slide {
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.keen-slider__slide.active {
+  opacity: 1;
+  z-index: 2;
 }
 
 /* Content Overlay - Center Bottom */
 .content-overlay {
   position: absolute;
-  bottom: 60px; /* stays above dots */
+  bottom: 60px;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
@@ -24,16 +42,30 @@
   align-items: center;
   gap: 0.5rem;
   z-index: 20;
+  animation: fadeUp 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Cinematic text entrance */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 30px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Play Button - Glassmorphism */
 .btn-hero-play {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.207), rgba(46, 16, 16, 0.05));
-  backdrop-filter: blur(5px); /* Glass effect */
-  -webkit-backdrop-filter: blur(5px);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.25), rgba(20, 20, 20, 0.05));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 
   color: #ffffff;
   font-weight: 600;
@@ -41,21 +73,18 @@
   padding: 0.75rem 2.2rem;
 
   border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 1rem;  /* slight round edges */
-  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
 
-  transition: all 0.3s ease;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Hover effect */
 .btn-hero-play:hover {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.1));
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.15));
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.7);
 }
 
-
-/* Dots - OTT style */
 /* Dots - OTT refined style */
 .hero-dots {
   position: absolute;
@@ -63,22 +92,21 @@
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 6px;   /* tighter spacing */
+  gap: 6px;
   z-index: 25;
 }
 
 .hero-dot {
-  width: 6px;    /* smaller clean dot */
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.35);
-  transition: background 0.3s ease, transform 0.3s ease;
+  background: rgb(240, 238, 238);
+  transition: background 0.25s ease, transform 0.25s ease;
   cursor: pointer;
 }
 
 .hero-dot.active {
-  background: #fff;        /* solid white active */
-  transform: scale(1.3);   /* slightly bigger, no pill */
-  box-shadow: 0 0 6px rgba(0,0,0,0.5);
+  background: #fff;
+  transform: scale(1.4);
+  box-shadow: 0 0 8px rgb(255, 254, 254);
 }
-

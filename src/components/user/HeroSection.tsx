@@ -13,23 +13,21 @@ export const HeroSection: React.FC = () => {
 
   const [sliderRef, instanceRef] = useKeenSlider<HTMLDivElement>({
     loop: true,
-    mode: "free-snap",
+    renderMode: "performance",
     slides: { perView: 1 },
-    drag: true,
+    drag: false, // disable drag for smoother cinematic effect
     created(s) {
       setCurrentSlide(s.track.details.rel);
     },
     slideChanged(s) {
       setCurrentSlide(s.track.details.rel);
     },
-    renderMode: "performance",
-    animation: { duration: 800, easing: (t) => t },
   });
 
   useEffect(() => {
     const interval = setInterval(() => {
       instanceRef.current?.next();
-    }, 3000);
+    }, 6000); // slower rotation to allow cinematic zoom
     return () => clearInterval(interval);
   }, [instanceRef]);
 
@@ -46,14 +44,21 @@ export const HeroSection: React.FC = () => {
 
   return (
     <div className="relative overflow-hidden select-none">
-      <div ref={sliderRef} className="keen-slider relative h-[50vh] lg:h-[60vh]">
+      <div ref={sliderRef} className="keen-slider relative h-[45vh] lg:h-[60vh]">
         {contents.map((content, idx) => (
-          <div key={content._id} className="keen-slider__slide relative">
+          <div
+            key={content._id}
+            className={`keen-slider__slide relative ${
+              currentSlide === idx ? "active" : ""
+            }`}
+          >
             {/* Background */}
             <img
               src={content.thumbnail}
               alt={content.title}
-              className="slide-background"
+              className={`slide-background ${
+                currentSlide === idx ? "active" : ""
+              }`}
               draggable={false}
             />
 
@@ -61,14 +66,16 @@ export const HeroSection: React.FC = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10" />
 
             {/* Center-down overlay */}
-            <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 text-center z-20 w-full px-6">
+            <div className="content-overlay">
               {/* Free or Rent Tag */}
               {content.premiumPrice === 0 ? (
                 <div className="mb-2">
                   <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-xs font-bold">
                     Free
                   </span>
-                  <span className="ml-2 text-white text-xs">Included with Prime</span>
+                  <span className="ml-2 text-white text-xs">
+                    Included with Prime
+                  </span>
                 </div>
               ) : (
                 <div className="mb-2">
@@ -82,19 +89,19 @@ export const HeroSection: React.FC = () => {
               )}
 
               {/* Title */}
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 drop-shadow-lg">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-8 drop-shadow-lg">
                 {content.title}
               </h1>
 
-              {/* U/A tag */}
+              {/* U/A tag 
               <div className="flex justify-center mb-4">
                 <div className="bg-gray-800 text-white px-2 py-1 rounded text-xs font-semibold">
                   U/A 16+
                 </div>
-              </div>
+              </div>  */}
             </div>
 
-            {/* Separate Play button closer to bottom */}
+            {/* Play button */}
             <div className="absolute bottom-9 left-1/2 transform -translate-x-1/2 z-20">
               <button
                 onClick={() => navigate(`/watch/${content._id}`)}
@@ -104,7 +111,6 @@ export const HeroSection: React.FC = () => {
                 <span className="ml-3">Play</span>
               </button>
             </div>
-
           </div>
         ))}
       </div>
@@ -116,7 +122,9 @@ export const HeroSection: React.FC = () => {
           return (
             <button
               key={actualIndex}
-              className={`hero-dot ${currentSlide === actualIndex ? "active" : ""}`}
+              className={`hero-dot ${
+                currentSlide === actualIndex ? "active" : ""
+              }`}
               onClick={() => instanceRef.current?.moveToIdx(actualIndex)}
               aria-label={`Go to slide ${actualIndex + 1}`}
               aria-current={currentSlide === actualIndex}
