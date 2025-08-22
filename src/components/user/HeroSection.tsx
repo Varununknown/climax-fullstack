@@ -80,7 +80,7 @@ export const HeroSection: React.FC = () => {
               ) : (
                 <div className="mb-2">
                   <span className="bg-yellow-600 text-black px-2 py-0.5 rounded text-xs font-bold">
-                    RENT
+                    Grant @
                   </span>
                   <span className="ml-2 text-white text-xs">
                     ₹{content.premiumPrice} upon climax
