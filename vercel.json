@@ -19,7 +19,7 @@
       "dest": "/frontend/index.html"
     }
   ],
-  "buildCommand": "cd frontend && npm run build",
+  "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
-  "installCommand": "npm install && cd frontend && npm install"
+  "installCommand": "cd frontend && npm install"
 }
