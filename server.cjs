@@ -7,12 +7,12 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
-// Route Imports - adjusted paths for root directory
-const authRoutes = require('./backend/routes/authRoutes.cjs');
-const googleAuthRoutes = require('./backend/routes/googleAuth.cjs');
-const contentRoutes = require('./backend/routes/contentRoutes.cjs');
-const paymentRoutes = require('./backend/routes/paymentRoutes.cjs');
-const paymentSettingsRoutes = require('./backend/routes/paymentSettingsRoutes.cjs');
+// Route Imports - adjusted paths for src directory
+const authRoutes = require('../backend/routes/authRoutes.cjs');
+const googleAuthRoutes = require('../backend/routes/googleAuth.cjs');
+const contentRoutes = require('../backend/routes/contentRoutes.cjs');
+const paymentRoutes = require('../backend/routes/paymentRoutes.cjs');
+const paymentSettingsRoutes = require('../backend/routes/paymentSettingsRoutes.cjs');
 
 const app = express();
 
