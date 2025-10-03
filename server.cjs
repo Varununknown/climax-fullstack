@@ -21,12 +21,16 @@ const allowedOrigins = [
   'http://localhost:5173',
   'https://climax-frontend.vercel.app',
   'https://watchclimax.vercel.app',
+  'https://climaxott.vercel.app',
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow Vercel domains and localhost
+      if (!origin || 
+          allowedOrigins.includes(origin) || 
+          origin.endsWith('.vercel.app')) {
         callback(null, true);
       } else {
         callback(new Error('CORS Not Allowed'));
