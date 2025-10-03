@@ -1,2 +1,3 @@
 // Simple redirect to actual server
-require('./backend/server.cjs');
+// Render runs from /opt/render/project/src but backend is at /opt/render/project/backend
+require('../backend/server.cjs');
