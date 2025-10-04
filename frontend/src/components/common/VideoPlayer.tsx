@@ -28,26 +28,20 @@ export const VideoPlayer: React.FC = () => {
     const fetchContent = async () => {
       if (!id) return;
       try {
-        console.log('🎬 Fetching content for ID:', id);
         const res = await API.get(`/contents/${id}`);
-        console.log('🎬 Content fetched:', res.data);
         setContent(res.data);
       } catch (err) {
         console.error('❌ Error fetching content:', err);
         // Try to get content from the list API instead
         try {
-          console.log('🔄 Trying to fetch from contents list...');
           const listRes = await API.get('/contents');
           const foundContent = listRes.data.find((c: any) => c._id === id);
           if (foundContent) {
-            console.log('✅ Found content in list:', foundContent);
             setContent(foundContent);
           } else {
-            console.error('❌ Content not found in list');
             navigate('/');
           }
         } catch (listErr) {
-          console.error('❌ Error fetching content list:', listErr);
           navigate('/');
         }
       }

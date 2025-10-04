@@ -38,14 +38,10 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
   useEffect(() => {
     const fetchContents = async () => {
       try {
-        console.log('🔄 Fetching contents from API...');
         const res = await API.get('/contents');
-        console.log('✅ Content response:', res.data);
         setContents(res.data);
       } catch (err) {
         console.error('❌ Error loading contents:', err);
-        console.error('❌ Error details:', err.response?.data);
-        console.error('❌ Error status:', err.response?.status);
         setContents([]);
       }
     };
