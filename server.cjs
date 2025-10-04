@@ -43,6 +43,24 @@ app.use(
 app.use(express.json());
 
 // =======================
+// ✅ Root API endpoint
+// =======================
+app.get('/', (req, res) => {
+  res.json({
+    message: '🎬 Climax OTT Backend API',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      auth: '/api/auth',
+      contents: '/api/contents',
+      payments: '/api/payments',
+      'payment-settings': '/api/payment-settings',
+      'video-proxy': '/api/video/:id'
+    }
+  });
+});
+
+// =======================
 // ✅ MongoDB Connection (Optimized for free hosting)
 // =======================
 mongoose.connect(process.env.MONGO_URI, {
