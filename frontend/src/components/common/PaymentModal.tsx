@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { X, QrCode, CheckCircle, Clock, Copy } from 'lucide-react';
 import { Content } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import API from '../../services/api';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || API.defaults.baseURL;
 
 interface PaymentModalProps {
   content: Content;
@@ -33,16 +34,25 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   useEffect(() => {
     console.log('💳 Fetching payment settings...');
-    fetch(`${BACKEND_URL}/payment-settings`)
-      .then(res => res.json())
-      .then(data => {
-        console.log('💳 Payment settings loaded:', data);
-        setPaymentSettings(data);
-      })
-      .catch(err => {
+    
+    const fetchSettings = async () => {
+      try {
+        const response = await API.get('/payment-settings');
+        console.log('💳 Payment settings loaded:', response.data);
+        setPaymentSettings(response.data);
+      } catch (err) {
         console.error('❌ Failed to load payment settings:', err);
-        setPaymentSettings(null);
-      });
+        // Set a default fallback for testing
+        setPaymentSettings({
+          upiId: 'test@upi',
+          qrCodeUrl: '',
+          merchantName: 'Climax OTT',
+          isActive: false
+        });
+      }
+    };
+
+    fetchSettings();
   }, []);
 
   const qrCodeData = paymentSettings && {
@@ -74,36 +84,33 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setPaymentStep('waiting');
 
     try {
-      const res = await fetch(`${BACKEND_URL}/payments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          contentId: content._id,
-          amount: content.premiumPrice,
-          transactionId
-        })
+      console.log('💳 Submitting payment:', {
+        userId: user.id,
+        contentId: content._id,
+        amount: content.premiumPrice,
+        transactionId
       });
 
-      const result = await res.json();
-      console.log('📦 Payment submission result:', result);
+      const response = await API.post('/payments', {
+        userId: user.id,
+        contentId: content._id,
+        amount: content.premiumPrice,
+        transactionId
+      });
 
-      if (res.ok) {
+      console.log('✅ Payment submission successful:', response.data);
+
+      setTimeout(() => {
+        setPaymentStep('success');
         setTimeout(() => {
-          setPaymentStep('success');
-          setTimeout(() => {
-            onSuccess();
-          }, 2000);
+          onSuccess();
         }, 2000);
-      } else {
-        alert(result.message || 'Payment failed to save. Try again.');
-        setPaymentStep('qr');
-      }
-    } catch (err) {
+      }, 2000);
+
+    } catch (err: any) {
       console.error('❌ Payment submission error:', err);
-      alert('Server error. Try again.');
+      const errorMessage = err.response?.data?.message || err.message || 'Server error. Try again.';
+      alert(errorMessage);
       setPaymentStep('qr');
     }
   };
