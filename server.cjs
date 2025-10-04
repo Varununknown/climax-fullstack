@@ -49,8 +49,7 @@ app.use(express.json());
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  maxPoolSize: 5, // Limit connection pool
-  bufferMaxEntries: 0 // Disable buffering
+  maxPoolSize: 5 // Limit connection pool
 })
   .then(() => {
     console.log('✅ Connected to MongoDB Atlas');
