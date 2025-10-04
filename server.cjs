@@ -98,7 +98,7 @@ app.get('/api/contents', async (req, res) => {
     // If no content in database, return empty array with message
     if (contents.length === 0) {
       return res.json({ 
-        message: 'No content found in database',
+        message: 'No content found in database - use POST /api/contents/seed to add sample data',
         contents: [],
         total: 0
       });
@@ -112,6 +112,57 @@ app.get('/api/contents', async (req, res) => {
       error: error.message,
       stack: error.stack
     });
+  }
+});
+
+// Seed endpoint to add sample content to database
+app.post('/api/contents/seed', async (req, res) => {
+  try {
+    const Content = require('./models/Content.cjs');
+    
+    // Check if content already exists
+    const existingCount = await Content.countDocuments();
+    if (existingCount > 0) {
+      return res.json({ message: 'Content already exists', count: existingCount });
+    }
+    
+    const sampleContent = [
+      {
+        title: 'The Dark Knight',
+        description: 'Batman faces the Joker in this epic crime drama.',
+        videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
+        thumbnail: 'https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=500',
+        category: 'Action',
+        type: 'movie',
+        duration: 152,
+        climaxTimestamp: 120,
+        premiumPrice: 4.99,
+        genre: ['Action', 'Crime', 'Drama'],
+        rating: 9.0,
+        isActive: true
+      },
+      {
+        title: 'Stranger Things',
+        description: 'Supernatural drama series set in the 1980s.',
+        videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4',
+        thumbnail: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500',
+        category: 'Drama',
+        type: 'series',
+        duration: 45,
+        climaxTimestamp: 35,
+        premiumPrice: 2.99,
+        genre: ['Drama', 'Fantasy', 'Horror'],
+        rating: 8.7,
+        isActive: true
+      }
+    ];
+    
+    const result = await Content.insertMany(sampleContent);
+    res.json({ message: 'Sample content added', count: result.length, content: result });
+    
+  } catch (error) {
+    console.error('❌ Seed error:', error);
+    res.status(500).json({ message: 'Failed to seed content', error: error.message });
   }
 });
 
