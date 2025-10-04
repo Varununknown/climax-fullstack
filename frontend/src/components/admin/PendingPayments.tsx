@@ -18,6 +18,7 @@ interface Payment {
   contentId: string;
   amount: number;
   transactionId: string;
+  status: 'pending' | 'approved' | 'declined';
   createdAt: string;
   userName?: string;
   userEmail?: string;
@@ -37,35 +38,67 @@ export const PendingPayments: React.FC = () => {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
+        console.log('🔄 Fetching payments from:', `${BACKEND_URL}/payments/all`);
         const res = await fetch(`${BACKEND_URL}/payments/all`);
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
         const data = await res.json();
+        console.log('📊 Payments loaded:', data.length, 'payments');
         setPayments(data);
       } catch (err) {
         console.error('❌ Error fetching payments:', err);
+        alert('Failed to load payments. Check console for details.');
       }
     };
 
     fetchPayments();
   }, []);
 
-  const handleApprove = (paymentId: string) => {
-    alert('✅ Payment already approved by user (via instant logic). No need to modify DB.');
+  const handleApprove = async (paymentId: string) => {
+    if (window.confirm('Are you sure you want to approve this payment?')) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/payments/${paymentId}/approve`, {
+          method: 'PATCH'
+        });
+        
+        if (res.ok) {
+          // Update payment status in local state
+          setPayments(prev => prev.map(p => 
+            p._id === paymentId ? { ...p, status: 'approved' } : p
+          ));
+          alert('✅ Payment approved successfully!');
+        } else {
+          alert('Error approving payment');
+        }
+      } catch (err) {
+        console.error('❌ Error approving payment:', err);
+        alert('Error approving payment');
+      }
+    }
   };
 
   const handleReject = async (paymentId: string) => {
-    if (window.confirm('Are you sure you want to reject and delete this payment?')) {
+    if (window.confirm('Are you sure you want to decline this payment?')) {
       try {
-        const res = await fetch(`${BACKEND_URL}/payments/${paymentId}`, {
-          method: 'DELETE'
+        const res = await fetch(`${BACKEND_URL}/payments/${paymentId}/decline`, {
+          method: 'PATCH'
         });
+        
         if (res.ok) {
-          setPayments((prev) => prev.filter((p) => p._id !== paymentId));
-          alert('❌ Payment rejected and removed from DB');
+          // Update payment status in local state
+          setPayments(prev => prev.map(p => 
+            p._id === paymentId ? { ...p, status: 'declined' } : p
+          ));
+          alert('❌ Payment declined successfully!');
         } else {
-          alert('Error rejecting payment');
+          alert('Error declining payment');
         }
       } catch (err) {
-        console.error('❌ Error rejecting payment:', err);
+        console.error('❌ Error declining payment:', err);
+        alert('Error declining payment');
       }
     }
   };
@@ -96,8 +129,9 @@ export const PendingPayments: React.FC = () => {
 
     const matchStatus =
       filterStatus === 'all' ||
-      (filterStatus === 'approved' && !p.deleted) ||
-      (filterStatus === 'rejected' && p.deleted);
+      (filterStatus === 'approved' && p.status === 'approved') ||
+      (filterStatus === 'rejected' && p.status === 'declined') ||
+      (filterStatus === 'pending' && p.status === 'pending');
 
     return matchSearch && matchStatus;
   });
@@ -131,6 +165,7 @@ export const PendingPayments: React.FC = () => {
             className="bg-gray-800 text-white border border-gray-700 rounded px-3 py-2"
           >
             <option value="all">All</option>
+            <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
@@ -163,6 +198,7 @@ export const PendingPayments: React.FC = () => {
               <th className="p-3 text-left">Content</th>
               <th className="p-3 text-left">Transaction ID</th>
               <th className="p-3 text-left">Amount</th>
+              <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Time</th>
               <th className="p-3 text-left">Actions</th>
             </tr>
@@ -179,27 +215,46 @@ export const PendingPayments: React.FC = () => {
                 <td className="p-3">{p.contentTitle}</td>
                 <td className="p-3 font-mono">{p.transactionId}</td>
                 <td className="p-3 text-green-400">₹{p.amount}</td>
+                <td className="p-3">
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    p.status === 'approved' ? 'bg-green-800 text-green-200' :
+                    p.status === 'declined' ? 'bg-red-800 text-red-200' :
+                    'bg-yellow-800 text-yellow-200'
+                  }`}>
+                    {p.status?.toUpperCase() || 'PENDING'}
+                  </span>
+                </td>
                 <td className="p-3 text-gray-400">{formatTime(p.createdAt)}</td>
                 <td className="p-3">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2">
-                    <button
-                      className="flex items-center gap-1 bg-green-800 text-white px-3 py-1 rounded hover:bg-green-700 text-sm"
-                      onClick={() => handleApprove(p._id)}
-                    >
-                      <CheckCircle className="w-5 h-5" /> Approve
-                    </button>
-                    <button
-                      className="flex items-center gap-1 bg-red-800 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
-                      onClick={() => handleReject(p._id)}
-                    >
-                      <XCircle className="w-5 h-5" /> Decline
-                    </button>
+                    {p.status === 'pending' && (
+                      <>
+                        <button
+                          className="flex items-center gap-1 bg-green-800 text-white px-3 py-1 rounded hover:bg-green-700 text-sm"
+                          onClick={() => handleApprove(p._id)}
+                        >
+                          <CheckCircle className="w-4 h-4" /> Approve
+                        </button>
+                        <button
+                          className="flex items-center gap-1 bg-red-800 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
+                          onClick={() => handleReject(p._id)}
+                        >
+                          <XCircle className="w-4 h-4" /> Decline
+                        </button>
+                      </>
+                    )}
+                    {p.status === 'approved' && (
+                      <span className="text-green-400 text-sm font-medium">✓ Approved</span>
+                    )}
+                    {p.status === 'declined' && (
+                      <span className="text-red-400 text-sm font-medium">✗ Declined</span>
+                    )}
                     <button
                       className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm"
                       title="Details"
                       onClick={() => setSelectedPayment(p)}
                     >
-                      <Eye className="w-5 h-5" /> View
+                      <Eye className="w-4 h-4" /> View
                     </button>
                   </div>
                 </td>
@@ -207,7 +262,7 @@ export const PendingPayments: React.FC = () => {
             ))}
             {filteredPayments.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center p-6 text-gray-500">
+                <td colSpan={7} className="text-center p-6 text-gray-500">
                   No payments found.
                 </td>
               </tr>
