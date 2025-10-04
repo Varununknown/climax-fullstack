@@ -82,13 +82,36 @@ app.get('/', (req, res) => {
 app.get('/api/contents', async (req, res) => {
   try {
     console.log('📦 Content API called');
+    
+    // Test MongoDB connection first
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(500).json({ 
+        message: 'Database not connected', 
+        state: mongoose.connection.readyState 
+      });
+    }
+    
     const Content = require('./models/Content.cjs');
     const contents = await Content.find().sort({ createdAt: -1 });
     console.log('📦 Found contents:', contents.length);
+    
+    // If no content in database, return empty array with message
+    if (contents.length === 0) {
+      return res.json({ 
+        message: 'No content found in database',
+        contents: [],
+        total: 0
+      });
+    }
+    
     res.json(contents);
   } catch (error) {
     console.error('❌ Content API error:', error);
-    res.status(500).json({ message: 'Failed to fetch contents', error: error.message });
+    res.status(500).json({ 
+      message: 'Failed to fetch contents', 
+      error: error.message,
+      stack: error.stack
+    });
   }
 });
 
