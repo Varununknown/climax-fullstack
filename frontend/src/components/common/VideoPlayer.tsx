@@ -151,7 +151,7 @@ export const VideoPlayer: React.FC = () => {
     <div className="relative bg-black min-h-screen flex flex-col items-center justify-center">
       <video
         ref={videoRef}
-        src={content.videoUrl}
+        src={`${API.defaults.baseURL}/video/${content._id}`}
         className="w-full max-w-4xl rounded shadow-lg"
         controls
         playsInline
@@ -164,6 +164,10 @@ export const VideoPlayer: React.FC = () => {
         onError={(e) => {
           console.error('Video loading error:', e);
           setIsBuffering(false);
+          // Fallback to direct video URL if proxy fails
+          if (videoRef.current) {
+            videoRef.current.src = content.videoUrl;
+          }
         }}
         style={{
           maxHeight: videoQuality === '360p' ? '360px' : 
