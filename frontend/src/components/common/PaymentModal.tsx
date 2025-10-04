@@ -120,12 +120,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           <X className="w-6 h-6" />
         </button>
 
-        {paymentStep === 'qr' && paymentSettings?.isActive && qrCodeData && (
+        {(paymentStep === 'qr') && (
           <>
             <div className="mb-4">
               <h2 className="text-2xl font-bold text-white mb-2">Complete Payment</h2>
               <p className="text-gray-400">
-                Scan QR code to pay ₹{content.premiumPrice} and continue watching "{content.title}"
+                Pay ₹{content.premiumPrice} to continue watching "{content.title}"
               </p>
             </div>
 
@@ -144,10 +144,52 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 mb-4 text-center">
-              <div className="mb-4">
-                <QrCode className="w-6 h-6 text-gray-600 mx-auto mb-2" />
-                <h3 className="text-gray-800 font-semibold">Scan to Pay</h3>
+            {paymentSettings?.isActive && qrCodeData ? (
+              <div className="bg-white rounded-lg p-4 mb-4 text-center">
+                <div className="mb-4">
+                  <QrCode className="w-6 h-6 text-gray-600 mx-auto mb-2" />
+                  <h3 className="text-gray-800 font-semibold">Scan to Pay</h3>
+                  <p className="text-gray-600 text-sm">{paymentSettings.merchantName}</p>
+                </div>
+
+                <div className="bg-gray-100 p-4 rounded-lg mb-4">
+                  <img
+                    src={qrCodeData.qrImage}
+                    alt="Payment QR Code"
+                    className="w-40 h-40 mx-auto"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200x200?text=QR+Code';
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex items-center justify-between">
+                    <span>UPI ID:</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-mono">{qrCodeData.upiId}</span>
+                      <button
+                        onClick={() => copyToClipboard(qrCodeData.upiId)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Amount:</span>
+                    <span className="font-semibold">₹{content.premiumPrice}</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-4 text-center">
+                <h3 className="text-red-400 font-semibold mb-2">Payment Setup Pending</h3>
+                <p className="text-gray-300 text-sm">
+                  UPI Gateway configuration in progress. Please enter transaction ID manually.
+                </p>
+              </div>
+            )}
                 <p className="text-gray-600 text-sm">{paymentSettings.merchantName}</p>
               </div>
 
