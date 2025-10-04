@@ -23,6 +23,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'https://climax-frontend.vercel.app',
   'https://watchclimax.vercel.app', // ✅ new domain
+  'https://climaxott.vercel.app', // ✅ CURRENT FRONTEND URL
 ];
 
 app.use(
