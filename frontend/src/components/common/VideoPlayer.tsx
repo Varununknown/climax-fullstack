@@ -18,7 +18,6 @@ export const VideoPlayer: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [videoQuality, setVideoQuality] = useState('auto');
-  const [isBuffering, setIsBuffering] = useState(false);
   const [showQualityMenu, setShowQualityMenu] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -159,12 +158,21 @@ export const VideoPlayer: React.FC = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  if (!content || hasPaid === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white text-xl bg-black">
-        Loading video...
-      </div>
-    );
+  // Auto-play when content loads
+  useEffect(() => {
+    if (content && videoRef.current) {
+      const video = videoRef.current;
+      video.muted = false; // Unmute by default
+      video.play().catch(err => {
+        console.log('Auto-play failed, user interaction required:', err);
+        // If auto-play fails due to browser policy, user will need to click play
+      });
+      setIsPlaying(true);
+    }
+  }, [content]);
+
+  if (!content) {
+    return null; // No loading screen, just wait for content
   }
 
   return (
@@ -175,15 +183,22 @@ export const VideoPlayer: React.FC = () => {
         className="w-full max-w-4xl rounded shadow-lg"
         controls
         playsInline
-        preload="none"
+        autoPlay
+        muted={false}
+        preload="auto"
         poster={content.thumbnail}
-        onWaiting={() => setIsBuffering(true)}
-        onCanPlay={() => setIsBuffering(false)}
-        onLoadStart={() => setIsBuffering(true)}
-        onLoadedData={() => setIsBuffering(false)}
+        onLoadedData={() => {
+          // Ensure video plays as soon as data is loaded
+          const video = videoRef.current;
+          if (video) {
+            video.play().catch(() => {
+              // Auto-play failed, user interaction required
+            });
+            setIsPlaying(true);
+          }
+        }}
         onError={(e) => {
           console.error('Video loading error:', e);
-          setIsBuffering(false);
         }}
         style={{
           maxHeight: videoQuality === '360p' ? '360px' : 
@@ -192,12 +207,7 @@ export const VideoPlayer: React.FC = () => {
         }}
       />
 
-      {/* Buffering Indicator */}
-      {isBuffering && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-          <div className="text-white text-xl">⏳ Loading...</div>
-        </div>
-      )}
+
 
       <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
         <button type="button" onClick={() => navigate(-1)} className="text-white flex items-center space-x-2">
