@@ -57,7 +57,8 @@ export const PendingPayments: React.FC = () => {
     if (window.confirm('Are you sure you want to approve this payment?')) {
       try {
         console.log('🔄 Approving payment:', paymentId);
-        const response = await API.post(`/payments/${paymentId}/approve`);
+        // Temporary workaround: Use PUT with action parameter
+        const response = await API.put(`/payments/${paymentId}?action=approve`);
         console.log('✅ Approve response:', response.data);
         
         // Update payment status in local state
@@ -77,7 +78,8 @@ export const PendingPayments: React.FC = () => {
     if (window.confirm('Are you sure you want to decline this payment?')) {
       try {
         console.log('🔄 Declining payment:', paymentId);
-        const response = await API.post(`/payments/${paymentId}/decline`);
+        // Temporary workaround: Use PUT with action parameter
+        const response = await API.put(`/payments/${paymentId}?action=decline`);
         console.log('✅ Decline response:', response.data);
         
         // Update payment status in local state
