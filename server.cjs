@@ -61,6 +61,25 @@ app.get('/test', (req, res) => {
   res.json({ message: 'Test route working!', status: 'success' });
 });
 
+// Add back the authentication and content routes
+try {
+  const authRoutes = require('./routes/authRoutes.cjs');
+  const contentRoutes = require('./routes/contentRoutes.cjs');
+  const paymentRoutes = require('./routes/paymentRoutes.cjs');
+  const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs');
+  
+  // Mount the routes
+  app.use('/api/auth', authRoutes);
+  app.use('/api/contents', contentRoutes);
+  app.use('/api/payments', paymentRoutes);
+  app.use('/api/payment-settings', paymentSettingsRoutes);
+  
+  console.log('✅ All API routes loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading routes:', error.message);
+  console.error('Routes not available - check route files');
+}
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🔗 Server URL: http://localhost:${PORT}`);
