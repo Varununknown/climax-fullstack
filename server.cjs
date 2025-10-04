@@ -1,18 +1,8 @@
 require('dotenv').config();
 
-// Memory optimization for free hosting
-process.env.NODE_OPTIONS = '--max-old-space-size=256';
-
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-
-// Route Imports - now in root directory
-const authRoutes = require('./routes/authRoutes.cjs');
-const googleAuthRoutes = require('./routes/googleAuth.cjs');
-const contentRoutes = require('./routes/contentRoutes.cjs');
-const paymentRoutes = require('./routes/paymentRoutes.cjs');
-const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs');
 
 const app = express();
 
@@ -28,6 +18,10 @@ app.use(
   cors({
     origin: function (origin, callback) {
       // Allow Vercel domains and localhost
+      if (!origin || 
+          allowedOrigins.includes(origin) || 
+          origin.endsWith('.vercel.app')) {
+        callback(null, true);
       if (!origin || 
           allowedOrigins.includes(origin) || 
           origin.endsWith('.vercel.app')) {
@@ -53,12 +47,30 @@ mongoose.connect(process.env.MONGO_URI)
     console.error('❌ MongoDB connection error:', err.message);
   });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/auth', googleAuthRoutes);
-app.use('/api/contents', contentRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/payment-settings', paymentSettingsRoutes);
+// Simple root route
+app.get('/', (req, res) => {
+  res.json({ message: 'Climax OTT Backend API is running!' });
+});
+
+// Route Imports with error handling
+try {
+  const authRoutes = require('./routes/authRoutes.cjs');
+  const googleAuthRoutes = require('./routes/googleAuth.cjs');
+  const contentRoutes = require('./routes/contentRoutes.cjs');
+  const paymentRoutes = require('./routes/paymentRoutes.cjs');
+  const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs');
+
+  // API Routes
+  app.use('/api/auth', authRoutes);
+  app.use('/api/auth', googleAuthRoutes);
+  app.use('/api/contents', contentRoutes);
+  app.use('/api/payments', paymentRoutes);
+  app.use('/api/payment-settings', paymentSettingsRoutes);
+  
+  console.log('✅ All routes loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading routes:', error.message);
+}
 
 // Start Server
 const PORT = process.env.PORT || 5000;
