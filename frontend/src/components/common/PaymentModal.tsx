@@ -102,11 +102,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       // Check if payment already existed
       if (response.data.alreadyPaid) {
-        console.log('🔓 Content already unlocked - payment existed!');
+        console.log('🔓 Content already unlocked - payment was approved!');
         setPaymentStep('success');
         setTimeout(() => {
           onSuccess();
-        }, 1000); // Faster unlock for existing payments
+        }, 1000); // Faster unlock for existing approved payments
       } else {
         // New payment - normal flow
         setTimeout(() => {
@@ -118,6 +118,26 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       }
 
     } catch (err: any) {
+      console.error('❌ Payment submission failed:', err);
+      
+      // Handle duplicate payment case
+      if (err.response?.status === 409 && err.response?.data?.alreadyExists) {
+        console.log('⚠️ Payment already exists with status:', err.response.data.payment?.status);
+        const existingPayment = err.response.data.payment;
+        
+        if (existingPayment?.status === 'approved') {
+          // Payment exists and is approved - unlock content
+          setPaymentStep('success');
+          setTimeout(() => {
+            onSuccess();
+          }, 1000);
+        } else {
+          // Payment exists but not approved - show status
+          setPaymentStep('waiting');
+          alert(`Payment already submitted with status: ${existingPayment?.status || 'pending'}. Please wait for admin approval.`);
+        }
+        return;
+      }
       console.error('❌ Payment submission error:', err);
       const errorMessage = err.response?.data?.message || err.message || 'Server error. Try again.';
       alert(errorMessage);

@@ -90,7 +90,19 @@ export const VideoPlayer: React.FC = () => {
           // Save to localStorage for permanent future access
           localStorage.setItem(paymentKey, 'true');
         } else {
-          console.log('❌ User has not paid for this content');
+          console.log('❌ User has not paid for this content yet');
+          
+          // Check if there's any pending payment for this content
+          try {
+            const pendingRes = await API.get(`/payments/check-any?userId=${user.id}&contentId=${content._id}`);
+            if (pendingRes.data.exists && pendingRes.data.status !== 'approved') {
+              console.log('⏳ User has pending payment - hiding payment button');
+              // Don't show payment button if there's already a pending/declined payment
+              setHasPaid(null); // Special state for pending payments
+            }
+          } catch (pendingErr) {
+            console.log('No pending payment check - normal flow');
+          }
         }
       } catch (err) {
         console.error('❌ Error checking payment:', err);
@@ -300,7 +312,7 @@ export const VideoPlayer: React.FC = () => {
           {formatTime(currentTime)} / {formatTime(duration)}
         </div>
         <div className="flex space-x-2">
-          {!hasPaid && content.premiumPrice > 0 && (
+          {!hasPaid && hasPaid !== null && content.premiumPrice > 0 && (
             <button
               type="button"
               onClick={() => {
