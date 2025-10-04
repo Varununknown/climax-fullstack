@@ -92,35 +92,17 @@ export const PendingPayments: React.FC = () => {
   };
 
   const handleReject = async (paymentId: string) => {
-    if (window.confirm('Are you sure you want to decline this payment?')) {
+    if (window.confirm('Are you sure you want to decline and PERMANENTLY DELETE this payment?')) {
       try {
-        console.log('🔄 Declining payment:', paymentId);
+        console.log('🔄 Declining and deleting payment:', paymentId);
         
-        // Find the payment data first
-        const payment = payments.find((p: any) => p._id === paymentId);
-        if (!payment) {
-          alert('Payment not found');
-          return;
-        }
-        
-        // Delete the existing payment
+        // Simply delete the payment - no recreation needed for decline
         await API.delete(`/payments/${paymentId}`);
-        console.log('✅ Payment deleted, creating declined version');
+        console.log('✅ Payment permanently deleted');
         
-        // Create a new payment with declined status
-        await API.post('/payments', {
-          userId: payment.userId,
-          contentId: payment.contentId,
-          amount: payment.amount,
-          transactionId: payment.transactionId + '_declined_' + Date.now(),
-          status: 'declined'
-        });
-        
-        // Update local state
-        setPayments((prev: any) => prev.map((p: any) => 
-          p._id === paymentId ? { ...p, status: 'declined' } : p
-        ));
-        alert('❌ Payment declined successfully!');
+        // Remove from local state completely
+        setPayments((prev: any) => prev.filter((p: any) => p._id !== paymentId));
+        alert('❌ Payment declined and removed from database!');
       } catch (err: any) {
         console.error('❌ Error declining payment:', err);
         console.error('Error details:', err.response?.data || err.message);
