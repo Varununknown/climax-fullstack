@@ -61,24 +61,91 @@ app.get('/test', (req, res) => {
   res.json({ message: 'Test route working!', status: 'success' });
 });
 
-// Add back the authentication and content routes
-try {
-  const authRoutes = require('./routes/authRoutes.cjs');
-  const contentRoutes = require('./routes/contentRoutes.cjs');
-  const paymentRoutes = require('./routes/paymentRoutes.cjs');
-  const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs');
-  
-  // Mount the routes
-  app.use('/api/auth', authRoutes);
-  app.use('/api/contents', contentRoutes);
-  app.use('/api/payments', paymentRoutes);
-  app.use('/api/payment-settings', paymentSettingsRoutes);
-  
-  console.log('✅ All API routes loaded successfully');
-} catch (error) {
-  console.error('❌ Error loading routes:', error.message);
-  console.error('Routes not available - check route files');
-}
+// Import User model for direct auth routes
+const User = require('./models/User.cjs');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+// Direct auth routes (bypass import issues)
+app.post('/api/auth/login', async (req, res) => {
+  console.log('🔐 Login attempt:', req.body);
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      token,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+    });
+  } catch (error) {
+    console.error('❌ Login error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.post('/api/auth/register', async (req, res) => {
+  console.log('📝 Register attempt:', req.body);
+  const { name, email, password, role } = req.body;
+
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || 'user'
+    });
+
+    await user.save();
+
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.status(201).json({
+      token,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+    });
+  } catch (error) {
+    console.error('❌ Register error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Add contents route directly
+const Content = require('./models/Content.cjs');
+
+app.get('/api/contents', async (req, res) => {
+  try {
+    const contents = await Content.find({ isActive: true });
+    res.json(contents);
+  } catch (error) {
+    console.error('❌ Contents error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
