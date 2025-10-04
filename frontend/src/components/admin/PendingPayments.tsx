@@ -56,16 +56,19 @@ export const PendingPayments: React.FC = () => {
   const handleApprove = async (paymentId: string) => {
     if (window.confirm('Are you sure you want to approve this payment?')) {
       try {
-        await API.patch(`/payments/${paymentId}/approve`);
+        console.log('🔄 Approving payment:', paymentId);
+        const response = await API.patch(`/payments/${paymentId}/approve`);
+        console.log('✅ Approve response:', response.data);
         
         // Update payment status in local state
         setPayments(prev => prev.map(p => 
           p._id === paymentId ? { ...p, status: 'approved' } : p
         ));
         alert('✅ Payment approved successfully!');
-      } catch (err) {
+      } catch (err: any) {
         console.error('❌ Error approving payment:', err);
-        alert('Error approving payment');
+        console.error('Error details:', err.response?.data || err.message);
+        alert(`Error approving payment: ${err.response?.data?.message || err.message}`);
       }
     }
   };
@@ -73,16 +76,19 @@ export const PendingPayments: React.FC = () => {
   const handleReject = async (paymentId: string) => {
     if (window.confirm('Are you sure you want to decline this payment?')) {
       try {
-        await API.patch(`/payments/${paymentId}/decline`);
+        console.log('🔄 Declining payment:', paymentId);
+        const response = await API.patch(`/payments/${paymentId}/decline`);
+        console.log('✅ Decline response:', response.data);
         
         // Update payment status in local state
         setPayments(prev => prev.map(p => 
           p._id === paymentId ? { ...p, status: 'declined' } : p
         ));
         alert('❌ Payment declined successfully!');
-      } catch (err) {
+      } catch (err: any) {
         console.error('❌ Error declining payment:', err);
-        alert('Error declining payment');
+        console.error('Error details:', err.response?.data || err.message);
+        alert(`Error declining payment: ${err.response?.data?.message || err.message}`);
       }
     }
   };
