@@ -228,10 +228,28 @@ export const PendingPayments: React.FC = () => {
                       </>
                     )}
                     {p.status === 'approved' && (
-                      <span className="text-green-400 text-sm font-medium">✓ Approved</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-400 text-sm font-medium">✓ Auto-Approved</span>
+                        <button
+                          className="flex items-center gap-1 bg-red-800 text-white px-2 py-1 rounded hover:bg-red-700 text-xs"
+                          onClick={() => handleReject(p._id)}
+                          title="Decline and revoke access"
+                        >
+                          <XCircle className="w-3 h-3" /> Revoke
+                        </button>
+                      </div>
                     )}
                     {p.status === 'declined' && (
-                      <span className="text-red-400 text-sm font-medium">✗ Declined</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-red-400 text-sm font-medium">✗ Declined</span>
+                        <button
+                          className="flex items-center gap-1 bg-green-800 text-white px-2 py-1 rounded hover:bg-green-700 text-xs"
+                          onClick={() => handleApprove(p._id)}
+                          title="Re-approve access"
+                        >
+                          <CheckCircle className="w-3 h-3" /> Restore
+                        </button>
+                      </div>
                     )}
                     <button
                       className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm"
