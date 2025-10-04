@@ -61,6 +61,11 @@ app.get('/test', (req, res) => {
   res.json({ message: 'Test route working!', status: 'success' });
 });
 
+// Test auth route
+app.get('/api/auth/test', (req, res) => {
+  res.json({ message: 'Auth routes are working!', status: 'success' });
+});
+
 // Import User model for direct auth routes
 const User = require('./models/User.cjs');
 const bcrypt = require('bcryptjs');
