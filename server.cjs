@@ -22,10 +22,6 @@ app.use(
           allowedOrigins.includes(origin) || 
           origin.endsWith('.vercel.app')) {
         callback(null, true);
-      if (!origin || 
-          allowedOrigins.includes(origin) || 
-          origin.endsWith('.vercel.app')) {
-        callback(null, true);
       } else {
         callback(new Error('CORS Not Allowed'));
       }
