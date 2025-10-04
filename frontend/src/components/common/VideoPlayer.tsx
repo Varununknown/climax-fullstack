@@ -16,7 +16,7 @@ export const VideoPlayer: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [hasPaid, setHasPaid] = useState<boolean>(false); // Simple default
+  const [hasPaid, setHasPaid] = useState<boolean | null>(null); // null = checking, true = paid, false = not paid
   const [videoQuality, setVideoQuality] = useState('auto');
   const [showQualityMenu, setShowQualityMenu] = useState(false);
 
@@ -61,7 +61,7 @@ export const VideoPlayer: React.FC = () => {
   useEffect(() => {
     const checkPayment = async () => {
       if (!content || !user) {
-        // If no user or content, assume not paid to show payment modal
+        // If no user or content, assume not paid
         setHasPaid(false);
         return;
       }
@@ -69,11 +69,18 @@ export const VideoPlayer: React.FC = () => {
       try {
         const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
         console.log('💰 Payment check response:', res.data);
-        setHasPaid(res.data.paid);
-        if (res.data.paid) setShowPaymentModal(false);
+        const isPaid = res.data.paid;
+        setHasPaid(isPaid);
+        
+        if (isPaid) {
+          console.log('✅ User has already paid for this content');
+          setShowPaymentModal(false);
+        } else {
+          console.log('❌ User has not paid for this content');
+        }
       } catch (err) {
         console.error('❌ Error checking payment:', err);
-        // On error, assume not paid to show payment modal
+        // On error, assume not paid
         setHasPaid(false);
       }
     };
@@ -137,18 +144,22 @@ export const VideoPlayer: React.FC = () => {
   }, [content, hasPaid]);
 
   const handlePaymentSuccess = async () => {
-    if (!content || !user) return;
-
-    try {
-      const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
-      if (res.data.paid) {
-        setHasPaid(true);
-        setShowPaymentModal(false);
-        videoRef.current?.play();
-        setIsPlaying(true);
-      }
-    } catch (err) {
-      console.error('❌ Error verifying payment after success:', err);
+    console.log('✅ Payment successful! Setting hasPaid to true');
+    setHasPaid(true);
+    setShowPaymentModal(false);
+    
+    // Store payment status in localStorage for persistence
+    if (content && user) {
+      const paymentKey = `payment_${user.id}_${content._id}`;
+      localStorage.setItem(paymentKey, 'true');
+      console.log('💾 Payment status saved to localStorage');
+    }
+    
+    // Resume video playback
+    const video = videoRef.current;
+    if (video) {
+      video.play();
+      setIsPlaying(true);
     }
   };
 
