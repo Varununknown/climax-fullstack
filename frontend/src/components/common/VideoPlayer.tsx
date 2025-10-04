@@ -28,11 +28,20 @@ export const VideoPlayer: React.FC = () => {
     const fetchContent = async () => {
       if (!id) return;
       try {
+        // Use CDN-optimized endpoint for super fast loading
         const res = await API.get(`/contents/${id}`);
-        setContent(res.data);
+        const contentData = res.data;
+        
+        // Ensure video URL is CDN-optimized
+        if (contentData.videoUrl && !contentData.videoUrl.includes('cdn') && !contentData.videoUrl.includes('r2.cloudflarestorage.com')) {
+          // If not already CDN URL, use the video proxy endpoint for optimization
+          contentData.videoUrl = `${API.defaults.baseURL}/video/${id}`;
+        }
+        
+        setContent(contentData);
       } catch (err) {
         console.error('❌ Error fetching content:', err);
-        // Try to get content from the list API instead
+        // Try to get content from the list API instead (CDN-optimized)
         try {
           const listRes = await API.get('/contents');
           const foundContent = listRes.data.find((c: any) => c._id === id);
