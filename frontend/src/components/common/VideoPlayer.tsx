@@ -16,7 +16,7 @@ export const VideoPlayer: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [hasPaid, setHasPaid] = useState<boolean | null>(null);
+  const [hasPaid, setHasPaid] = useState<boolean>(false); // Simple default
   const [videoQuality, setVideoQuality] = useState('auto');
   const [showQualityMenu, setShowQualityMenu] = useState(false);
 
@@ -155,13 +155,6 @@ export const VideoPlayer: React.FC = () => {
   const togglePlayPause = () => {
     const video = videoRef.current;
     if (!video) return;
-    
-    // Check if payment is required
-    if (!hasPaid && content.premiumPrice > 0 && video.currentTime >= content.climaxTimestamp) {
-      setShowPaymentModal(true);
-      return;
-    }
-    
     if (video.paused) {
       video.play();
       setIsPlaying(true);
@@ -177,26 +170,18 @@ export const VideoPlayer: React.FC = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Only auto-play if user has paid or no payment required
+  // Auto-play when content loads
   useEffect(() => {
-    if (content && videoRef.current && hasPaid !== null) {
+    if (content && videoRef.current) {
       const video = videoRef.current;
-      
-      // Only auto-play if payment not required or already paid
-      if (hasPaid || content.premiumPrice === 0) {
-        video.muted = false;
-        video.play().catch(err => {
-          console.log('Auto-play failed, user interaction required:', err);
-        });
-        setIsPlaying(true);
-      } else {
-        // Payment required - keep video paused
-        video.pause();
-        setIsPlaying(false);
-        console.log('🚫 Payment required - keeping video paused');
-      }
+      video.muted = false; // Unmute by default
+      video.play().catch(err => {
+        console.log('Auto-play failed, user interaction required:', err);
+        // If auto-play fails due to browser policy, user will need to click play
+      });
+      setIsPlaying(true);
     }
-  }, [content, hasPaid]);
+  }, [content]);
 
   if (!content) {
     return null; // No loading screen, just wait for content
@@ -208,28 +193,20 @@ export const VideoPlayer: React.FC = () => {
         ref={videoRef}
         src={content.videoUrl}
         className="w-full max-w-4xl rounded shadow-lg"
-        controls={hasPaid || content.premiumPrice === 0}
+        controls
         playsInline
+        autoPlay
         muted={false}
         preload="auto"
         poster={content.thumbnail}
         onLoadedData={() => {
-          // Don't auto-play, let payment logic decide
+          // Ensure video plays as soon as data is loaded
           const video = videoRef.current;
-          if (video && (hasPaid || content.premiumPrice === 0)) {
-            video.play().catch(() => {});
+          if (video) {
+            video.play().catch(() => {
+              // Auto-play failed, user interaction required
+            });
             setIsPlaying(true);
-          }
-        }}
-        onPlay={() => {
-          // Prevent play if payment required
-          if (!hasPaid && content.premiumPrice > 0) {
-            const video = videoRef.current;
-            if (video) {
-              video.pause();
-              setIsPlaying(false);
-              setShowPaymentModal(true);
-            }
           }
         }}
         onError={(e) => {
@@ -309,20 +286,13 @@ export const VideoPlayer: React.FC = () => {
       </div>
 
       {showPaymentModal && (
-        <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-50">
+        <div className="fixed inset-0 z-50">
           <PaymentModal
             content={content}
             onSuccess={handlePaymentSuccess}
             onClose={() => {
               console.log('💳 Closing payment modal');
               setShowPaymentModal(false);
-              // Keep video paused when modal closes without payment
-              const video = videoRef.current;
-              if (video && !hasPaid) {
-                video.pause();
-                video.currentTime = lastValidTime.current;
-                setIsPlaying(false);
-              }
             }}
           />
         </div>
