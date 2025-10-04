@@ -66,6 +66,18 @@ export const VideoPlayer: React.FC = () => {
         return;
       }
 
+      // Create unique key for this user-content combination
+      const paymentKey = `payment_${user.id}_${content._id}`;
+      const localPaymentStatus = localStorage.getItem(paymentKey);
+      
+      // First check localStorage for instant unlock
+      if (localPaymentStatus === 'true') {
+        console.log('🔓 PERMANENT UNLOCK: Content already paid for (localStorage)');
+        setHasPaid(true);
+        setShowPaymentModal(false);
+        return; // Skip backend check - permanent unlock
+      }
+
       try {
         const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
         console.log('💰 Payment check response:', res.data);
@@ -73,8 +85,10 @@ export const VideoPlayer: React.FC = () => {
         setHasPaid(isPaid);
         
         if (isPaid) {
-          console.log('✅ User has already paid for this content');
+          console.log('✅ User has already paid for this content - PERMANENT UNLOCK');
           setShowPaymentModal(false);
+          // Save to localStorage for permanent future access
+          localStorage.setItem(paymentKey, 'true');
         } else {
           console.log('❌ User has not paid for this content');
         }
@@ -148,11 +162,11 @@ export const VideoPlayer: React.FC = () => {
     setHasPaid(true);
     setShowPaymentModal(false);
     
-    // Store payment status in localStorage for persistence
+    // Store payment status in localStorage for PERMANENT ACCESS
     if (content && user) {
       const paymentKey = `payment_${user.id}_${content._id}`;
       localStorage.setItem(paymentKey, 'true');
-      console.log('💾 Payment status saved to localStorage');
+      console.log('� PERMANENT UNLOCK: Payment status saved to localStorage - content unlocked forever!');
     }
     
     // Resume video playback
@@ -160,6 +174,15 @@ export const VideoPlayer: React.FC = () => {
     if (video) {
       video.play();
       setIsPlaying(true);
+    }
+  };
+
+  // Debug function to clear payment cache (for testing only)
+  const clearPaymentCache = () => {
+    if (content && user) {
+      const paymentKey = `payment_${user.id}_${content._id}`;
+      localStorage.removeItem(paymentKey);
+      console.log('🗑️ Payment cache cleared for testing');
     }
   };
 
