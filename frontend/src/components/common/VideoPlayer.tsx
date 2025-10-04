@@ -155,6 +155,13 @@ export const VideoPlayer: React.FC = () => {
   const togglePlayPause = () => {
     const video = videoRef.current;
     if (!video) return;
+    
+    // Check if payment is required
+    if (!hasPaid && content.premiumPrice > 0 && video.currentTime >= content.climaxTimestamp) {
+      setShowPaymentModal(true);
+      return;
+    }
+    
     if (video.paused) {
       video.play();
       setIsPlaying(true);
@@ -170,18 +177,26 @@ export const VideoPlayer: React.FC = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Auto-play when content loads
+  // Only auto-play if user has paid or no payment required
   useEffect(() => {
-    if (content && videoRef.current) {
+    if (content && videoRef.current && hasPaid !== null) {
       const video = videoRef.current;
-      video.muted = false; // Unmute by default
-      video.play().catch(err => {
-        console.log('Auto-play failed, user interaction required:', err);
-        // If auto-play fails due to browser policy, user will need to click play
-      });
-      setIsPlaying(true);
+      
+      // Only auto-play if payment not required or already paid
+      if (hasPaid || content.premiumPrice === 0) {
+        video.muted = false;
+        video.play().catch(err => {
+          console.log('Auto-play failed, user interaction required:', err);
+        });
+        setIsPlaying(true);
+      } else {
+        // Payment required - keep video paused
+        video.pause();
+        setIsPlaying(false);
+        console.log('🚫 Payment required - keeping video paused');
+      }
     }
-  }, [content]);
+  }, [content, hasPaid]);
 
   if (!content) {
     return null; // No loading screen, just wait for content
@@ -193,20 +208,28 @@ export const VideoPlayer: React.FC = () => {
         ref={videoRef}
         src={content.videoUrl}
         className="w-full max-w-4xl rounded shadow-lg"
-        controls
+        controls={hasPaid || content.premiumPrice === 0}
         playsInline
-        autoPlay
         muted={false}
         preload="auto"
         poster={content.thumbnail}
         onLoadedData={() => {
-          // Ensure video plays as soon as data is loaded
+          // Don't auto-play, let payment logic decide
           const video = videoRef.current;
-          if (video) {
-            video.play().catch(() => {
-              // Auto-play failed, user interaction required
-            });
+          if (video && (hasPaid || content.premiumPrice === 0)) {
+            video.play().catch(() => {});
             setIsPlaying(true);
+          }
+        }}
+        onPlay={() => {
+          // Prevent play if payment required
+          if (!hasPaid && content.premiumPrice > 0) {
+            const video = videoRef.current;
+            if (video) {
+              video.pause();
+              setIsPlaying(false);
+              setShowPaymentModal(true);
+            }
           }
         }}
         onError={(e) => {
@@ -286,13 +309,20 @@ export const VideoPlayer: React.FC = () => {
       </div>
 
       {showPaymentModal && (
-        <div className="fixed inset-0 z-50">
+        <div className="absolute inset-0 bg-black/95 flex items-center justify-center z-50">
           <PaymentModal
             content={content}
             onSuccess={handlePaymentSuccess}
             onClose={() => {
               console.log('💳 Closing payment modal');
               setShowPaymentModal(false);
+              // Keep video paused when modal closes without payment
+              const video = videoRef.current;
+              if (video && !hasPaid) {
+                video.pause();
+                video.currentTime = lastValidTime.current;
+                setIsPlaying(false);
+              }
             }}
           />
         </div>
