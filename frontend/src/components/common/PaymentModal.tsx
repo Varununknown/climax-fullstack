@@ -190,39 +190,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 </p>
               </div>
             )}
-                <p className="text-gray-600 text-sm">{paymentSettings.merchantName}</p>
-              </div>
-
-              <div className="bg-gray-100 p-4 rounded-lg mb-4">
-                <img
-                  src={qrCodeData.qrImage}
-                  alt="Payment QR Code"
-                  className="w-40 h-40 mx-auto"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200x200?text=QR+Code';
-                  }}
-                />
-              </div>
-
-              <div className="space-y-2 text-sm text-gray-600">
-                <div className="flex items-center justify-between">
-                  <span>UPI ID:</span>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-mono">{qrCodeData.upiId}</span>
-                    <button
-                      onClick={() => copyToClipboard(qrCodeData.upiId)}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Amount:</span>
-                  <span className="font-semibold">₹{content.premiumPrice}</span>
-                </div>
-              </div>
-            </div>
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-300 mb-2">
