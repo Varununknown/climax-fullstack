@@ -72,10 +72,25 @@ export const VideoPlayer: React.FC = () => {
       
       // First check localStorage for instant unlock
       if (localPaymentStatus === 'true') {
-        console.log('🔓 PERMANENT UNLOCK: Content already paid for (localStorage)');
-        setHasPaid(true);
-        setShowPaymentModal(false);
-        return; // Skip backend check - permanent unlock
+        console.log('🔓 CACHED UNLOCK: Content already paid for (localStorage)');
+        // But also verify with backend to ensure it's still valid
+        try {
+          const verifyRes = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+          if (verifyRes.data.paid) {
+            console.log('✅ VERIFIED: Payment still valid on backend');
+            setHasPaid(true);
+            setShowPaymentModal(false);
+            return;
+          } else {
+            console.log('⚠️ CACHE INVALID: Clearing localStorage and rechecking');
+            localStorage.removeItem(paymentKey);
+          }
+        } catch (verifyErr) {
+          console.log('❌ Verification failed, using cache');
+          setHasPaid(true);
+          setShowPaymentModal(false);
+          return;
+        }
       }
 
       try {
