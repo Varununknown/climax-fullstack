@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+import API from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -36,32 +35,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await API.post('/auth/login', { email, password });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        const loggedInUser: User = {
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.name,
-          role: data.user.role,
-          subscription: 'free',
-        };
-        setUser(loggedInUser);
-        localStorage.setItem('streamflix_user', JSON.stringify(loggedInUser));
-        localStorage.setItem('streamflix_token', data.token);
-        setIsLoading(false);
-        return true;
-      } else {
-        console.error(data.message);
-        setIsLoading(false);
-        return false;
-      }
+      const loggedInUser: User = {
+        id: response.data.user.id,
+        email: response.data.user.email,
+        name: response.data.user.name,
+        role: response.data.user.role,
+        subscription: 'free',
+      };
+      setUser(loggedInUser);
+      localStorage.setItem('streamflix_user', JSON.stringify(loggedInUser));
+      localStorage.setItem('streamflix_token', response.data.token);
+      setIsLoading(false);
+      return true;
     } catch (error) {
       console.error('Login failed:', error);
       setIsLoading(false);
@@ -72,21 +59,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        return await login(email, password); // Optional auto-login
-      } else {
-        console.error(data.message);
-        setIsLoading(false);
-        return false;
-      }
+      const response = await API.post('/auth/register', { name, email, password });
+      return await login(email, password); // Optional auto-login
     } catch (error) {
       console.error('Registration failed:', error);
       setIsLoading(false);
