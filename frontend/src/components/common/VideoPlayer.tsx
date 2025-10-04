@@ -28,11 +28,28 @@ export const VideoPlayer: React.FC = () => {
     const fetchContent = async () => {
       if (!id) return;
       try {
+        console.log('🎬 Fetching content for ID:', id);
         const res = await API.get(`/contents/${id}`);
+        console.log('🎬 Content fetched:', res.data);
         setContent(res.data);
       } catch (err) {
         console.error('❌ Error fetching content:', err);
-        navigate('/');
+        // Try to get content from the list API instead
+        try {
+          console.log('🔄 Trying to fetch from contents list...');
+          const listRes = await API.get('/contents');
+          const foundContent = listRes.data.find((c: any) => c._id === id);
+          if (foundContent) {
+            console.log('✅ Found content in list:', foundContent);
+            setContent(foundContent);
+          } else {
+            console.error('❌ Content not found in list');
+            navigate('/');
+          }
+        } catch (listErr) {
+          console.error('❌ Error fetching content list:', listErr);
+          navigate('/');
+        }
       }
     };
 
@@ -151,7 +168,7 @@ export const VideoPlayer: React.FC = () => {
     <div className="relative bg-black min-h-screen flex flex-col items-center justify-center">
       <video
         ref={videoRef}
-        src={`${API.defaults.baseURL}/video/${content._id}`}
+        src={content.videoUrl}
         className="w-full max-w-4xl rounded shadow-lg"
         controls
         playsInline
@@ -164,10 +181,6 @@ export const VideoPlayer: React.FC = () => {
         onError={(e) => {
           console.error('Video loading error:', e);
           setIsBuffering(false);
-          // Fallback to direct video URL if proxy fails
-          if (videoRef.current) {
-            videoRef.current.src = content.videoUrl;
-          }
         }}
         style={{
           maxHeight: videoQuality === '360p' ? '360px' : 

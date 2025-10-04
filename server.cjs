@@ -161,6 +161,97 @@ app.get('/api/contents', async (req, res) => {
   }
 });
 
+// Individual content endpoint
+app.get('/api/contents/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('📦 Individual content API called for ID:', id);
+    
+    // First, try to get from database
+    if (mongoose.connection.readyState === 1) {
+      try {
+        const Content = require('./models/Content.cjs');
+        const content = await Content.findById(id);
+        if (content) {
+          console.log('📦 Found content in DB:', content.title);
+          return res.json(content);
+        }
+      } catch (dbError) {
+        console.error('❌ Database query error:', dbError);
+      }
+    }
+    
+    // Fallback: Find in static content
+    const fallbackContent = [
+      {
+        _id: "670123456789abcdef000001",
+        title: "The Dark Knight",
+        description: "Batman faces the Joker in this epic crime drama.",
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        thumbnail: "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=500",
+        category: "Action",
+        type: "movie",
+        duration: 152,
+        climaxTimestamp: 120,
+        premiumPrice: 4.99,
+        genre: ["Action", "Crime", "Drama"],
+        rating: 9.0,
+        isActive: true,
+        createdAt: new Date()
+      },
+      {
+        _id: "670123456789abcdef000002", 
+        title: "Stranger Things",
+        description: "Supernatural drama series set in the 1980s.",
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+        thumbnail: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500",
+        category: "Drama",
+        type: "series", 
+        duration: 45,
+        climaxTimestamp: 35,
+        premiumPrice: 2.99,
+        genre: ["Drama", "Fantasy", "Horror"],
+        rating: 8.7,
+        isActive: true,
+        createdAt: new Date()
+      },
+      {
+        _id: "670123456789abcdef000003",
+        title: "Comedy Central",
+        description: "Hilarious comedy specials and shows.",
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", 
+        thumbnail: "https://images.unsplash.com/photo-1497486751825-1233686d5d80?w=500",
+        category: "Comedy",
+        type: "series",
+        duration: 30,
+        climaxTimestamp: 20,
+        premiumPrice: 1.99,
+        genre: ["Comedy"],
+        rating: 8.5,
+        isActive: true,
+        createdAt: new Date()
+      }
+    ];
+    
+    const content = fallbackContent.find(c => c._id === id);
+    
+    if (content) {
+      console.log('📦 Found content in fallback:', content.title);
+      res.json(content);
+    } else {
+      console.log('❌ Content not found for ID:', id);
+      res.status(404).json({ message: 'Content not found' });
+    }
+    
+  } catch (error) {
+    console.error('❌ Individual content API error:', error);
+    res.status(500).json({ 
+      message: 'Failed to fetch content', 
+      error: error.message
+    });
+  }
+});
+
 // Seed endpoint to add sample content to database
 app.post('/api/contents/seed', async (req, res) => {
   try {
