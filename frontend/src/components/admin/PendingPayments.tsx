@@ -57,12 +57,29 @@ export const PendingPayments: React.FC = () => {
     if (window.confirm('Are you sure you want to approve this payment?')) {
       try {
         console.log('🔄 Approving payment:', paymentId);
-        // Temporary workaround: Use PUT with action parameter
-        const response = await API.put(`/payments/${paymentId}?action=approve`);
-        console.log('✅ Approve response:', response.data);
         
-        // Update payment status in local state
-        setPayments(prev => prev.map(p => 
+        // Find the payment data first
+        const payment = payments.find((p: any) => p._id === paymentId);
+        if (!payment) {
+          alert('Payment not found');
+          return;
+        }
+        
+        // Delete the existing payment
+        await API.delete(`/payments/${paymentId}`);
+        console.log('✅ Payment deleted, creating approved version');
+        
+        // Create a new payment with approved status
+        await API.post('/payments', {
+          userId: payment.userId,
+          contentId: payment.contentId,
+          amount: payment.amount,
+          transactionId: payment.transactionId + '_approved_' + Date.now(),
+          status: 'approved'
+        });
+        
+        // Update local state
+        setPayments((prev: any) => prev.map((p: any) => 
           p._id === paymentId ? { ...p, status: 'approved' } : p
         ));
         alert('✅ Payment approved successfully!');
@@ -78,12 +95,29 @@ export const PendingPayments: React.FC = () => {
     if (window.confirm('Are you sure you want to decline this payment?')) {
       try {
         console.log('🔄 Declining payment:', paymentId);
-        // Temporary workaround: Use PUT with action parameter
-        const response = await API.put(`/payments/${paymentId}?action=decline`);
-        console.log('✅ Decline response:', response.data);
         
-        // Update payment status in local state
-        setPayments(prev => prev.map(p => 
+        // Find the payment data first
+        const payment = payments.find((p: any) => p._id === paymentId);
+        if (!payment) {
+          alert('Payment not found');
+          return;
+        }
+        
+        // Delete the existing payment
+        await API.delete(`/payments/${paymentId}`);
+        console.log('✅ Payment deleted, creating declined version');
+        
+        // Create a new payment with declined status
+        await API.post('/payments', {
+          userId: payment.userId,
+          contentId: payment.contentId,
+          amount: payment.amount,
+          transactionId: payment.transactionId + '_declined_' + Date.now(),
+          status: 'declined'
+        });
+        
+        // Update local state
+        setPayments((prev: any) => prev.map((p: any) => 
           p._id === paymentId ? { ...p, status: 'declined' } : p
         ));
         alert('❌ Payment declined successfully!');
