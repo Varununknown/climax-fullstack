@@ -29,10 +29,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
 
+  console.log('💳 PaymentModal rendered for content:', content.title, 'Price:', content.premiumPrice);
+
   useEffect(() => {
+    console.log('💳 Fetching payment settings...');
     fetch(`${BACKEND_URL}/payment-settings`)
       .then(res => res.json())
-      .then(data => setPaymentSettings(data))
+      .then(data => {
+        console.log('💳 Payment settings loaded:', data);
+        setPaymentSettings(data);
+      })
       .catch(err => {
         console.error('❌ Failed to load payment settings:', err);
         setPaymentSettings(null);

@@ -60,14 +60,20 @@ export const VideoPlayer: React.FC = () => {
 
   useEffect(() => {
     const checkPayment = async () => {
-      if (!content || !user) return;
+      if (!content || !user) {
+        // If no user or content, assume not paid to show payment modal
+        setHasPaid(false);
+        return;
+      }
 
       try {
         const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+        console.log('💰 Payment check response:', res.data);
         setHasPaid(res.data.paid);
         if (res.data.paid) setShowPaymentModal(false);
       } catch (err) {
         console.error('❌ Error checking payment:', err);
+        // On error, assume not paid to show payment modal
         setHasPaid(false);
       }
     };
@@ -81,15 +87,19 @@ export const VideoPlayer: React.FC = () => {
     if (!video) return;
 
     const climax = content.climaxTimestamp;
+    console.log('🎬 Setting up payment check - Climax at:', climax, 'seconds');
+    console.log('💰 Has paid:', hasPaid);
 
     const onTimeUpdate = () => {
       const time = video.currentTime;
 
       if (!hasPaid && time >= climax) {
+        console.log('🚫 Payment required! Current time:', time, 'Climax:', climax);
         video.pause();
         video.currentTime = lastValidTime.current;
         setIsPlaying(false);
         setShowPaymentModal(true);
+        console.log('💳 Opening payment modal...');
         return;
       }
 
@@ -102,10 +112,12 @@ export const VideoPlayer: React.FC = () => {
 
     const onSeeked = () => {
       if (!hasPaid && video.currentTime >= climax) {
+        console.log('🚫 Seek blocked! Attempting to seek past climax');
         video.currentTime = lastValidTime.current;
         video.pause();
         setIsPlaying(false);
         setShowPaymentModal(true);
+        console.log('💳 Opening payment modal from seek...');
       }
     };
 
@@ -253,27 +265,37 @@ export const VideoPlayer: React.FC = () => {
         <div className="text-white text-sm">
           {formatTime(currentTime)} / {formatTime(duration)}
         </div>
-        {!hasPaid && content.premiumPrice > 0 && (
-          <button
-            type="button"
-            onClick={() => setShowPaymentModal(true)}
-            className="flex items-center bg-red-600 text-white px-3 py-2 rounded space-x-1"
-          >
-            <CreditCard className="w-4 h-4" />
-            <span>Unlock Full Access</span>
+        <div className="flex space-x-2">
+          {!hasPaid && content.premiumPrice > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                console.log('💳 Manual payment modal trigger');
+                setShowPaymentModal(true);
+              }}
+              className="flex items-center bg-red-600 text-white px-3 py-2 rounded space-x-1"
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>Unlock ₹{content.premiumPrice}</span>
+            </button>
+          )}
+          <button type="button" onClick={togglePlayPause} className="text-white">
+            {isPlaying ? <Pause /> : <Play />}
           </button>
-        )}
-        <button type="button" onClick={togglePlayPause} className="text-white">
-          {isPlaying ? <Pause /> : <Play />}
-        </button>
+        </div>
       </div>
 
       {showPaymentModal && (
-        <PaymentModal
-          content={content}
-          onSuccess={handlePaymentSuccess}
-          onClose={() => setShowPaymentModal(false)}
-        />
+        <div className="fixed inset-0 z-50">
+          <PaymentModal
+            content={content}
+            onSuccess={handlePaymentSuccess}
+            onClose={() => {
+              console.log('💳 Closing payment modal');
+              setShowPaymentModal(false);
+            }}
+          />
+        </div>
       )}
     </div>
   );
