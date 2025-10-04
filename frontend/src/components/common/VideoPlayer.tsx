@@ -4,8 +4,7 @@ import { Play, Pause, ArrowLeft, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PaymentModal } from './PaymentModal';
 import { Content } from '../../types';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+import API from '../../services/api';
 
 export const VideoPlayer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,10 +25,8 @@ export const VideoPlayer: React.FC = () => {
     const fetchContent = async () => {
       if (!id) return;
       try {
-        const res = await fetch(`${BACKEND_URL}/contents/${id}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
-        setContent(data);
+        const res = await API.get(`/contents/${id}`);
+        setContent(res.data);
       } catch (err) {
         console.error('❌ Error fetching content:', err);
         navigate('/');
@@ -44,12 +41,9 @@ export const VideoPlayer: React.FC = () => {
       if (!content || !user) return;
 
       try {
-        const res = await fetch(
-          `${BACKEND_URL}/payments/check?userId=${user.id}&contentId=${content._id}`
-        );
-        const data = await res.json();
-        setHasPaid(data.paid);
-        if (data.paid) setShowPaymentModal(false);
+        const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+        setHasPaid(res.data.paid);
+        if (res.data.paid) setShowPaymentModal(false);
       } catch (err) {
         console.error('❌ Error checking payment:', err);
         setHasPaid(false);
@@ -112,11 +106,8 @@ export const VideoPlayer: React.FC = () => {
     if (!content || !user) return;
 
     try {
-      const res = await fetch(
-        `${BACKEND_URL}/payments/check?userId=${user.id}&contentId=${content._id}`
-      );
-      const data = await res.json();
-      if (data.paid) {
+      const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+      if (res.data.paid) {
         setHasPaid(true);
         setShowPaymentModal(false);
         videoRef.current?.play();

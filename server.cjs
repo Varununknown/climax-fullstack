@@ -152,6 +152,33 @@ app.get('/api/contents', async (req, res) => {
   }
 });
 
+// Get individual content by ID
+app.get('/api/contents/:id', async (req, res) => {
+  try {
+    const content = await Content.findById(req.params.id);
+    if (!content) {
+      return res.status(404).json({ message: 'Content not found' });
+    }
+    res.json(content);
+  } catch (error) {
+    console.error('❌ Content by ID error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Payment check route
+app.get('/api/payments/check', async (req, res) => {
+  try {
+    const { userId, contentId } = req.query;
+    // For now, return that payment is required (free content)
+    // You can implement actual payment logic later
+    res.json({ paid: false, message: 'Payment required for premium content' });
+  } catch (error) {
+    console.error('❌ Payment check error:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🔗 Server URL: http://localhost:${PORT}`);
