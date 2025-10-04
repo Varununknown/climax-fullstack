@@ -47,33 +47,25 @@ mongoose.connect(process.env.MONGO_URI)
     console.error('❌ MongoDB connection error:', err.message);
   });
 
-// Simple root route
+// Start Server FIRST - then add routes
+const PORT = process.env.PORT || 5000;
+
+// Simple root route BEFORE everything else
 app.get('/', (req, res) => {
-  res.json({ message: 'Climax OTT Backend API is running!' });
+  console.log('✅ Root route hit!');
+  res.json({ 
+    message: 'Climax OTT Backend API is running!', 
+    timestamp: new Date().toISOString(),
+    port: PORT 
+  });
 });
 
-// Route Imports with error handling
-try {
-  const authRoutes = require('./routes/authRoutes.cjs');
-  const googleAuthRoutes = require('./routes/googleAuth.cjs');
-  const contentRoutes = require('./routes/contentRoutes.cjs');
-  const paymentRoutes = require('./routes/paymentRoutes.cjs');
-  const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs');
+// Test route
+app.get('/test', (req, res) => {
+  res.json({ message: 'Test route working!', status: 'success' });
+});
 
-  // API Routes
-  app.use('/api/auth', authRoutes);
-  app.use('/api/auth', googleAuthRoutes);
-  app.use('/api/contents', contentRoutes);
-  app.use('/api/payments', paymentRoutes);
-  app.use('/api/payment-settings', paymentSettingsRoutes);
-  
-  console.log('✅ All routes loaded successfully');
-} catch (error) {
-  console.error('❌ Error loading routes:', error.message);
-}
-
-// Start Server
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🔗 Server URL: http://localhost:${PORT}`);
 });
