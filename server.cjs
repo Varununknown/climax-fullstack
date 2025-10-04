@@ -79,6 +79,12 @@ mongoose.connect(process.env.MONGO_URI, {
 // =======================
 // ✅ API Routes
 // =======================
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API is working', timestamp: new Date().toISOString() });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', googleAuthRoutes);  // <-- Add Google auth routes here
 app.use('/api/contents', contentRoutes);
