@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Pause, ArrowLeft, CreditCard } from 'lucide-react';
+import { Play, Pause, ArrowLeft, CreditCard, Settings } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PaymentModal } from './PaymentModal';
 import { Content } from '../../types';
@@ -17,6 +17,9 @@ export const VideoPlayer: React.FC = () => {
   const [duration, setDuration] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
+  const [videoQuality, setVideoQuality] = useState('auto');
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [showQualityMenu, setShowQualityMenu] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastValidTime = useRef<number>(0);
@@ -151,10 +154,26 @@ export const VideoPlayer: React.FC = () => {
         src={content.videoUrl}
         className="w-full max-w-4xl rounded shadow-lg"
         controls
-        autoPlay
         playsInline
-        muted
+        preload="metadata"
+        poster={content.thumbnail}
+        onWaiting={() => setIsBuffering(true)}
+        onCanPlay={() => setIsBuffering(false)}
+        onLoadStart={() => setIsBuffering(true)}
+        onLoadedData={() => setIsBuffering(false)}
+        style={{
+          maxHeight: videoQuality === '360p' ? '360px' : 
+                    videoQuality === '480p' ? '480px' : 
+                    videoQuality === '720p' ? '720px' : 'auto'
+        }}
       />
+
+      {/* Buffering Indicator */}
+      {isBuffering && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+          <div className="text-white text-xl">⏳ Loading...</div>
+        </div>
+      )}
 
       <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
         <button type="button" onClick={() => navigate(-1)} className="text-white flex items-center space-x-2">
@@ -163,6 +182,36 @@ export const VideoPlayer: React.FC = () => {
         <div className="text-white text-center">
           <h2 className="text-lg font-bold">{content.title}</h2>
           <p className="text-sm">{content.category} • {content.type}</p>
+        </div>
+        
+        {/* Quality Control */}
+        <div className="relative">
+          <button 
+            onClick={() => setShowQualityMenu(!showQualityMenu)}
+            className="text-white bg-black/50 px-3 py-1 rounded hover:bg-black/70"
+          >
+            🎥 {videoQuality === 'auto' ? 'Auto' : videoQuality}
+          </button>
+          
+          {showQualityMenu && (
+            <div className="absolute right-0 top-8 bg-black/90 rounded shadow-lg min-w-[120px]">
+              {['auto', '720p', '480p', '360p'].map((quality) => (
+                <button
+                  key={quality}
+                  onClick={() => {
+                    setVideoQuality(quality);
+                    setShowQualityMenu(false);
+                    // Auto-adjust video quality here if needed
+                  }}
+                  className={`block w-full text-left px-3 py-2 text-white hover:bg-gray-600 ${
+                    videoQuality === quality ? 'bg-red-600' : ''
+                  }`}
+                >
+                  {quality === 'auto' ? 'Auto (Recommended)' : quality}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
