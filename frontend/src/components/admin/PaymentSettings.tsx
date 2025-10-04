@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { QrCode, Edit, Save, Copy, RefreshCw } from 'lucide-react';
+import API from '../../services/api';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -21,33 +22,31 @@ export const PaymentSettings: React.FC = () => {
   });
 
   useEffect(() => {
-    fetch(`${BACKEND_URL}/payment-settings`)
-      .then(res => res.json())
-      .then(data => {
-        if (data) {
-          setSettings(data);
-          setTempSettings(data);
+    const fetchSettings = async () => {
+      try {
+        const response = await API.get('/payment-settings');
+        if (response.data) {
+          setSettings(response.data);
+          setTempSettings(response.data);
         }
-      })
-      .catch(err => console.error('Error loading settings:', err));
+      } catch (err) {
+        console.error('Error loading settings:', err);
+      }
+    };
+    
+    fetchSettings();
   }, []);
 
-  const handleSave = () => {
-    fetch(`${BACKEND_URL}/payment-settings`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tempSettings)
-    })
-      .then(res => res.json())
-      .then(data => {
-        setSettings(tempSettings);
-        setIsEditing(false);
-        alert('✅ Settings updated successfully');
-      })
-      .catch(err => {
-        console.error('Error saving settings:', err);
-        alert('❌ Failed to update settings');
-      });
+  const handleSave = async () => {
+    try {
+      await API.post('/payment-settings', tempSettings);
+      setSettings(tempSettings);
+      setIsEditing(false);
+      alert('✅ Settings updated successfully');
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      alert('❌ Failed to update settings');
+    }
   };
 
   const handleCancel = () => {

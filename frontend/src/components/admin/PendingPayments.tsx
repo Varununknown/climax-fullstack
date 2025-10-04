@@ -9,6 +9,7 @@ import {
   Download
 } from 'lucide-react';
 import { PaymentDetailsModal } from '../../components/admin/PaymentDetailsModal';
+import API from '../../services/api';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -38,16 +39,11 @@ export const PendingPayments: React.FC = () => {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        console.log('🔄 Fetching payments from:', `${BACKEND_URL}/payments/all`);
-        const res = await fetch(`${BACKEND_URL}/payments/all`);
+        console.log('🔄 Fetching payments from API...');
+        const response = await API.get('/payments/all');
         
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        
-        const data = await res.json();
-        console.log('📊 Payments loaded:', data.length, 'payments');
-        setPayments(data);
+        console.log('📊 Payments loaded:', response.data.length, 'payments');
+        setPayments(response.data);
       } catch (err) {
         console.error('❌ Error fetching payments:', err);
         alert('Failed to load payments. Check console for details.');
@@ -60,19 +56,13 @@ export const PendingPayments: React.FC = () => {
   const handleApprove = async (paymentId: string) => {
     if (window.confirm('Are you sure you want to approve this payment?')) {
       try {
-        const res = await fetch(`${BACKEND_URL}/payments/${paymentId}/approve`, {
-          method: 'PATCH'
-        });
+        await API.patch(`/payments/${paymentId}/approve`);
         
-        if (res.ok) {
-          // Update payment status in local state
-          setPayments(prev => prev.map(p => 
-            p._id === paymentId ? { ...p, status: 'approved' } : p
-          ));
-          alert('✅ Payment approved successfully!');
-        } else {
-          alert('Error approving payment');
-        }
+        // Update payment status in local state
+        setPayments(prev => prev.map(p => 
+          p._id === paymentId ? { ...p, status: 'approved' } : p
+        ));
+        alert('✅ Payment approved successfully!');
       } catch (err) {
         console.error('❌ Error approving payment:', err);
         alert('Error approving payment');
@@ -83,19 +73,13 @@ export const PendingPayments: React.FC = () => {
   const handleReject = async (paymentId: string) => {
     if (window.confirm('Are you sure you want to decline this payment?')) {
       try {
-        const res = await fetch(`${BACKEND_URL}/payments/${paymentId}/decline`, {
-          method: 'PATCH'
-        });
+        await API.patch(`/payments/${paymentId}/decline`);
         
-        if (res.ok) {
-          // Update payment status in local state
-          setPayments(prev => prev.map(p => 
-            p._id === paymentId ? { ...p, status: 'declined' } : p
-          ));
-          alert('❌ Payment declined successfully!');
-        } else {
-          alert('Error declining payment');
-        }
+        // Update payment status in local state
+        setPayments(prev => prev.map(p => 
+          p._id === paymentId ? { ...p, status: 'declined' } : p
+        ));
+        alert('❌ Payment declined successfully!');
       } catch (err) {
         console.error('❌ Error declining payment:', err);
         alert('Error declining payment');
