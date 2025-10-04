@@ -62,9 +62,39 @@ mongoose.connect(process.env.MONGO_URI, {
 // =======================
 // ✅ API Routes
 // =======================
+
+// Add root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: '🎬 Climax OTT Backend API',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      auth: '/api/auth',
+      contents: '/api/contents',
+      payments: '/api/payments',
+      'payment-settings': '/api/payment-settings'
+    }
+  });
+});
+
+// Direct content endpoint for debugging - BEFORE route middleware
+app.get('/api/contents', async (req, res) => {
+  try {
+    console.log('📦 Content API called');
+    const Content = require('./models/Content.cjs');
+    const contents = await Content.find().sort({ createdAt: -1 });
+    console.log('📦 Found contents:', contents.length);
+    res.json(contents);
+  } catch (error) {
+    console.error('❌ Content API error:', error);
+    res.status(500).json({ message: 'Failed to fetch contents', error: error.message });
+  }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', googleAuthRoutes);  // <-- Add Google auth routes here
-app.use('/api/contents', contentRoutes);
+// Skip content routes since we have direct endpoint above
 app.use('/api/payments', paymentRoutes);
 app.use('/api/payment-settings', paymentSettingsRoutes); // ✅ NEW
 

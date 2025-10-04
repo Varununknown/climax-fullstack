@@ -38,77 +38,15 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
   useEffect(() => {
     const fetchContents = async () => {
       try {
+        console.log('🔄 Fetching contents from API...');
         const res = await API.get('/contents');
+        console.log('✅ Content response:', res.data);
         setContents(res.data);
       } catch (err) {
         console.error('❌ Error loading contents:', err);
-        console.log('🔄 Loading mock content as fallback...');
-        
-        // Fallback mock data when API fails
-        const mockContents: Content[] = [
-          {
-            _id: '1',
-            title: 'The Dark Knight',
-            description: 'When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests.',
-            category: 'Action',
-            type: 'movie',
-            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-            thumbnail: 'https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=500',
-            duration: 152,
-            genre: ['Action', 'Crime', 'Drama'],
-            rating: 9.0,
-            releaseYear: 2008,
-            isPremium: true,
-            createdAt: new Date().toISOString()
-          },
-          {
-            _id: '2',
-            title: 'Stranger Things',
-            description: 'When a young boy disappears, his mother, a police chief and his friends must confront terrifying supernatural forces.',
-            category: 'Drama',
-            type: 'series',
-            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-            thumbnail: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500',
-            duration: 45,
-            genre: ['Drama', 'Fantasy', 'Horror'],
-            rating: 8.7,
-            releaseYear: 2016,
-            isPremium: false,
-            createdAt: new Date().toISOString()
-          },
-          {
-            _id: '3',
-            title: 'The Office',
-            description: 'A mockumentary on a group of typical office workers, where the workday consists of ego clashes and inappropriate behavior.',
-            category: 'Comedy',
-            type: 'series',
-            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-            thumbnail: 'https://images.unsplash.com/photo-1497486751825-1233686d5d80?w=500',
-            duration: 22,
-            genre: ['Comedy'],
-            rating: 8.9,
-            releaseYear: 2005,
-            isPremium: false,
-            createdAt: new Date().toISOString()
-          },
-          {
-            _id: '4',
-            title: 'Avengers: Endgame',
-            description: 'After the devastating events of Infinity War, the Avengers assemble once more to reverse Thanos\' actions.',
-            category: 'Action',
-            type: 'movie',
-            videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-            thumbnail: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=500',
-            duration: 181,
-            genre: ['Action', 'Adventure', 'Drama'],
-            rating: 8.4,
-            releaseYear: 2019,
-            isPremium: true,
-            createdAt: new Date().toISOString()
-          }
-        ];
-        
-        setContents(mockContents);
+        console.error('❌ Error details:', err.response?.data);
+        console.error('❌ Error status:', err.response?.status);
+        setContents([]);
       }
     };
 
