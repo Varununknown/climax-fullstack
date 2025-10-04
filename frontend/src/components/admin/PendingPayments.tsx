@@ -211,46 +211,33 @@ export const PendingPayments: React.FC = () => {
                 <td className="p-3 text-gray-400">{formatTime(p.createdAt)}</td>
                 <td className="p-3">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2">
-                    {p.status === 'pending' && (
-                      <>
-                        <button
-                          className="flex items-center gap-1 bg-green-800 text-white px-3 py-1 rounded hover:bg-green-700 text-sm"
-                          onClick={() => handleApprove(p._id)}
-                        >
-                          <CheckCircle className="w-4 h-4" /> Approve
-                        </button>
-                        <button
-                          className="flex items-center gap-1 bg-red-800 text-white px-3 py-1 rounded hover:bg-red-700 text-sm"
-                          onClick={() => handleReject(p._id)}
-                        >
-                          <XCircle className="w-4 h-4" /> Decline
-                        </button>
-                      </>
-                    )}
-                    {p.status === 'approved' && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-green-400 text-sm font-medium">✓ Auto-Approved</span>
-                        <button
-                          className="flex items-center gap-1 bg-red-800 text-white px-2 py-1 rounded hover:bg-red-700 text-xs"
-                          onClick={() => handleReject(p._id)}
-                          title="Decline and revoke access"
-                        >
-                          <XCircle className="w-3 h-3" /> Revoke
-                        </button>
-                      </div>
-                    )}
-                    {p.status === 'declined' && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-red-400 text-sm font-medium">✗ Declined</span>
-                        <button
-                          className="flex items-center gap-1 bg-green-800 text-white px-2 py-1 rounded hover:bg-green-700 text-xs"
-                          onClick={() => handleApprove(p._id)}
-                          title="Re-approve access"
-                        >
-                          <CheckCircle className="w-3 h-3" /> Restore
-                        </button>
-                      </div>
-                    )}
+                    {/* Always show Approve/Decline buttons for admin control */}
+                    <button
+                      className={`flex items-center gap-1 text-white px-3 py-1 rounded text-sm ${
+                        p.status === 'approved' 
+                          ? 'bg-green-900 text-green-300 cursor-default' 
+                          : 'bg-green-800 hover:bg-green-700'
+                      }`}
+                      onClick={() => handleApprove(p._id)}
+                      disabled={p.status === 'approved'}
+                    >
+                      <CheckCircle className="w-4 h-4" /> 
+                      {p.status === 'approved' ? 'Approved ✓' : 'Approve'}
+                    </button>
+                    
+                    <button
+                      className={`flex items-center gap-1 text-white px-3 py-1 rounded text-sm ${
+                        p.status === 'declined' 
+                          ? 'bg-red-900 text-red-300 cursor-default' 
+                          : 'bg-red-800 hover:bg-red-700'
+                      }`}
+                      onClick={() => handleReject(p._id)}
+                      disabled={p.status === 'declined'}
+                    >
+                      <XCircle className="w-4 h-4" /> 
+                      {p.status === 'declined' ? 'Declined ✗' : 'Decline'}
+                    </button>
+
                     <button
                       className="flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm"
                       title="Details"
