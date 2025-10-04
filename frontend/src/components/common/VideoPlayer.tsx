@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, SyntheticEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Play, Pause, ArrowLeft, CreditCard, Settings } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -155,12 +155,16 @@ export const VideoPlayer: React.FC = () => {
         className="w-full max-w-4xl rounded shadow-lg"
         controls
         playsInline
-        preload="metadata"
+        preload="none"
         poster={content.thumbnail}
         onWaiting={() => setIsBuffering(true)}
         onCanPlay={() => setIsBuffering(false)}
         onLoadStart={() => setIsBuffering(true)}
         onLoadedData={() => setIsBuffering(false)}
+        onError={(e) => {
+          console.error('Video loading error:', e);
+          setIsBuffering(false);
+        }}
         style={{
           maxHeight: videoQuality === '360p' ? '360px' : 
                     videoQuality === '480p' ? '480px' : 

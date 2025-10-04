@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 
 const app = express();
 
@@ -177,6 +178,19 @@ app.get('/api/payments/check', async (req, res) => {
     console.error('❌ Payment check error:', error.message);
     res.status(500).json({ message: 'Server error' });
   }
+});
+
+// Serve static files for frontend (if any)
+app.use(express.static('frontend/dist'));
+
+// Catch-all handler for SPA routing - must be LAST
+app.get('*', (req, res) => {
+  // Don't interfere with API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ message: 'API route not found' });
+  }
+  // For all other routes, serve the React app
+  res.sendFile(path.join(__dirname, 'frontend/dist/index.html'));
 });
 
 app.listen(PORT, () => {
