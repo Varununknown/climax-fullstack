@@ -100,12 +100,22 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       console.log('✅ Payment submission successful:', response.data);
 
-      setTimeout(() => {
+      // Check if payment already existed
+      if (response.data.alreadyPaid) {
+        console.log('🔓 Content already unlocked - payment existed!');
         setPaymentStep('success');
         setTimeout(() => {
           onSuccess();
+        }, 1000); // Faster unlock for existing payments
+      } else {
+        // New payment - normal flow
+        setTimeout(() => {
+          setPaymentStep('success');
+          setTimeout(() => {
+            onSuccess();
+          }, 2000);
         }, 2000);
-      }, 2000);
+      }
 
     } catch (err: any) {
       console.error('❌ Payment submission error:', err);
