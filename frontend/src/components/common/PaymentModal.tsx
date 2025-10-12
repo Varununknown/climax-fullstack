@@ -116,28 +116,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     } catch (err: any) {
       console.error('❌ Payment submission failed:', err);
       
-      // Handle duplicate payment case
-      if (err.response?.status === 409 && err.response?.data?.alreadyExists) {
-        console.log('⚠️ Payment already exists with status:', err.response.data.payment?.status);
-        const existingPayment = err.response.data.payment;
-        
-        if (existingPayment?.status === 'approved') {
-          // Payment exists and is approved - unlock content
-          console.log('✅ Existing approved payment found - unlocking!');
-          setPaymentStep('success');
-          setTimeout(() => {
-            onSuccess();
-          }, 1000);
-        } else {
-          // This should rarely happen now since payments auto-approve
-          alert(`Payment already submitted. Admin review required for verification.`);
-          onClose();
-        }
-        return;
-      }
+      // Since all payments auto-approve, any error should be handled simply
       console.error('❌ Payment submission error:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Server error. Try again.';
+      const errorMessage = err.response?.data?.message || err.message || 'Payment failed. Please try again.';
       alert(errorMessage);
+      setPaymentStep('qr'); // Go back to payment form
       setPaymentStep('qr');
     }
   };
