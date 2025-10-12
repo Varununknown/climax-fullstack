@@ -61,67 +61,33 @@ export const VideoPlayer: React.FC = () => {
   useEffect(() => {
     const checkPayment = async () => {
       if (!content || !user) {
-        // If no user or content, assume not paid
         setHasPaid(false);
         return;
       }
 
-      // Create unique key for this user-content combination
-      const paymentKey = `payment_${user.id}_${content._id}`;
-      const localPaymentStatus = localStorage.getItem(paymentKey);
-      
-      // First check localStorage for instant unlock
-      if (localPaymentStatus === 'true') {
-        console.log('🔓 CACHED UNLOCK: Content already paid for (localStorage)');
-        // But also verify with backend to ensure it's still valid
-        try {
-          const verifyRes = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
-          if (verifyRes.data.paid) {
-            console.log('✅ VERIFIED: Payment still valid on backend');
-            setHasPaid(true);
-            setShowPaymentModal(false);
-            return;
-          } else {
-            console.log('⚠️ CACHE INVALID: Clearing localStorage and rechecking');
-            localStorage.removeItem(paymentKey);
-          }
-        } catch (verifyErr) {
-          console.log('❌ Verification failed, using cache');
-          setHasPaid(true);
-          setShowPaymentModal(false);
-          return;
-        }
-      }
-
       try {
+        // Check if user has approved payment for this content
         const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
         console.log('💰 Payment check response:', res.data);
-        const isPaid = res.data.paid;
-        setHasPaid(isPaid);
         
-        if (isPaid) {
-          console.log('✅ User has already paid for this content - PERMANENT UNLOCK');
+        if (res.data.paid) {
+          console.log('✅ APPROVED PAYMENT FOUND - Content unlocked');
+          setHasPaid(true);
           setShowPaymentModal(false);
-          // Save to localStorage for permanent future access
+          
+          // Cache for faster future loads
+          const paymentKey = `payment_${user.id}_${content._id}`;
           localStorage.setItem(paymentKey, 'true');
         } else {
-          console.log('❌ User has not paid for this content yet');
+          console.log('❌ NO APPROVED PAYMENT - Payment required');
+          setHasPaid(false);
           
-          // Check if there's any pending payment for this content
-          try {
-            const pendingRes = await API.get(`/payments/check-any?userId=${user.id}&contentId=${content._id}`);
-            if (pendingRes.data.exists && pendingRes.data.status !== 'approved') {
-              console.log('⏳ User has pending payment - hiding payment button');
-              // Don't show payment button if there's already a pending/declined payment
-              setHasPaid(null); // Special state for pending payments
-            }
-          } catch (pendingErr) {
-            console.log('No pending payment check - normal flow');
-          }
+          // Clear any stale cache
+          const paymentKey = `payment_${user.id}_${content._id}`;
+          localStorage.removeItem(paymentKey);
         }
       } catch (err) {
         console.error('❌ Error checking payment:', err);
-        // On error, assume not paid
         setHasPaid(false);
       }
     };
