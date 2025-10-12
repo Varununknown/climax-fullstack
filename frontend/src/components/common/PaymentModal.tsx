@@ -100,22 +100,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       console.log('✅ Payment submission successful:', response.data);
 
-      // Check if payment already existed
+      // All new payments are auto-approved, so unlock immediately
       if (response.data.alreadyPaid) {
-        console.log('🔓 Content already unlocked - payment was approved!');
-        setPaymentStep('success');
-        setTimeout(() => {
-          onSuccess();
-        }, 1000); // Faster unlock for existing approved payments
+        console.log('🔓 Content already unlocked - existing payment!');
       } else {
-        // New payment - normal flow
-        setTimeout(() => {
-          setPaymentStep('success');
-          setTimeout(() => {
-            onSuccess();
-          }, 2000);
-        }, 2000);
+        console.log('🚀 New payment auto-approved - unlocking content!');
       }
+      
+      // Show success and unlock content
+      setPaymentStep('success');
+      setTimeout(() => {
+        onSuccess();
+      }, 1500); // Quick unlock for auto-approved payments
 
     } catch (err: any) {
       console.error('❌ Payment submission failed:', err);
@@ -127,14 +123,15 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         
         if (existingPayment?.status === 'approved') {
           // Payment exists and is approved - unlock content
+          console.log('✅ Existing approved payment found - unlocking!');
           setPaymentStep('success');
           setTimeout(() => {
             onSuccess();
           }, 1000);
         } else {
-          // Payment exists but not approved - show status
-          setPaymentStep('waiting');
-          alert(`Payment already submitted with status: ${existingPayment?.status || 'pending'}. Please wait for admin approval.`);
+          // This should rarely happen now since payments auto-approve
+          alert(`Payment already submitted. Admin review required for verification.`);
+          onClose();
         }
         return;
       }
