@@ -347,11 +347,30 @@ export const VideoPlayer: React.FC = () => {
 
     try {
       if (!document.fullscreenElement) {
+        // Request fullscreen
         await container.requestFullscreen();
         setVideoState(prev => ({ ...prev, isFullscreen: true }));
+        
+        // Auto-rotate on mobile devices
+        if (window.innerWidth <= 768 && 'screen' in window && 'orientation' in window.screen) {
+          try {
+            await (window.screen.orientation as any).lock('landscape');
+          } catch (orientationErr) {
+            console.log('Orientation lock not supported or failed:', orientationErr);
+          }
+        }
       } else {
         await document.exitFullscreen();
         setVideoState(prev => ({ ...prev, isFullscreen: false }));
+        
+        // Unlock orientation on mobile when exiting fullscreen
+        if (window.innerWidth <= 768 && 'screen' in window && 'orientation' in window.screen) {
+          try {
+            (window.screen.orientation as any).unlock();
+          } catch (orientationErr) {
+            console.log('Orientation unlock not supported or failed:', orientationErr);
+          }
+        }
       }
     } catch (err) {
       console.error('Fullscreen error:', err);
@@ -366,6 +385,17 @@ export const VideoPlayer: React.FC = () => {
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Handle window resize for mobile responsiveness
+  useEffect(() => {
+    const handleResize = () => {
+      // Force re-render on resize to apply mobile styles
+      setVideoState(prev => ({ ...prev }));
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Close quality menu when clicking outside
@@ -498,17 +528,19 @@ export const VideoPlayer: React.FC = () => {
       <video
         ref={videoRef}
         src={content.videoUrl}
-        className="w-full h-screen object-contain cursor-pointer"
-        onClick={togglePlayPause}
+        className="w-full object-contain cursor-pointer md:h-screen"
+        style={{
+          backgroundColor: 'black',
+          maxWidth: '100%',
+          height: window.innerWidth <= 768 ? '60vh' : '100vh', // Mobile: 60vh, Desktop: 100vh
+          maxHeight: window.innerWidth <= 768 ? '60vh' : '100%'
+        }}
         onContextMenu={(e) => e.preventDefault()}
         preload="auto"
         playsInline
         controls={false}
-        style={{
-          backgroundColor: 'black',
-          maxWidth: '100%',
-          maxHeight: '100%'
-        }}
+        // Remove onClick to prevent touch-to-pause on mobile
+        {...(window.innerWidth > 768 && { onClick: togglePlayPause })}
       />
 
       {/* Big Play Button Overlay */}
@@ -608,14 +640,15 @@ export const VideoPlayer: React.FC = () => {
       </div>
 
       {/* Controls Overlay */}
-      <div className={`absolute bottom-0 left-0 right-0 p-3 z-10 transition-opacity duration-300 ${
+      <div className={`absolute bottom-0 left-0 right-0 z-10 transition-opacity duration-300 ${
         videoState.showControls ? 'opacity-100' : 'opacity-0'
       }`} style={{
         background: 'linear-gradient(to top, rgba(15, 23, 42, 0.7) 0%, rgba(30, 58, 138, 0.3) 40%, transparent 100%)',
-        backdropFilter: 'blur(6px)'
+        backdropFilter: 'blur(6px)',
+        padding: window.innerWidth <= 768 ? '8px' : '12px' // Less padding on mobile
       }}>
         {/* Progress Bar */}
-        <div className="mb-5">
+        <div style={{ marginBottom: window.innerWidth <= 768 ? '12px' : '20px' }}>
           <div className="relative group">
             <div 
               className="bg-gray-600/50 h-1 rounded-full cursor-pointer group-hover:h-2 transition-all duration-200"
@@ -630,6 +663,13 @@ export const VideoPlayer: React.FC = () => {
                   const percentage = ((e.clientX - rect.left) / rect.width) * 100;
                   seekTo(percentage);
                 }
+              }}
+              onTouchMove={(e) => {
+                // Handle touch drag on mobile
+                const touch = e.touches[0];
+                const rect = e.currentTarget.getBoundingClientRect();
+                const percentage = ((touch.clientX - rect.left) / rect.width) * 100;
+                seekTo(percentage);
               }}
             >
               <div 
@@ -656,19 +696,25 @@ export const VideoPlayer: React.FC = () => {
         <div className="flex items-center justify-center relative">
           {/* Left Side - Volume Control (Positioned Absolutely) */}
           <div className="absolute left-0 flex items-center">
-            <div className="flex items-center space-x-2 px-2 py-1.5 rounded-md backdrop-blur-sm shadow-md" style={{
+            <div className="flex items-center rounded-md backdrop-blur-sm shadow-md" style={{
               background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.4) 100%)',
-              border: '1px solid rgba(59, 130, 246, 0.2)'
+              border: '1px solid rgba(59, 130, 246, 0.2)',
+              padding: window.innerWidth <= 768 ? '4px 6px' : '6px 8px',
+              gap: window.innerWidth <= 768 ? '4px' : '8px'
             }}>
               <button
                 onClick={() => adjustVolume(videoState.volume > 0 ? 0 : 1)}
                 className="text-blue-200 hover:text-white transition-colors"
                 title="Toggle mute"
               >
-                <Volume2 size={16} />
+                <Volume2 size={window.innerWidth <= 768 ? 14 : 16} />
               </button>
               <div 
-                className="w-16 h-1 bg-slate-600/40 rounded-full cursor-pointer shadow-inner"
+                className="bg-slate-600/40 rounded-full cursor-pointer shadow-inner"
+                style={{
+                  width: window.innerWidth <= 768 ? '40px' : '64px',
+                  height: '4px'
+                }}
                 onClick={(e) => {
                   const rect = e.currentTarget.getBoundingClientRect();
                   const percentage = (e.clientX - rect.left) / rect.width;
@@ -681,6 +727,12 @@ export const VideoPlayer: React.FC = () => {
                     adjustVolume(percentage, true);
                   }
                 }}
+                onTouchMove={(e) => {
+                  const touch = e.touches[0];
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const percentage = (touch.clientX - rect.left) / rect.width;
+                  adjustVolume(percentage, true);
+                }}
               >
                 <div 
                   className="h-full rounded-full transition-all"
@@ -691,49 +743,59 @@ export const VideoPlayer: React.FC = () => {
                   }}
                 />
               </div>
-              <span className="text-xs text-blue-100 w-6 text-center font-medium">{Math.round(videoState.volume * 100)}</span>
+              {window.innerWidth > 768 && (
+                <span className="text-xs text-blue-100 w-6 text-center font-medium">{Math.round(videoState.volume * 100)}</span>
+              )}
             </div>
           </div>
 
           {/* Center - Main Playback Controls (Truly Centered) */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center" style={{ gap: window.innerWidth <= 768 ? '8px' : '12px' }}>
             <button 
               onClick={() => seekBy(-10)}
-              className="flex items-center space-x-1 text-white hover:text-blue-300 transition-colors px-2.5 py-1.5 rounded-md backdrop-blur-sm shadow-md"
+              className="flex items-center text-white hover:text-blue-300 transition-colors rounded-md backdrop-blur-sm shadow-md"
               title="Backward 10s (←)"
               style={{
                 background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.4) 100%)',
-                border: '1px solid rgba(59, 130, 246, 0.2)'
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+                padding: window.innerWidth <= 768 ? '6px 8px' : '6px 10px',
+                gap: window.innerWidth <= 768 ? '2px' : '4px'
               }}
             >
-              <SkipBack size={16} />
-              <span className="text-xs font-medium">10s</span>
+              <SkipBack size={window.innerWidth <= 768 ? 14 : 16} />
+              {window.innerWidth > 768 && <span className="text-xs font-medium">10s</span>}
             </button>
 
             <button 
               onClick={togglePlayPause}
-              className="rounded-full p-2.5 transition-colors backdrop-blur-sm shadow-xl border text-white hover:text-blue-200"
+              className="rounded-full transition-colors backdrop-blur-sm shadow-xl border text-white hover:text-blue-200"
               title="Play/Pause (Space)"
               style={{
                 background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 58, 138, 0.5) 100%)',
                 borderColor: 'rgba(59, 130, 246, 0.3)',
-                boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)'
+                boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)',
+                padding: window.innerWidth <= 768 ? '8px' : '10px'
               }}
             >
-              {videoState.isPlaying ? <Pause size={24} className="drop-shadow-lg" /> : <Play size={24} className="drop-shadow-lg ml-0.5" />}
+              {videoState.isPlaying ? 
+                <Pause size={window.innerWidth <= 768 ? 20 : 24} className="drop-shadow-lg" /> : 
+                <Play size={window.innerWidth <= 768 ? 20 : 24} className="drop-shadow-lg" style={{ marginLeft: window.innerWidth <= 768 ? '1px' : '2px' }} />
+              }
             </button>
 
             <button 
               onClick={() => seekBy(10)}
-              className="flex items-center space-x-1 text-white hover:text-blue-300 transition-colors px-2.5 py-1.5 rounded-md backdrop-blur-sm shadow-md"
+              className="flex items-center text-white hover:text-blue-300 transition-colors rounded-md backdrop-blur-sm shadow-md"
               title="Forward 10s (→)"
               style={{
                 background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.4) 100%)',
-                border: '1px solid rgba(59, 130, 246, 0.2)'
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+                padding: window.innerWidth <= 768 ? '6px 8px' : '6px 10px',
+                gap: window.innerWidth <= 768 ? '2px' : '4px'
               }}
             >
-              <span className="text-xs font-medium">10s</span>
-              <SkipForward size={16} />
+              {window.innerWidth > 768 && <span className="text-xs font-medium">10s</span>}
+              <SkipForward size={window.innerWidth <= 768 ? 14 : 16} />
             </button>
           </div>
 
@@ -741,14 +803,18 @@ export const VideoPlayer: React.FC = () => {
           <div className="absolute right-0 flex items-center">
             <button 
               onClick={toggleFullscreen}
-              className="text-white hover:text-blue-300 transition-colors px-2.5 py-1.5 rounded-md backdrop-blur-sm shadow-md"
+              className="text-white hover:text-blue-300 transition-colors rounded-md backdrop-blur-sm shadow-md"
               title="Toggle Fullscreen (F)"
               style={{
                 background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.4) 100%)',
-                border: '1px solid rgba(59, 130, 246, 0.2)'
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+                padding: window.innerWidth <= 768 ? '6px 8px' : '6px 10px'
               }}
             >
-              {videoState.isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+              {videoState.isFullscreen ? 
+                <Minimize size={window.innerWidth <= 768 ? 14 : 18} /> : 
+                <Maximize size={window.innerWidth <= 768 ? 14 : 18} />
+              }
             </button>
           </div>
         </div>
