@@ -32,6 +32,62 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   console.log('💳 PaymentModal rendered for content:', content.title, 'Price:', content.premiumPrice);
 
+  // CRITICAL: Check if payment already exists and close modal immediately
+  useEffect(() => {
+    const checkExistingPayment = async () => {
+      if (!user?.id || !content._id) return;
+      
+      try {
+        // Check localStorage first
+        const paymentKey = `payment_${user.id}_${content._id}`;
+        const cachedPayment = localStorage.getItem(paymentKey);
+        
+        if (cachedPayment === 'true') {
+          // Optimistic: if cache says paid, close modal quickly but verify in background.
+          console.log('🚫 PAYMENT EXISTS IN CACHE - optimistic close, verifying...');
+          onSuccess(); // Close modal and unlock content
+
+          try {
+            const verify = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+            if (!verify.data.paid) {
+              // Cache was stale — clear and surface the correct state on next load
+              console.log('⚠️ Cached payment was revoked on server; clearing cache');
+              localStorage.removeItem(paymentKey);
+            }
+          } catch (err) {
+            console.warn('Payment verification failed after optimistic close:', err);
+          }
+
+          return;
+        }
+        
+        // Check server
+        const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+        if (res.data.paid) {
+          console.log('🚫 PAYMENT EXISTS ON SERVER - CLOSING MODAL!');
+          localStorage.setItem(paymentKey, 'true');
+          onSuccess(); // Close modal and unlock content
+          return;
+        }
+        
+        // Double check with any payment endpoint
+        const anyRes = await API.get(`/payments/check-any?userId=${user.id}&contentId=${content._id}`);
+        if (anyRes.data.exists && anyRes.data.status === 'approved') {
+          console.log('🚫 APPROVED PAYMENT FOUND - CLOSING MODAL!');
+          localStorage.setItem(paymentKey, 'true');
+          onSuccess(); // Close modal and unlock content
+          return;
+        }
+        
+        console.log('✅ No existing payment - modal can proceed');
+      } catch (err) {
+        console.error('❌ Error checking existing payment:', err);
+      }
+    };
+    
+    checkExistingPayment();
+  }, [user, content, onSuccess]);
+
   useEffect(() => {
     console.log('💳 Fetching payment settings...');
     
@@ -100,28 +156,42 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       console.log('✅ Payment submission successful:', response.data);
 
-      // All new payments are auto-approved, so unlock immediately
+      // Handle different payment scenarios clearly
       if (response.data.alreadyPaid) {
-        console.log('🔓 Content already unlocked - existing payment!');
+        console.log('🔓 Content already unlocked - you have access!');
+        setPaymentStep('success');
+        setTimeout(() => {
+          onSuccess(); // Close modal and unlock content
+        }, 1000);
       } else {
         console.log('🚀 New payment auto-approved - unlocking content!');
+        setPaymentStep('success');
+        setTimeout(() => {
+          onSuccess(); // Close modal and unlock content
+        }, 1500);
       }
-      
-      // Show success and unlock content
-      setPaymentStep('success');
-      setTimeout(() => {
-        onSuccess();
-      }, 1500); // Quick unlock for auto-approved payments
 
     } catch (err: any) {
       console.error('❌ Payment submission failed:', err);
       
-      // Since all payments auto-approve, any error should be handled simply
-      console.error('❌ Payment submission error:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Payment failed. Please try again.';
+      // Handle payment errors with clear user feedback
+      let errorMessage = 'Payment failed. Please try again.';
+      
+      if (err.response?.data?.message) {
+        const serverMessage = err.response.data.message;
+        
+        if (serverMessage.includes('already unlocked') || serverMessage.includes('already paid')) {
+          // Content is already unlocked - close modal and succeed
+          console.log('🔓 Content already unlocked - closing payment modal');
+          onSuccess();
+          return;
+        } else {
+          errorMessage = serverMessage;
+        }
+      }
+      
       alert(errorMessage);
       setPaymentStep('qr'); // Go back to payment form
-      setPaymentStep('qr');
     }
   };
 

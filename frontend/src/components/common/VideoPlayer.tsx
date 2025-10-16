@@ -1,328 +1,795 @@
-import React, { useState, useRef, useEffect, SyntheticEvent } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Pause, ArrowLeft, CreditCard, Settings } from 'lucide-react';
+import { Play, Pause, ArrowLeft, Volume2, Settings, SkipBack, SkipForward, Maximize, Minimize } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PaymentModal } from './PaymentModal';
 import { Content } from '../../types';
 import API from '../../services/api';
 
+// =====================================================
+// 🎬 CLEAN VIDEO PLAYER - COMPLETELY REBUILT
+// =====================================================
+
+interface PaymentState {
+  isLoading: boolean;
+  isPaid: boolean;
+  shouldShowModal: boolean;
+}
+
+interface VideoState {
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  volume: number;
+  isFullscreen: boolean;
+  quality: string;
+  showControls: boolean;
+}
+
 export const VideoPlayer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-
-  const [content, setContent] = useState<Content | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [hasPaid, setHasPaid] = useState<boolean | null>(null); // null = checking, true = paid, false = not paid
-  const [videoQuality, setVideoQuality] = useState('auto');
-  const [showQualityMenu, setShowQualityMenu] = useState(false);
-
   const videoRef = useRef<HTMLVideoElement>(null);
-  const lastValidTime = useRef<number>(0);
+  
+  // ===== STATE MANAGEMENT =====
+  const [content, setContent] = useState<Content | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const [paymentState, setPaymentState] = useState<PaymentState>({
+    isLoading: true,
+    isPaid: false,
+    shouldShowModal: false
+  });
+  
+  const [videoState, setVideoState] = useState<VideoState>({
+    isPlaying: false,
+    currentTime: 0,
+    duration: 0,
+    volume: 1,
+    isFullscreen: false,
+    quality: 'auto',
+    showControls: true
+  });
 
+  const [showQualityMenu, setShowQualityMenu] = useState(false);
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [controlsTimeout, setControlsTimeout] = useState<number | null>(null);
+  const [videoLoading, setVideoLoading] = useState(false); // Start as false for faster perceived load
+  const [showPlayButton, setShowPlayButton] = useState(false);
+  const [qualityChangeNotification, setQualityChangeNotification] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // ===== CONTENT FETCHING =====
   useEffect(() => {
     const fetchContent = async () => {
-      if (!id) return;
+      if (!id) {
+        setError('Content ID not provided');
+        setLoading(false);
+        return;
+      }
+
       try {
-        // Use CDN-optimized endpoint for super fast loading
-        const res = await API.get(`/contents/${id}`);
-        const contentData = res.data;
+        console.log('🎬 Fetching content:', id);
+        const response = await API.get(`/contents/${id}`);
+        setContent(response.data);
+        console.log('✅ Content loaded:', response.data.title);
         
-        // Ensure video URL is CDN-optimized
-        if (contentData.videoUrl && !contentData.videoUrl.includes('cdn') && !contentData.videoUrl.includes('r2.cloudflarestorage.com')) {
-          // If not already CDN URL, use the video proxy endpoint for optimization
-          contentData.videoUrl = `${API.defaults.baseURL}/video/${id}`;
-        }
-        
-        setContent(contentData);
-      } catch (err) {
+        // Let the video element handle loading naturally
+      } catch (err: any) {
         console.error('❌ Error fetching content:', err);
-        // Try to get content from the list API instead (CDN-optimized)
-        try {
-          const listRes = await API.get('/contents');
-          const foundContent = listRes.data.find((c: any) => c._id === id);
-          if (foundContent) {
-            setContent(foundContent);
-          } else {
-            navigate('/');
-          }
-        } catch (listErr) {
-          navigate('/');
-        }
+        setError(err.response?.data?.message || 'Failed to load content');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchContent();
-  }, [id, navigate]);
+  }, [id]);
 
+  // ===== PAYMENT STATUS CHECKING =====
   useEffect(() => {
-    const checkPayment = async () => {
+    const checkPaymentStatus = async () => {
       if (!content || !user) {
-        setHasPaid(false);
+        setPaymentState(prev => ({ ...prev, isLoading: false, isPaid: false }));
         return;
       }
 
       try {
-        // Check if user has approved payment for this content
-        const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
-        console.log('💰 Payment check response:', res.data);
+        console.log('💳 Checking payment status...');
         
-        if (res.data.paid) {
-          console.log('✅ APPROVED PAYMENT FOUND - Content unlocked');
-          setHasPaid(true);
-          setShowPaymentModal(false);
+        // Check localStorage cache first for instant response
+        const cacheKey = `payment_${user.id}_${content._id}`;
+        const cachedPayment = localStorage.getItem(cacheKey);
+        
+        if (cachedPayment === 'true') {
+          console.log('⚡ Using cached payment status');
+          setPaymentState(prev => ({ ...prev, isPaid: true, isLoading: false }));
           
-          // Cache for faster future loads
-          const paymentKey = `payment_${user.id}_${content._id}`;
-          localStorage.setItem(paymentKey, 'true');
-        } else {
-          console.log('❌ NO APPROVED PAYMENT - Payment required');
-          setHasPaid(false);
-          
-          // Clear any stale cache
-          const paymentKey = `payment_${user.id}_${content._id}`;
-          localStorage.removeItem(paymentKey);
+          // Verify cache with server in background
+          verifyPaymentWithServer(cacheKey);
+          return;
         }
+
+        // Check server for payment
+        const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+        const isPaid = response.data.paid;
+        
+        console.log(isPaid ? '✅ Payment verified on server' : '❌ No payment found');
+        
+        setPaymentState(prev => ({ ...prev, isPaid, isLoading: false }));
+        
+        // Cache the result
+        if (isPaid) {
+          localStorage.setItem(cacheKey, 'true');
+        }
+        
       } catch (err) {
-        console.error('❌ Error checking payment:', err);
-        setHasPaid(false);
+        console.error('❌ Payment check failed:', err);
+        setPaymentState(prev => ({ ...prev, isLoading: false, isPaid: false }));
       }
     };
 
-    checkPayment();
+    checkPaymentStatus();
   }, [content, user]);
 
-  useEffect(() => {
-    if (!content || hasPaid === null) return;
-    const video = videoRef.current;
-    if (!video) return;
+  // ===== BACKGROUND PAYMENT VERIFICATION =====
+  const verifyPaymentWithServer = async (cacheKey: string) => {
+    if (!content || !user) return;
+    
+    try {
+      const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+      
+      if (!response.data.paid) {
+        console.log('⚠️ Cached payment invalid - clearing cache');
+        localStorage.removeItem(cacheKey);
+        setPaymentState(prev => ({ ...prev, isPaid: false }));
+      }
+    } catch (err) {
+      console.warn('Payment verification failed:', err);
+    }
+  };
 
-    const climax = content.climaxTimestamp;
-    console.log('🎬 Setting up payment check - Climax at:', climax, 'seconds');
-    console.log('💰 Has paid:', hasPaid);
+  // ===== VIDEO EVENT HANDLERS =====
+  const handleVideoEvents = () => {
+    const video = videoRef.current;
+    if (!video || !content) return;
 
     const onTimeUpdate = () => {
-      const time = video.currentTime;
-
-      if (!hasPaid && time >= climax) {
-        console.log('🚫 Payment required! Current time:', time, 'Climax:', climax);
+      const currentTime = video.currentTime;
+      setVideoState(prev => ({ ...prev, currentTime }));
+      
+      // Check if user reached paywall without payment
+      if (!paymentState.isPaid && currentTime >= content.climaxTimestamp) {
+        console.log('🚫 Paywall triggered at climax timestamp');
         video.pause();
-        video.currentTime = lastValidTime.current;
-        setIsPlaying(false);
-        setShowPaymentModal(true);
-        console.log('💳 Opening payment modal...');
-        return;
-      }
-
-      if (time < climax) {
-        lastValidTime.current = time;
-      }
-
-      setCurrentTime(time);
-    };
-
-    const onSeeked = () => {
-      if (!hasPaid && video.currentTime >= climax) {
-        console.log('🚫 Seek blocked! Attempting to seek past climax');
-        video.currentTime = lastValidTime.current;
-        video.pause();
-        setIsPlaying(false);
-        setShowPaymentModal(true);
-        console.log('💳 Opening payment modal from seek...');
+        video.currentTime = Math.max(0, content.climaxTimestamp - 1);
+        setVideoState(prev => ({ ...prev, isPlaying: false }));
+        setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
       }
     };
 
     const onLoadedMetadata = () => {
-      setDuration(video.duration);
+      setVideoState(prev => ({ ...prev, duration: video.duration }));
     };
 
+    const onCanPlay = () => {
+      setVideoLoading(false);
+      console.log('✅ Video can play - attempting auto-start');
+      
+      // Simple auto-play attempt
+      if (video.paused) {
+        video.play().then(() => {
+          console.log('✅ Auto-play successful');
+          setShowPlayButton(false);
+        }).catch(() => {
+          console.log('⚠️ Auto-play blocked - showing play button');
+          setShowPlayButton(true);
+        });
+      }
+    };
+
+    const onWaiting = () => {
+      // Only show loading after a brief delay to avoid flashing
+      setTimeout(() => {
+        if (video.readyState < 3) { // Only if still not ready
+          setVideoLoading(true);
+        }
+      }, 500);
+    };
+
+    const onPlay = () => {
+      setVideoState(prev => ({ ...prev, isPlaying: true }));
+      setVideoLoading(false);
+      setShowPlayButton(false);
+    };
+    
+    const onPause = () => setVideoState(prev => ({ ...prev, isPlaying: false }));
+
     video.addEventListener('timeupdate', onTimeUpdate);
-    video.addEventListener('seeked', onSeeked);
     video.addEventListener('loadedmetadata', onLoadedMetadata);
+    video.addEventListener('canplay', onCanPlay);
+    video.addEventListener('waiting', onWaiting);
+    video.addEventListener('play', onPlay);
+    video.addEventListener('pause', onPause);
 
     return () => {
       video.removeEventListener('timeupdate', onTimeUpdate);
-      video.removeEventListener('seeked', onSeeked);
-      video.removeEventListener('loadedmetadata', onLoadedMetadata);
+      video.removeEventListener('loadedmetadata', onLoadedMetadata);  
+      video.removeEventListener('canplay', onCanPlay);
+      video.removeEventListener('waiting', onWaiting);
+      video.removeEventListener('play', onPlay);
+      video.removeEventListener('pause', onPause);
     };
-  }, [content, hasPaid]);
-
-  const handlePaymentSuccess = async () => {
-    console.log('✅ Payment successful! Setting hasPaid to true');
-    setHasPaid(true);
-    setShowPaymentModal(false);
-    
-    // Store payment status in localStorage for PERMANENT ACCESS
-    if (content && user) {
-      const paymentKey = `payment_${user.id}_${content._id}`;
-      localStorage.setItem(paymentKey, 'true');
-      console.log('� PERMANENT UNLOCK: Payment status saved to localStorage - content unlocked forever!');
-    }
-    
-    // Resume video playback
-    const video = videoRef.current;
-    if (video) {
-      video.play();
-      setIsPlaying(true);
-    }
   };
 
-  // Debug function to clear payment cache (for testing only)
-  const clearPaymentCache = () => {
-    if (content && user) {
-      const paymentKey = `payment_${user.id}_${content._id}`;
-      localStorage.removeItem(paymentKey);
-      console.log('🗑️ Payment cache cleared for testing');
-    }
-  };
+  useEffect(handleVideoEvents, [content, paymentState.isPaid]);
 
+  // ===== KEYBOARD CONTROLS =====
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!videoRef.current) return;
+      
+      // Don't interfere with typing in input fields, textareas, or other form elements
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return; // Let the user type normally
+      }
+      
+      switch (e.code) {
+        case 'Space':
+          e.preventDefault();
+          togglePlayPause();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          seekBy(-10);
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          seekBy(10);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          adjustVolume(0.1);
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          adjustVolume(-0.1);
+          break;
+        case 'KeyF':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case 'KeyH':
+        case 'Slash':
+          e.preventDefault();
+          setShowKeyboardHelp(!showKeyboardHelp);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [paymentState.isPaid, content]);
+
+  // ===== PLAYER CONTROLS =====
   const togglePlayPause = () => {
     const video = videoRef.current;
     if (!video) return;
+
+    console.log('🎮 Toggle play/pause - current state:', video.paused ? 'paused' : 'playing');
+    console.log('🎮 Video ready state:', video.readyState);
+    console.log('🎮 Video src:', video.src);
+    
     if (video.paused) {
-      video.play();
-      setIsPlaying(true);
+      video.play().then(() => {
+        console.log('✅ Play started successfully');
+        setShowPlayButton(false);
+      }).catch(err => {
+        console.error('❌ Play failed:', err);
+        setShowPlayButton(true);
+      });
     } else {
       video.pause();
-      setIsPlaying(false);
     }
   };
 
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  const seekBy = (seconds: number) => {
+    const video = videoRef.current;
+    if (!video || !content) return;
+
+    const newTime = Math.max(0, Math.min(videoState.duration, video.currentTime + seconds));
+    
+    // Check paywall for forward seeking
+    if (!paymentState.isPaid && newTime > content.climaxTimestamp) {
+      console.log('🚫 Seek blocked - payment required');
+      setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
+      return;
+    }
+
+    video.currentTime = newTime;
   };
 
-  // Auto-play when content loads
+  const seekTo = (percentage: number) => {
+    const video = videoRef.current;
+    if (!video || !content) return;
+
+    const newTime = (percentage / 100) * videoState.duration;
+    
+    // Check paywall
+    if (!paymentState.isPaid && newTime > content.climaxTimestamp) {
+      console.log('🚫 Timeline seek blocked - payment required');
+      setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
+      return;
+    }
+
+    video.currentTime = newTime;
+  };
+
+  const adjustVolume = (delta: number, isAbsolute: boolean = false) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const newVolume = isAbsolute 
+      ? Math.max(0, Math.min(1, delta))
+      : Math.max(0, Math.min(1, video.volume + delta));
+    
+    video.volume = newVolume;
+    setVideoState(prev => ({ ...prev, volume: newVolume }));
+  };
+
+  // ===== FULLSCREEN CONTROLS =====
+  const toggleFullscreen = async () => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await container.requestFullscreen();
+        setVideoState(prev => ({ ...prev, isFullscreen: true }));
+      } else {
+        await document.exitFullscreen();
+        setVideoState(prev => ({ ...prev, isFullscreen: false }));
+      }
+    } catch (err) {
+      console.error('Fullscreen error:', err);
+    }
+  };
+
+  // Listen for fullscreen changes
   useEffect(() => {
-    if (content && videoRef.current) {
-      const video = videoRef.current;
-      video.muted = false; // Unmute by default
-      video.play().catch(err => {
-        console.log('Auto-play failed, user interaction required:', err);
-        // If auto-play fails due to browser policy, user will need to click play
-      });
-      setIsPlaying(true);
-    }
-  }, [content]);
+    const handleFullscreenChange = () => {
+      setVideoState(prev => ({ ...prev, isFullscreen: !!document.fullscreenElement }));
+    };
 
-  if (!content) {
-    return null; // No loading screen, just wait for content
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Close quality menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (showQualityMenu && !(e.target as Element).closest('.quality-menu')) {
+        setShowQualityMenu(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showQualityMenu]);
+
+  // ===== QUALITY CONTROLS =====
+  const changeQuality = (quality: string) => {
+    const video = videoRef.current;
+    if (!video || !content) return;
+
+    // For demo purposes - in production you'd have different URLs
+    // Just update the UI immediately for fast feedback
+    setVideoState(prev => ({ ...prev, quality }));
+    setShowQualityMenu(false);
+    
+    // Show quality change notification immediately
+    setQualityChangeNotification(`Quality: ${quality === 'auto' ? 'Auto' : quality}`);
+    setTimeout(() => {
+      setQualityChangeNotification(null);
+    }, 1500);
+    
+    console.log(`🎥 Quality set to: ${quality}`);
+    
+    // Optional: In production, you would actually change video source here
+    // For now, just provide immediate UI feedback for better UX
+  };
+
+  // ===== CONTROLS VISIBILITY =====
+  const showControls = () => {
+    setVideoState(prev => ({ ...prev, showControls: true }));
+    
+    if (controlsTimeout) {
+      clearTimeout(controlsTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      setVideoState(prev => ({ ...prev, showControls: false }));
+    }, 3000);
+    
+    setControlsTimeout(timeout);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (controlsTimeout) {
+        clearTimeout(controlsTimeout);
+      }
+    };
+  }, [controlsTimeout]);
+
+  // ===== SUCCESS HANDLERS =====
+  const handlePaymentSuccess = () => {
+    console.log('🎉 Payment successful - unlocking content');
+    
+    setPaymentState({
+      isLoading: false,
+      isPaid: true,
+      shouldShowModal: false
+    });
+
+    // Cache payment status
+    if (content && user) {
+      const cacheKey = `payment_${user.id}_${content._id}`;
+      localStorage.setItem(cacheKey, 'true');
+    }
+
+    // Resume playback
+    const video = videoRef.current;
+    if (video) {
+      video.play();
+    }
+  };
+
+  // ===== UTILITY FUNCTIONS =====
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getProgressPercentage = (): number => {
+    return videoState.duration > 0 ? (videoState.currentTime / videoState.duration) * 100 : 0;
+  };
+
+  // ===== LOADING STATE =====
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-xl">Loading content...</div>
+      </div>
+    );
   }
 
+  // ===== ERROR STATE =====
+  if (error || !content) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center text-white">
+          <h2 className="text-2xl mb-4">Content Not Available</h2>
+          <p className="mb-4">{error || 'Content not found'}</p>
+          <button 
+            onClick={() => navigate(-1)}
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== MAIN RENDER =====
   return (
-    <div className="relative bg-black min-h-screen flex flex-col items-center justify-center">
+    <div 
+      ref={containerRef}
+      className="min-h-screen bg-gray-900 text-white relative overflow-hidden"
+      onMouseMove={showControls}
+      onMouseEnter={showControls}
+    >
+      {/* Video Element */}
       <video
         ref={videoRef}
         src={content.videoUrl}
-        className="w-full max-w-4xl rounded shadow-lg"
-        controls
-        playsInline
-        autoPlay
-        muted={false}
+        className="w-full h-screen object-contain cursor-pointer"
+        onClick={togglePlayPause}
+        onContextMenu={(e) => e.preventDefault()}
         preload="auto"
-        poster={content.thumbnail}
-        onLoadedData={() => {
-          // Ensure video plays as soon as data is loaded
-          const video = videoRef.current;
-          if (video) {
-            video.play().catch(() => {
-              // Auto-play failed, user interaction required
-            });
-            setIsPlaying(true);
-          }
-        }}
-        onError={(e) => {
-          console.error('Video loading error:', e);
-        }}
+        playsInline
+        controls={false}
         style={{
-          maxHeight: videoQuality === '360p' ? '360px' : 
-                    videoQuality === '480p' ? '480px' : 
-                    videoQuality === '720p' ? '720px' : 'auto'
+          backgroundColor: 'black',
+          maxWidth: '100%',
+          maxHeight: '100%'
         }}
       />
 
-
-
-      <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
-        <button type="button" onClick={() => navigate(-1)} className="text-white flex items-center space-x-2">
-          <ArrowLeft /> <span>Back</span>
-        </button>
-        <div className="text-white text-center">
-          <h2 className="text-lg font-bold">{content.title}</h2>
-          <p className="text-sm">{content.category} • {content.type}</p>
+      {/* Big Play Button Overlay */}
+      {showPlayButton && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/30 z-20" onClick={togglePlayPause}>
+          <div className="rounded-full p-6 backdrop-blur-sm cursor-pointer transition-all transform hover:scale-110 shadow-2xl border-2"
+               style={{
+                 background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(29, 78, 216, 0.6) 100%)',
+                 borderColor: 'rgba(59, 130, 246, 0.6)',
+                 boxShadow: '0 0 50px rgba(59, 130, 246, 0.5), inset 0 4px 20px rgba(255, 255, 255, 0.1)'
+               }}>
+            <Play size={48} className="text-white ml-1 drop-shadow-2xl" />
+          </div>
         </div>
-        
-        {/* Quality Control */}
-        <div className="relative">
+      )}
+
+      {/* Video Loading Spinner - Only for significant delays */}
+      {videoLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-20">
+          <div className="flex flex-col items-center space-y-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            <div className="text-white text-sm font-medium">Buffering...</div>
+          </div>
+        </div>
+      )}
+
+      {/* Quality Change Notification */}
+      {qualityChangeNotification && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-lg z-30 backdrop-blur-sm border border-gray-600">
+          <div className="flex items-center space-x-2">
+            <Settings size={16} />
+            <span className="font-medium">{qualityChangeNotification}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Header Overlay */}
+      <div className={`absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent z-10 transition-opacity duration-300 ${
+        videoState.showControls ? 'opacity-100' : 'opacity-0'
+      }`}>
+        <div className="flex justify-between items-center">
           <button 
-            onClick={() => setShowQualityMenu(!showQualityMenu)}
-            className="text-white bg-black/50 px-3 py-1 rounded hover:bg-black/70"
+            onClick={() => navigate(-1)}
+            className="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors bg-black/50 px-3 py-2 rounded-lg backdrop-blur-sm"
           >
-            🎥 {videoQuality === 'auto' ? 'Auto' : videoQuality}
+            <ArrowLeft size={20} />
+            <span className="font-medium">Back</span>
           </button>
           
-          {showQualityMenu && (
-            <div className="absolute right-0 top-8 bg-black/90 rounded shadow-lg min-w-[120px]">
-              {['auto', '720p', '480p', '360p'].map((quality) => (
-                <button
-                  key={quality}
-                  onClick={() => {
-                    setVideoQuality(quality);
-                    setShowQualityMenu(false);
-                    // Auto-adjust video quality here if needed
+          <div className="text-center bg-black/50 px-4 py-2 rounded-lg backdrop-blur-sm">
+            <h1 className="text-xl font-bold text-white">{content.title}</h1>
+            <div className="flex items-center justify-center space-x-4 text-sm">
+              <span className="text-gray-300 capitalize">{content.type} • {content.category}</span>
+              {paymentState.isPaid ? (
+                <span className="text-green-400 font-medium">🔓 Premium</span>
+              ) : (
+                <span className="text-yellow-400 font-medium">🔒 Preview</span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            {/* Quality Settings */}
+            <div className="relative quality-menu">
+              <button 
+                onClick={() => setShowQualityMenu(!showQualityMenu)}
+                className="flex items-center space-x-1 text-white bg-black/50 px-3 py-2 rounded-lg hover:bg-black/70 transition-colors backdrop-blur-sm"
+                title="Quality Settings"
+              >
+                <Settings size={18} />
+                <span className="text-sm font-medium">{videoState.quality}</span>
+              </button>
+              
+              {showQualityMenu && (
+                <div className="absolute right-0 top-12 bg-black/90 rounded-lg shadow-xl min-w-[140px] z-20 backdrop-blur-sm border border-gray-700">
+                  {['auto', '1080p', '720p', '480p', '360p'].map((quality) => (
+                    <button
+                      key={quality}
+                      onClick={() => changeQuality(quality)}
+                      className={`block w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                        videoState.quality === quality ? 'bg-blue-600 text-white' : 'text-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{quality === 'auto' ? 'Auto' : quality}</span>
+                        {videoState.quality === quality && (
+                          <span className="text-green-400 text-xs">✓</span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Controls Overlay */}
+      <div className={`absolute bottom-0 left-0 right-0 p-3 z-10 transition-opacity duration-300 ${
+        videoState.showControls ? 'opacity-100' : 'opacity-0'
+      }`} style={{
+        background: 'linear-gradient(to top, rgba(15, 23, 42, 0.7) 0%, rgba(30, 58, 138, 0.3) 40%, transparent 100%)',
+        backdropFilter: 'blur(6px)'
+      }}>
+        {/* Progress Bar */}
+        <div className="mb-5">
+          <div className="relative group">
+            <div 
+              className="bg-gray-600/50 h-1 rounded-full cursor-pointer group-hover:h-2 transition-all duration-200"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const percentage = ((e.clientX - rect.left) / rect.width) * 100;
+                seekTo(percentage);
+              }}
+              onMouseMove={(e) => {
+                if (e.buttons === 1) { // Left mouse button is held down
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const percentage = ((e.clientX - rect.left) / rect.width) * 100;
+                  seekTo(percentage);
+                }
+              }}
+            >
+              <div 
+                className="bg-red-600 h-full rounded-full transition-all relative hover:bg-red-500"
+                style={{ 
+                  width: `${getProgressPercentage()}%`,
+                  background: 'linear-gradient(to right, #dc2626, #b91c1c)',
+                  boxShadow: '0 0 8px rgba(220, 38, 38, 0.6)'
+                }}
+              >
+                <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg border-2 border-red-500" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-between text-sm mt-2 text-white/80">
+            <span className="font-medium">{formatTime(videoState.currentTime)}</span>
+            <span className="text-xs text-gray-400">Click timeline to seek</span>
+            <span className="font-medium">{formatTime(videoState.duration)}</span>
+          </div>
+        </div>
+
+        {/* Control Buttons */}
+        <div className="flex items-center justify-center relative">
+          {/* Left Side - Volume Control (Positioned Absolutely) */}
+          <div className="absolute left-0 flex items-center">
+            <div className="flex items-center space-x-2 px-2 py-1.5 rounded-md backdrop-blur-sm shadow-md" style={{
+              background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.4) 100%)',
+              border: '1px solid rgba(59, 130, 246, 0.2)'
+            }}>
+              <button
+                onClick={() => adjustVolume(videoState.volume > 0 ? 0 : 1)}
+                className="text-blue-200 hover:text-white transition-colors"
+                title="Toggle mute"
+              >
+                <Volume2 size={16} />
+              </button>
+              <div 
+                className="w-16 h-1 bg-slate-600/40 rounded-full cursor-pointer shadow-inner"
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const percentage = (e.clientX - rect.left) / rect.width;
+                  adjustVolume(percentage, true);
+                }}
+                onMouseMove={(e) => {
+                  if (e.buttons === 1) {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const percentage = (e.clientX - rect.left) / rect.width;
+                    adjustVolume(percentage, true);
+                  }
+                }}
+              >
+                <div 
+                  className="h-full rounded-full transition-all"
+                  style={{ 
+                    width: `${videoState.volume * 100}%`,
+                    background: 'linear-gradient(to right, #3b82f6, #1d4ed8)',
+                    boxShadow: '0 0 6px rgba(59, 130, 246, 0.4)'
                   }}
-                  className={`block w-full text-left px-3 py-2 text-white hover:bg-gray-600 ${
-                    videoQuality === quality ? 'bg-red-600' : ''
-                  }`}
-                >
-                  {quality === 'auto' ? 'Auto (Recommended)' : quality}
-                </button>
+                />
+              </div>
+              <span className="text-xs text-blue-100 w-6 text-center font-medium">{Math.round(videoState.volume * 100)}</span>
+            </div>
+          </div>
+
+          {/* Center - Main Playback Controls (Truly Centered) */}
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={() => seekBy(-10)}
+              className="flex items-center space-x-1 text-white hover:text-blue-300 transition-colors px-2.5 py-1.5 rounded-md backdrop-blur-sm shadow-md"
+              title="Backward 10s (←)"
+              style={{
+                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.4) 100%)',
+                border: '1px solid rgba(59, 130, 246, 0.2)'
+              }}
+            >
+              <SkipBack size={16} />
+              <span className="text-xs font-medium">10s</span>
+            </button>
+
+            <button 
+              onClick={togglePlayPause}
+              className="rounded-full p-2.5 transition-colors backdrop-blur-sm shadow-xl border text-white hover:text-blue-200"
+              title="Play/Pause (Space)"
+              style={{
+                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 58, 138, 0.5) 100%)',
+                borderColor: 'rgba(59, 130, 246, 0.3)',
+                boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)'
+              }}
+            >
+              {videoState.isPlaying ? <Pause size={24} className="drop-shadow-lg" /> : <Play size={24} className="drop-shadow-lg ml-0.5" />}
+            </button>
+
+            <button 
+              onClick={() => seekBy(10)}
+              className="flex items-center space-x-1 text-white hover:text-blue-300 transition-colors px-2.5 py-1.5 rounded-md backdrop-blur-sm shadow-md"
+              title="Forward 10s (→)"
+              style={{
+                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.4) 100%)',
+                border: '1px solid rgba(59, 130, 246, 0.2)'
+              }}
+            >
+              <span className="text-xs font-medium">10s</span>
+              <SkipForward size={16} />
+            </button>
+          </div>
+
+          {/* Right Side - Fullscreen Control (Positioned Absolutely) */}
+          <div className="absolute right-0 flex items-center">
+            <button 
+              onClick={toggleFullscreen}
+              className="text-white hover:text-blue-300 transition-colors px-2.5 py-1.5 rounded-md backdrop-blur-sm shadow-md"
+              title="Toggle Fullscreen (F)"
+              style={{
+                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.4) 100%)',
+                border: '1px solid rgba(59, 130, 246, 0.2)'
+              }}
+            >
+              {videoState.isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Keyboard Help Overlay */}
+      {showKeyboardHelp && (
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-50" onClick={() => setShowKeyboardHelp(false)}>
+          <div className="bg-gray-900 rounded-xl p-6 max-w-md mx-4 border border-gray-700" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-bold text-white mb-4 text-center">Keyboard Shortcuts</h3>
+            <div className="space-y-2 text-sm">
+              {[
+                { key: 'Space', action: 'Play / Pause' },
+                { key: '← →', action: 'Seek 10s backward / forward' },
+                { key: '↑ ↓', action: 'Volume up / down' },
+                { key: 'F', action: 'Toggle fullscreen' },
+                { key: 'H or ?', action: 'Show this help' },
+              ].map(({ key, action }) => (
+                <div key={key} className="flex justify-between items-center">
+                  <span className="bg-gray-700 px-2 py-1 rounded text-gray-300 font-mono text-xs">{key}</span>
+                  <span className="text-white">{action}</span>
+                </div>
               ))}
             </div>
-          )}
-        </div>
-      </div>
-
-      <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-between items-center bg-black/60">
-        <div className="text-white text-sm">
-          {formatTime(currentTime)} / {formatTime(duration)}
-        </div>
-        <div className="flex space-x-2">
-          {!hasPaid && hasPaid !== null && content.premiumPrice > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                console.log('💳 Manual payment modal trigger');
-                setShowPaymentModal(true);
-              }}
-              className="flex items-center bg-red-600 text-white px-3 py-2 rounded space-x-1"
+            <button 
+              onClick={() => setShowKeyboardHelp(false)}
+              className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
             >
-              <CreditCard className="w-4 h-4" />
-              <span>Unlock ₹{content.premiumPrice}</span>
+              Close
             </button>
-          )}
-          <button type="button" onClick={togglePlayPause} className="text-white">
-            {isPlaying ? <Pause /> : <Play />}
-          </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {showPaymentModal && (
-        <div className="fixed inset-0 z-50">
-          <PaymentModal
-            content={content}
-            onSuccess={handlePaymentSuccess}
-            onClose={() => {
-              console.log('💳 Closing payment modal');
-              setShowPaymentModal(false);
-            }}
-          />
-        </div>
+      {/* Payment Modal */}
+      {paymentState.shouldShowModal && (
+        <PaymentModal
+          content={content}
+          onSuccess={handlePaymentSuccess}
+          onClose={() => setPaymentState(prev => ({ ...prev, shouldShowModal: false }))}
+        />
       )}
     </div>
   );

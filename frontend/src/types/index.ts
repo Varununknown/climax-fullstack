@@ -7,7 +7,8 @@ export interface User {
 }
 
 export interface Content {
-  id: string;
+  _id: string; // MongoDB uses _id
+  id?: string; // Optional for compatibility
   title: string;
   description: string;
   thumbnail: string;
