@@ -236,6 +236,21 @@ export const VideoPlayer: React.FC = () => {
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
         return; // Let the user type normally
       }
+
+      // Disable keyboard shortcuts when payment modal is open to prevent interference
+      if (paymentState.shouldShowModal) {
+        return;
+      }
+
+      // On mobile, only allow essential keyboard shortcuts
+      if (window.innerWidth <= 768) {
+        // Only allow F key for fullscreen on mobile, other keys might interfere
+        if (e.code === 'KeyF') {
+          e.preventDefault();
+          toggleFullscreen();
+        }
+        return;
+      }
       
       switch (e.code) {
         case 'Space':
@@ -272,7 +287,7 @@ export const VideoPlayer: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [paymentState.isPaid, content]);
+  }, [paymentState.isPaid, paymentState.shouldShowModal, content]);
 
   // ===== PLAYER CONTROLS =====
   const togglePlayPause = () => {
@@ -398,6 +413,18 @@ export const VideoPlayer: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Pause video when payment modal is shown
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (paymentState.shouldShowModal) {
+      video.pause();
+      setVideoState(prev => ({ ...prev, isPlaying: false }));
+      console.log('🛑 Video paused - payment modal opened');
+    }
+  }, [paymentState.shouldShowModal]);
+
   // Close quality menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -516,32 +543,85 @@ export const VideoPlayer: React.FC = () => {
     );
   }
 
+  // ===== MOBILE DOUBLE TAP HANDLING =====
+  const [lastTap, setLastTap] = useState<{ time: number; side: 'left' | 'right' } | null>(null);
+
+  const handleMobileTouch = (e: React.TouchEvent, side: 'left' | 'right') => {
+    if (window.innerWidth > 768) return; // Only for mobile
+
+    const now = Date.now();
+    
+    if (lastTap && lastTap.side === side && now - lastTap.time < 300) {
+      // Double tap detected
+      e.preventDefault();
+      if (side === 'left') {
+        seekBy(-10);
+      } else {
+        seekBy(10);
+      }
+      setLastTap(null);
+    } else {
+      // Single tap
+      setLastTap({ time: now, side });
+    }
+  };
+
   // ===== MAIN RENDER =====
   return (
     <div 
       ref={containerRef}
-      className="min-h-screen bg-gray-900 text-white relative overflow-hidden"
+      className="bg-gray-900 text-white relative overflow-hidden"
+      style={{
+        minHeight: window.innerWidth <= 768 ? '100vh' : '100vh',
+        height: window.innerWidth <= 768 ? '100vh' : 'auto'
+      }}
       onMouseMove={showControls}
       onMouseEnter={showControls}
     >
-      {/* Video Element */}
-      <video
-        ref={videoRef}
-        src={content.videoUrl}
-        className="w-full object-contain cursor-pointer md:h-screen"
-        style={{
-          backgroundColor: 'black',
-          maxWidth: '100%',
-          height: window.innerWidth <= 768 ? '60vh' : '100vh', // Mobile: 60vh, Desktop: 100vh
-          maxHeight: window.innerWidth <= 768 ? '60vh' : '100%'
-        }}
-        onContextMenu={(e) => e.preventDefault()}
-        preload="auto"
-        playsInline
-        controls={false}
-        // Remove onClick to prevent touch-to-pause on mobile
-        {...(window.innerWidth > 768 && { onClick: togglePlayPause })}
-      />
+      {/* Video Container with Touch Areas */}
+      <div className="relative w-full" style={{
+        height: window.innerWidth <= 768 ? '70vh' : '100vh'
+      }}>
+        {/* Video Element */}
+        <video
+          ref={videoRef}
+          src={content.videoUrl}
+          className="w-full h-full object-contain"
+          style={{
+            backgroundColor: 'black',
+            cursor: window.innerWidth <= 768 ? 'default' : 'pointer'
+          }}
+          onContextMenu={(e) => e.preventDefault()}
+          preload="auto"
+          playsInline
+          controls={false}
+          // Remove onClick completely for mobile, only desktop gets click-to-play
+          {...(window.innerWidth > 768 && { onClick: togglePlayPause })}
+        />
+
+        {/* Mobile Touch Areas for Double Tap (Only on Mobile) */}
+        {window.innerWidth <= 768 && (
+          <>
+            {/* Left side - Double tap to go backward */}
+            <div
+              className="absolute top-0 left-0 w-1/3 h-full z-5"
+              onTouchEnd={(e) => handleMobileTouch(e, 'left')}
+            />
+            
+            {/* Center - Single tap for play/pause */}
+            <div
+              className="absolute top-0 left-1/3 w-1/3 h-full z-5"
+              onTouchEnd={togglePlayPause}
+            />
+            
+            {/* Right side - Double tap to go forward */}
+            <div
+              className="absolute top-0 right-0 w-1/3 h-full z-5"
+              onTouchEnd={(e) => handleMobileTouch(e, 'right')}
+            />
+          </>
+        )}
+      </div>
 
       {/* Big Play Button Overlay */}
       {showPlayButton && (
@@ -640,12 +720,13 @@ export const VideoPlayer: React.FC = () => {
       </div>
 
       {/* Controls Overlay */}
-      <div className={`absolute bottom-0 left-0 right-0 z-10 transition-opacity duration-300 ${
+      <div className={`absolute left-0 right-0 z-10 transition-opacity duration-300 ${
         videoState.showControls ? 'opacity-100' : 'opacity-0'
       }`} style={{
         background: 'linear-gradient(to top, rgba(15, 23, 42, 0.7) 0%, rgba(30, 58, 138, 0.3) 40%, transparent 100%)',
         backdropFilter: 'blur(6px)',
-        padding: window.innerWidth <= 768 ? '8px' : '12px' // Less padding on mobile
+        padding: window.innerWidth <= 768 ? '8px' : '12px',
+        bottom: window.innerWidth <= 768 ? '20px' : '0px' // Lift controls up on mobile
       }}>
         {/* Progress Bar */}
         <div style={{ marginBottom: window.innerWidth <= 768 ? '12px' : '20px' }}>
@@ -853,8 +934,15 @@ export const VideoPlayer: React.FC = () => {
       {paymentState.shouldShowModal && (
         <PaymentModal
           content={content}
-          onSuccess={handlePaymentSuccess}
-          onClose={() => setPaymentState(prev => ({ ...prev, shouldShowModal: false }))}
+          onPaymentSuccess={handlePaymentSuccess}
+          onClose={() => {
+            setPaymentState(prev => ({ ...prev, shouldShowModal: false }));
+            // Resume video when modal closes without payment
+            const video = videoRef.current;
+            if (video && !paymentState.isPaid) {
+              video.currentTime = Math.max(0, content.climaxTimestamp - 1);
+            }
+          }}
         />
       )}
     </div>
