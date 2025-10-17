@@ -721,19 +721,7 @@ export const VideoPlayer: React.FC = () => {
       <div className="relative w-full" style={{
         height: window.innerWidth <= 768 ? '70vh' : '100vh'
       }}>
-        {/* Test Content Display */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white bg-black/50 p-8 rounded-lg">
-            <h1 className="text-2xl mb-4">Video Player Test</h1>
-            <p className="mb-2">Content ID: {id}</p>
-            <p className="mb-2">User: {user?.name || 'Not logged in'}</p>
-            <p className="mb-2">Content: {content?.title || 'No content'}</p>
-            <p className="mb-4">Video URL: {content?.videoUrl || 'No URL'}</p>
-            {content?.videoUrl && (
-              <p className="text-green-400">✅ Ready to play video</p>
-            )}
-          </div>
-        </div>
+
 
         {/* Video Element - Only show if we have content */}
         {content?.videoUrl && (
@@ -1091,18 +1079,37 @@ export const VideoPlayer: React.FC = () => {
           content={content}
           onSuccess={handlePaymentSuccess}
           onClose={() => {
-            console.log('📴 Payment modal cancelled - pausing video and allowing rewind');
+            console.log('📴 Payment modal cancelled - FORCE PAUSING video');
             setPaymentState(prev => ({ ...prev, shouldShowModal: false }));
             
-            // Reset video to safe position and PAUSE automatically
+            // FORCE PAUSE and reset video position  
             const video = videoRef.current;
             if (video && !paymentState.isPaid) {
+              // Force immediate pause
+              video.pause();
+              
+              // Reset to safe position
               const safePosition = Math.max(0, content.climaxTimestamp - 2);
               video.currentTime = safePosition;
-              video.pause(); // 🛑 AUTO-PAUSE on cancel
-              setVideoState(prev => ({ ...prev, isPlaying: false }));
-              setPreviousTime(safePosition); // Reset tracking to allow backward seeking
-              console.log(`📹 Video paused and reset to safe position: ${safePosition}s`);
+              
+              // Update all states to reflect paused status
+              setVideoState(prev => ({ 
+                ...prev, 
+                isPlaying: false,
+                currentTime: safePosition
+              }));
+              
+              setPreviousTime(safePosition);
+              
+              // Double-check pause after a brief delay
+              setTimeout(() => {
+                if (video && !video.paused) {
+                  video.pause();
+                  console.log('🔴 FORCE PAUSED video after cancel');
+                }
+              }, 50);
+              
+              console.log(`📹 Video FORCE PAUSED and reset to: ${safePosition}s`);
             }
           }}
         />
