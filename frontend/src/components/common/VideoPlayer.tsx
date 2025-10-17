@@ -65,23 +65,31 @@ export const VideoPlayer: React.FC = () => {
   useEffect(() => {
     const fetchContent = async () => {
       if (!id) {
+        console.error('❌ No content ID provided');
         setError('Content ID not provided');
         setLoading(false);
         return;
       }
 
+      console.log('🎬 Starting to fetch content with ID:', id);
+      setLoading(true);
+      setError(null);
+
       try {
         console.log('🎬 Fetching content:', id);
         const response = await API.get(`/contents/${id}`);
+        console.log('✅ Content loaded successfully:', response.data);
         setContent(response.data);
-        console.log('✅ Content loaded:', response.data.title);
         
         // Let the video element handle loading naturally
       } catch (err: any) {
         console.error('❌ Error fetching content:', err);
-        setError(err.response?.data?.message || 'Failed to load content');
+        const errorMessage = err.response?.data?.message || err.message || 'Failed to load content';
+        console.error('❌ Error details:', errorMessage);
+        setError(errorMessage);
       } finally {
         setLoading(false);
+        console.log('🎬 Content fetch completed');
       }
     };
 
@@ -519,8 +527,11 @@ export const VideoPlayer: React.FC = () => {
   // ===== LOADING STATE =====
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl">Loading content...</div>
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="text-white text-xl">Loading content...</div>
+        </div>
       </div>
     );
   }
@@ -528,7 +539,7 @@ export const VideoPlayer: React.FC = () => {
   // ===== ERROR STATE =====
   if (error || !content) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center text-white">
           <h2 className="text-2xl mb-4">Content Not Available</h2>
           <p className="mb-4">{error || 'Content not found'}</p>
@@ -570,10 +581,10 @@ export const VideoPlayer: React.FC = () => {
   return (
     <div 
       ref={containerRef}
-      className="bg-gray-900 text-white relative overflow-hidden"
+      className="min-h-screen w-full bg-gray-900 text-white relative overflow-hidden"
       style={{
-        minHeight: window.innerWidth <= 768 ? '100vh' : '100vh',
-        height: window.innerWidth <= 768 ? '100vh' : 'auto'
+        height: '100vh',
+        minHeight: '100vh'
       }}
       onMouseMove={showControls}
       onMouseEnter={showControls}
@@ -934,7 +945,7 @@ export const VideoPlayer: React.FC = () => {
       {paymentState.shouldShowModal && (
         <PaymentModal
           content={content}
-          onPaymentSuccess={handlePaymentSuccess}
+          onSuccess={handlePaymentSuccess}
           onClose={() => {
             setPaymentState(prev => ({ ...prev, shouldShowModal: false }));
             // Resume video when modal closes without payment
