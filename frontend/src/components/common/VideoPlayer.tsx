@@ -203,10 +203,22 @@ export const VideoPlayer: React.FC = () => {
       // Check if user reached paywall without payment
       if (!paymentState.isPaid && currentTime >= content.climaxTimestamp) {
         console.log('🚫 Paywall triggered at climax timestamp');
+        
+        // Immediately pause and prevent further playback
         video.pause();
         video.currentTime = Math.max(0, content.climaxTimestamp - 1);
         setVideoState(prev => ({ ...prev, isPlaying: false }));
         setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
+        
+        // Remove timeupdate listener temporarily to prevent loop
+        video.removeEventListener('timeupdate', onTimeUpdate);
+        
+        // Re-add after a brief delay to allow state to settle
+        setTimeout(() => {
+          if (video && !paymentState.isPaid) {
+            video.addEventListener('timeupdate', onTimeUpdate);
+          }
+        }, 100);
       }
     };
 
@@ -332,11 +344,24 @@ export const VideoPlayer: React.FC = () => {
   // ===== PLAYER CONTROLS =====
   const togglePlayPause = () => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !content) return;
 
     console.log('🎮 Toggle play/pause - current state:', video.paused ? 'paused' : 'playing');
     console.log('🎮 Video ready state:', video.readyState);
     console.log('🎮 Video src:', video.src);
+    
+    // If paywall modal is open, don't allow play
+    if (paymentState.shouldShowModal) {
+      console.log('🚫 Play blocked - payment modal is open');
+      return;
+    }
+    
+    // If trying to play beyond paywall without payment, block it
+    if (!paymentState.isPaid && video.currentTime >= content.climaxTimestamp - 1) {
+      console.log('🚫 Play blocked - at paywall boundary');
+      setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
+      return;
+    }
     
     if (video.paused) {
       video.play().then(() => {
@@ -462,6 +487,19 @@ export const VideoPlayer: React.FC = () => {
       video.pause();
       setVideoState(prev => ({ ...prev, isPlaying: false }));
       console.log('🛑 Video paused - payment modal opened');
+      
+      // Additional safeguard: prevent the video from playing while modal is open
+      const preventPlay = (e: Event) => {
+        e.preventDefault();
+        video.pause();
+        console.log('🚫 Play prevented - payment modal is open');
+      };
+      
+      video.addEventListener('play', preventPlay);
+      
+      return () => {
+        video.removeEventListener('play', preventPlay);
+      };
     }
   }, [paymentState.shouldShowModal]);
 
