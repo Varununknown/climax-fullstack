@@ -36,6 +36,18 @@ export const VideoPlayer: React.FC = () => {
   console.log('🎬 VideoPlayer render - ID:', id);
   console.log('🎬 VideoPlayer render - User:', user?.name);
   
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!user) {
+      console.log('🚫 No user - redirecting to auth');
+      // Don't redirect immediately, let them see the debug info first
+      setTimeout(() => {
+        navigate('/');
+      }, 3000);
+      return;
+    }
+  }, [user, navigate]);
+  
   // ===== STATE MANAGEMENT =====
   const [content, setContent] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
@@ -560,6 +572,25 @@ export const VideoPlayer: React.FC = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <div className="text-white text-xl">Loading content...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== AUTHENTICATION CHECK =====
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <h2 className="text-2xl mb-4">Authentication Required</h2>
+          <p className="mb-4">Please log in to access this content</p>
+          <p className="text-sm text-gray-400 mb-4">Redirecting to login page...</p>
+          <button 
+            onClick={() => navigate('/')}
+            className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded"
+          >
+            Go to Login
+          </button>
         </div>
       </div>
     );
