@@ -1091,16 +1091,18 @@ export const VideoPlayer: React.FC = () => {
           content={content}
           onSuccess={handlePaymentSuccess}
           onClose={() => {
-            console.log('📴 Payment modal cancelled - allowing user to rewind/seek backward');
+            console.log('📴 Payment modal cancelled - pausing video and allowing rewind');
             setPaymentState(prev => ({ ...prev, shouldShowModal: false }));
             
-            // Reset video to safe position (before climax) and allow seeking
+            // Reset video to safe position and PAUSE automatically
             const video = videoRef.current;
             if (video && !paymentState.isPaid) {
               const safePosition = Math.max(0, content.climaxTimestamp - 2);
               video.currentTime = safePosition;
+              video.pause(); // 🛑 AUTO-PAUSE on cancel
+              setVideoState(prev => ({ ...prev, isPlaying: false }));
               setPreviousTime(safePosition); // Reset tracking to allow backward seeking
-              console.log(`📹 Video reset to safe position: ${safePosition}s`);
+              console.log(`📹 Video paused and reset to safe position: ${safePosition}s`);
             }
           }}
         />
