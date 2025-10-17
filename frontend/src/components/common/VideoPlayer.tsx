@@ -691,9 +691,9 @@ export const VideoPlayer: React.FC = () => {
       // Double tap detected
       e.preventDefault();
       if (side === 'left') {
-        seekBy(-10);
+        seekBy(10); // Left = move forward
       } else {
-        seekBy(10);
+        seekBy(-10); // Right = move backward  
       }
       setLastTap(null);
     } else {
