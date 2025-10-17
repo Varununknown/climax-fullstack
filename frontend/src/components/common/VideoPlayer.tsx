@@ -67,6 +67,9 @@ export const VideoPlayer: React.FC = () => {
 
   // ===== MOBILE DOUBLE TAP HANDLING =====
   const [lastTap, setLastTap] = useState<{ time: number; side: 'left' | 'right' } | null>(null);
+  
+  // ===== PAYWALL TRIGGER TRACKING =====
+  const [previousTime, setPreviousTime] = useState<number>(0);
 
   // ===== CONTENT FETCHING =====
   useEffect(() => {
@@ -242,9 +245,9 @@ export const VideoPlayer: React.FC = () => {
       const currentTime = video.currentTime;
       setVideoState(prev => ({ ...prev, currentTime }));
       
-      // Check if user reached paywall without payment
-      if (!paymentState.isPaid && currentTime >= content.climaxTimestamp) {
-        console.log('🚫 Paywall triggered at climax timestamp');
+      // Check if user is moving FORWARD past the climax timestamp (not backward/seeking)
+      if (!paymentState.isPaid && currentTime >= content.climaxTimestamp && currentTime > previousTime) {
+        console.log('🚫 Paywall triggered - user moved FORWARD past climax timestamp');
         
         // Immediately pause and prevent further playback
         video.pause();
@@ -262,6 +265,9 @@ export const VideoPlayer: React.FC = () => {
           }
         }, 100);
       }
+      
+      // Update previous time for next comparison
+      setPreviousTime(currentTime);
     };
 
     const onLoadedMetadata = () => {
@@ -424,14 +430,16 @@ export const VideoPlayer: React.FC = () => {
 
     const newTime = Math.max(0, Math.min(videoState.duration, video.currentTime + seconds));
     
-    // Check paywall for forward seeking
-    if (!paymentState.isPaid && newTime > content.climaxTimestamp) {
-      console.log('🚫 Seek blocked - payment required');
+    // Check paywall for forward seeking only
+    if (!paymentState.isPaid && newTime > content.climaxTimestamp && seconds > 0) {
+      console.log('🚫 Forward skip blocked - payment required');
       setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
       return;
     }
 
     video.currentTime = newTime;
+    setPreviousTime(newTime); // Update tracking
+    console.log(`📹 Skip ${seconds > 0 ? 'forward' : 'backward'} to ${newTime.toFixed(1)}s`);
   };
 
   const seekTo = (percentage: number) => {
@@ -440,14 +448,17 @@ export const VideoPlayer: React.FC = () => {
 
     const newTime = (percentage / 100) * videoState.duration;
     
-    // Check paywall
-    if (!paymentState.isPaid && newTime > content.climaxTimestamp) {
-      console.log('🚫 Timeline seek blocked - payment required');
+    // Check paywall - only trigger if seeking FORWARD past climax
+    if (!paymentState.isPaid && newTime > content.climaxTimestamp && newTime > video.currentTime) {
+      console.log('🚫 Forward seek blocked - payment required');
       setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
       return;
     }
 
+    // Allow seeking backward freely, even past climax
     video.currentTime = newTime;
+    setPreviousTime(newTime); // Update tracking for next timeupdate
+    console.log(`📹 Seek to ${newTime.toFixed(1)}s (${percentage.toFixed(1)}%)`);
   };
 
   const adjustVolume = (delta: number, isAbsolute: boolean = false) => {
@@ -1080,11 +1091,16 @@ export const VideoPlayer: React.FC = () => {
           content={content}
           onSuccess={handlePaymentSuccess}
           onClose={() => {
+            console.log('📴 Payment modal cancelled - allowing user to rewind/seek backward');
             setPaymentState(prev => ({ ...prev, shouldShowModal: false }));
-            // Resume video when modal closes without payment
+            
+            // Reset video to safe position (before climax) and allow seeking
             const video = videoRef.current;
             if (video && !paymentState.isPaid) {
-              video.currentTime = Math.max(0, content.climaxTimestamp - 1);
+              const safePosition = Math.max(0, content.climaxTimestamp - 2);
+              video.currentTime = safePosition;
+              setPreviousTime(safePosition); // Reset tracking to allow backward seeking
+              console.log(`📹 Video reset to safe position: ${safePosition}s`);
             }
           }}
         />
