@@ -736,7 +736,7 @@ export const VideoPlayer: React.FC = () => {
             onContextMenu={(e) => e.preventDefault()}
             preload="auto"
             playsInline
-            controls={true} // Enable native controls for debugging
+            controls={false} // Use custom controls only
             // Remove onClick completely for mobile, only desktop gets click-to-play
             {...(window.innerWidth > 768 && { onClick: togglePlayPause })}
           />
@@ -1079,20 +1079,27 @@ export const VideoPlayer: React.FC = () => {
           content={content}
           onSuccess={handlePaymentSuccess}
           onClose={() => {
-            console.log('📴 Payment modal cancelled - FORCE PAUSING video');
+            console.log('� PAYMENT CANCELLED - STOPPING VIDEO');
+            
+            // Close modal first
             setPaymentState(prev => ({ ...prev, shouldShowModal: false }));
             
-            // FORCE PAUSE and reset video position  
+            // AGGRESSIVE VIDEO STOP
             const video = videoRef.current;
             if (video && !paymentState.isPaid) {
-              // Force immediate pause
+              // Multiple pause attempts
+              video.pause();
               video.pause();
               
-              // Reset to safe position
+              // Remove all event listeners temporarily  
+              video.removeEventListener('play', video.pause);
+              video.addEventListener('play', video.pause);
+              
+              // Reset position
               const safePosition = Math.max(0, content.climaxTimestamp - 2);
               video.currentTime = safePosition;
               
-              // Update all states to reflect paused status
+              // Force state updates
               setVideoState(prev => ({ 
                 ...prev, 
                 isPlaying: false,
@@ -1101,15 +1108,15 @@ export const VideoPlayer: React.FC = () => {
               
               setPreviousTime(safePosition);
               
-              // Double-check pause after a brief delay
+              // Multiple checks to ensure it stays paused
               setTimeout(() => {
-                if (video && !video.paused) {
+                if (video) {
                   video.pause();
-                  console.log('🔴 FORCE PAUSED video after cancel');
+                  video.removeEventListener('play', video.pause);
                 }
-              }, 50);
+              }, 100);
               
-              console.log(`📹 Video FORCE PAUSED and reset to: ${safePosition}s`);
+              console.log('� VIDEO AGGRESSIVELY STOPPED');
             }
           }}
         />
