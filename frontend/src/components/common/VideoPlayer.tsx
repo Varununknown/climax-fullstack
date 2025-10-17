@@ -36,18 +36,6 @@ export const VideoPlayer: React.FC = () => {
   console.log('🎬 VideoPlayer render - ID:', id);
   console.log('🎬 VideoPlayer render - User:', user?.name);
   
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!user) {
-      console.log('🚫 No user - redirecting to auth');
-      // Don't redirect immediately, let them see the debug info first
-      setTimeout(() => {
-        navigate('/');
-      }, 3000);
-      return;
-    }
-  }, [user, navigate]);
-  
   // ===== STATE MANAGEMENT =====
   const [content, setContent] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
@@ -577,25 +565,6 @@ export const VideoPlayer: React.FC = () => {
     );
   }
 
-  // ===== AUTHENTICATION CHECK =====
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="text-2xl mb-4">Authentication Required</h2>
-          <p className="mb-4">Please log in to access this content</p>
-          <p className="text-sm text-gray-400 mb-4">Redirecting to login page...</p>
-          <button 
-            onClick={() => navigate('/')}
-            className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // ===== ERROR STATE =====
   if (error || !content) {
     return (
@@ -651,34 +620,51 @@ export const VideoPlayer: React.FC = () => {
       onMouseMove={showControls}
       onMouseEnter={showControls}
     >
-      {/* Debug Info */}
+      {/* Debug Info - Always visible */}
       <div className="absolute top-4 left-4 z-50 bg-black/80 text-white p-2 rounded text-sm">
         <div>ID: {id || 'No ID'}</div>
         <div>Loading: {loading ? 'Yes' : 'No'}</div>
         <div>Error: {error || 'None'}</div>
         <div>Content: {content ? content.title : 'None'}</div>
         <div>User: {user?.name || 'None'}</div>
+        <div>Content VideoURL: {content?.videoUrl || 'None'}</div>
       </div>
       {/* Video Container with Touch Areas */}
       <div className="relative w-full" style={{
         height: window.innerWidth <= 768 ? '70vh' : '100vh'
       }}>
-        {/* Video Element */}
-        <video
-          ref={videoRef}
-          src={content.videoUrl}
-          className="w-full h-full object-contain"
-          style={{
-            backgroundColor: 'black',
-            cursor: window.innerWidth <= 768 ? 'default' : 'pointer'
-          }}
-          onContextMenu={(e) => e.preventDefault()}
-          preload="auto"
-          playsInline
-          controls={false}
-          // Remove onClick completely for mobile, only desktop gets click-to-play
-          {...(window.innerWidth > 768 && { onClick: togglePlayPause })}
-        />
+        {/* Test Content Display */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white bg-black/50 p-8 rounded-lg">
+            <h1 className="text-2xl mb-4">Video Player Test</h1>
+            <p className="mb-2">Content ID: {id}</p>
+            <p className="mb-2">User: {user?.name || 'Not logged in'}</p>
+            <p className="mb-2">Content: {content?.title || 'No content'}</p>
+            <p className="mb-4">Video URL: {content?.videoUrl || 'No URL'}</p>
+            {content?.videoUrl && (
+              <p className="text-green-400">✅ Ready to play video</p>
+            )}
+          </div>
+        </div>
+
+        {/* Video Element - Only show if we have content */}
+        {content?.videoUrl && (
+          <video
+            ref={videoRef}
+            src={content.videoUrl}
+            className="w-full h-full object-contain"
+            style={{
+              backgroundColor: 'black',
+              cursor: window.innerWidth <= 768 ? 'default' : 'pointer'
+            }}
+            onContextMenu={(e) => e.preventDefault()}
+            preload="auto"
+            playsInline
+            controls={true} // Enable native controls for debugging
+            // Remove onClick completely for mobile, only desktop gets click-to-play
+            {...(window.innerWidth > 768 && { onClick: togglePlayPause })}
+          />
+        )}
 
         {/* Mobile Touch Areas for Double Tap (Only on Mobile) */}
         {window.innerWidth <= 768 && (
