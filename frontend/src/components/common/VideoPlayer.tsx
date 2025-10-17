@@ -128,7 +128,7 @@ export const VideoPlayer: React.FC = () => {
     fetchContent();
   }, [id]);
 
-  // ===== PAYMENT STATUS CHECKING =====
+  // ===== ROBUST PAYMENT STATUS CHECKING =====
   useEffect(() => {
     const checkPaymentStatus = async () => {
       if (!content || !user) {
@@ -139,20 +139,34 @@ export const VideoPlayer: React.FC = () => {
       try {
         console.log('💳 Checking payment status...');
         
-        // Check localStorage cache first for instant response
+        // Multi-layer payment verification for persistence
         const cacheKey = `payment_${user.id}_${content._id}`;
-        const cachedPayment = localStorage.getItem(cacheKey);
+        const permanentKey = `payment_permanent_${user.id}_${content._id}`;
         
+        // Check permanent storage first (never cleared)
+        const permanentPayment = localStorage.getItem(permanentKey);
+        if (permanentPayment === 'approved') {
+          console.log('🔒 PERMANENT PAYMENT STATUS - Auto-approved content');
+          setPaymentState(prev => ({ ...prev, isPaid: true, isLoading: false }));
+          
+          // Still verify with server but don't change state if it fails
+          verifyPaymentWithServer(cacheKey, false);
+          return;
+        }
+        
+        // Check regular cache
+        const cachedPayment = localStorage.getItem(cacheKey);
         if (cachedPayment === 'true') {
           console.log('⚡ Using cached payment status');
           setPaymentState(prev => ({ ...prev, isPaid: true, isLoading: false }));
           
-          // Verify cache with server in background
-          verifyPaymentWithServer(cacheKey);
+          // Verify and potentially upgrade to permanent
+          verifyPaymentWithServer(cacheKey, true);
           return;
         }
 
-        // Check server for payment
+        // Check server for payment (final authority)
+        console.log('🌐 Checking server payment status...');
         const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
         const isPaid = response.data.paid;
         
@@ -160,14 +174,26 @@ export const VideoPlayer: React.FC = () => {
         
         setPaymentState(prev => ({ ...prev, isPaid, isLoading: false }));
         
-        // Cache the result
+        // Cache the result and make permanent if paid
         if (isPaid) {
           localStorage.setItem(cacheKey, 'true');
+          localStorage.setItem(permanentKey, 'approved'); // 🔒 Permanent approval
+          console.log('🔒 Payment status made permanent - will persist across sessions');
         }
         
       } catch (err) {
         console.error('❌ Payment check failed:', err);
-        setPaymentState(prev => ({ ...prev, isLoading: false, isPaid: false }));
+        
+        // If server fails but we have permanent payment, trust permanent status
+        const permanentKey = `payment_permanent_${user.id}_${content._id}`;
+        const permanentPayment = localStorage.getItem(permanentKey);
+        
+        if (permanentPayment === 'approved') {
+          console.log('🔒 Server failed but permanent payment exists - maintaining paid status');
+          setPaymentState(prev => ({ ...prev, isPaid: true, isLoading: false }));
+        } else {
+          setPaymentState(prev => ({ ...prev, isLoading: false, isPaid: false }));
+        }
       }
     };
 
@@ -175,19 +201,35 @@ export const VideoPlayer: React.FC = () => {
   }, [content, user]);
 
   // ===== BACKGROUND PAYMENT VERIFICATION =====
-  const verifyPaymentWithServer = async (cacheKey: string) => {
+  const verifyPaymentWithServer = async (cacheKey: string, canUpgradeToPermanent: boolean = false) => {
     if (!content || !user) return;
     
     try {
       const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
       
-      if (!response.data.paid) {
-        console.log('⚠️ Cached payment invalid - clearing cache');
-        localStorage.removeItem(cacheKey);
-        setPaymentState(prev => ({ ...prev, isPaid: false }));
+      if (response.data.paid) {
+        // Upgrade to permanent if verified and allowed
+        if (canUpgradeToPermanent) {
+          const permanentKey = `payment_permanent_${user.id}_${content._id}`;
+          localStorage.setItem(permanentKey, 'approved');
+          console.log('🔒 Payment upgraded to permanent status');
+        }
+      } else {
+        // Only clear cache if no permanent payment exists
+        const permanentKey = `payment_permanent_${user.id}_${content._id}`;
+        const permanentPayment = localStorage.getItem(permanentKey);
+        
+        if (permanentPayment !== 'approved') {
+          console.log('⚠️ Cached payment invalid - clearing cache');
+          localStorage.removeItem(cacheKey);
+          setPaymentState(prev => ({ ...prev, isPaid: false }));
+        } else {
+          console.log('🔒 Server says no payment but permanent status exists - keeping paid state');
+        }
       }
     } catch (err) {
       console.warn('Payment verification failed:', err);
+      // Don't change payment state on verification failure if permanent payment exists
     }
   };
 
@@ -562,7 +604,7 @@ export const VideoPlayer: React.FC = () => {
 
   // ===== SUCCESS HANDLERS =====
   const handlePaymentSuccess = () => {
-    console.log('🎉 Payment successful - unlocking content');
+    console.log('🎉 Payment successful - unlocking content PERMANENTLY');
     
     setPaymentState({
       isLoading: false,
@@ -570,10 +612,15 @@ export const VideoPlayer: React.FC = () => {
       shouldShowModal: false
     });
 
-    // Cache payment status
+    // 🔒 PERMANENT PAYMENT STATUS - Never reverts to paywall
     if (content && user) {
       const cacheKey = `payment_${user.id}_${content._id}`;
+      const permanentKey = `payment_permanent_${user.id}_${content._id}`;
+      
       localStorage.setItem(cacheKey, 'true');
+      localStorage.setItem(permanentKey, 'approved'); // 🔒 Permanent approval
+      
+      console.log('🔒 Payment made permanent - will never revert to paywall');
     }
 
     // Resume playback
@@ -665,7 +712,9 @@ export const VideoPlayer: React.FC = () => {
         <div>Error: {error || 'None'}</div>
         <div>Content: {content ? content.title : 'None'}</div>
         <div>User: {user?.name || 'None'}</div>
-        <div>Content VideoURL: {content?.videoUrl || 'None'}</div>
+        <div>Payment: {paymentState.isPaid ? '✅ PAID' : '❌ NOT PAID'}</div>
+        <div>Permanent: {content && user && localStorage.getItem(`payment_permanent_${user.id}_${content._id}`) === 'approved' ? '🔒 YES' : '🔓 NO'}</div>
+        <div>Modal: {paymentState.shouldShowModal ? 'SHOWING' : 'HIDDEN'}</div>
       </div>
       {/* Video Container with Touch Areas */}
       <div className="relative w-full" style={{
