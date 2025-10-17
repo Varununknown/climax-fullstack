@@ -705,17 +705,7 @@ export const VideoPlayer: React.FC = () => {
       onMouseMove={showControls}
       onMouseEnter={showControls}
     >
-      {/* Debug Info - Always visible */}
-      <div className="absolute top-4 left-4 z-50 bg-black/80 text-white p-2 rounded text-sm">
-        <div>ID: {id || 'No ID'}</div>
-        <div>Loading: {loading ? 'Yes' : 'No'}</div>
-        <div>Error: {error || 'None'}</div>
-        <div>Content: {content ? content.title : 'None'}</div>
-        <div>User: {user?.name || 'None'}</div>
-        <div>Payment: {paymentState.isPaid ? '✅ PAID' : '❌ NOT PAID'}</div>
-        <div>Permanent: {content && user && localStorage.getItem(`payment_permanent_${user.id}_${content._id}`) === 'approved' ? '🔒 YES' : '🔓 NO'}</div>
-        <div>Modal: {paymentState.shouldShowModal ? 'SHOWING' : 'HIDDEN'}</div>
-      </div>
+
       {/* Video Container with Touch Areas */}
       <div className="relative w-full" style={{
         height: window.innerWidth <= 768 ? '70vh' : '100vh'
