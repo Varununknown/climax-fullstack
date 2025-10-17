@@ -65,6 +65,9 @@ export const VideoPlayer: React.FC = () => {
   const [qualityChangeNotification, setQualityChangeNotification] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // ===== MOBILE DOUBLE TAP HANDLING =====
+  const [lastTap, setLastTap] = useState<{ time: number; side: 'left' | 'right' } | null>(null);
+
   // ===== CONTENT FETCHING =====
   useEffect(() => {
     const fetchContent = async () => {
@@ -582,9 +585,6 @@ export const VideoPlayer: React.FC = () => {
       </div>
     );
   }
-
-  // ===== MOBILE DOUBLE TAP HANDLING =====
-  const [lastTap, setLastTap] = useState<{ time: number; side: 'left' | 'right' } | null>(null);
 
   const handleMobileTouch = (e: React.TouchEvent, side: 'left' | 'right') => {
     if (window.innerWidth > 768) return; // Only for mobile
