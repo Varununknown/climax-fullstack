@@ -32,6 +32,10 @@ export const VideoPlayer: React.FC = () => {
   const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   
+  // Add debugging
+  console.log('🎬 VideoPlayer render - ID:', id);
+  console.log('🎬 VideoPlayer render - User:', user?.name);
+  
   // ===== STATE MANAGEMENT =====
   const [content, setContent] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,7 +70,7 @@ export const VideoPlayer: React.FC = () => {
     const fetchContent = async () => {
       if (!id) {
         console.error('❌ No content ID provided');
-        setError('Content ID not provided');
+        setError('Content ID not provided - URL should be /watch/:id');
         setLoading(false);
         return;
       }
@@ -75,8 +79,31 @@ export const VideoPlayer: React.FC = () => {
       setLoading(true);
       setError(null);
 
+      // Fallback test content for debugging
+      if (id === 'test' || id === 'test123') {
+        console.log('🎬 Using test content for debugging');
+        const testContent: Content = {
+          _id: 'test123',
+          title: 'Test Video',
+          description: 'Test video for debugging',
+          videoUrl: 'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4',
+          thumbnail: 'https://via.placeholder.com/400x600?text=Test+Video',
+          category: 'action',
+          type: 'movie',
+          genre: ['test'],
+          duration: 120,
+          climaxTimestamp: 60,
+          price: 0,
+          createdAt: new Date()
+        };
+        setContent(testContent);
+        setLoading(false);
+        return;
+      }
+
       try {
         console.log('🎬 Fetching content:', id);
+        console.log('🎬 API Base URL:', API.defaults.baseURL);
         const response = await API.get(`/contents/${id}`);
         console.log('✅ Content loaded successfully:', response.data);
         setContent(response.data);
@@ -84,6 +111,8 @@ export const VideoPlayer: React.FC = () => {
         // Let the video element handle loading naturally
       } catch (err: any) {
         console.error('❌ Error fetching content:', err);
+        console.error('❌ Error response:', err.response);
+        console.error('❌ Error message:', err.message);
         const errorMessage = err.response?.data?.message || err.message || 'Failed to load content';
         console.error('❌ Error details:', errorMessage);
         setError(errorMessage);
@@ -578,6 +607,8 @@ export const VideoPlayer: React.FC = () => {
   };
 
   // ===== MAIN RENDER =====
+  console.log('🎬 Render state - Loading:', loading, 'Error:', error, 'Content:', !!content);
+  
   return (
     <div 
       ref={containerRef}
@@ -589,6 +620,14 @@ export const VideoPlayer: React.FC = () => {
       onMouseMove={showControls}
       onMouseEnter={showControls}
     >
+      {/* Debug Info */}
+      <div className="absolute top-4 left-4 z-50 bg-black/80 text-white p-2 rounded text-sm">
+        <div>ID: {id || 'No ID'}</div>
+        <div>Loading: {loading ? 'Yes' : 'No'}</div>
+        <div>Error: {error || 'None'}</div>
+        <div>Content: {content ? content.title : 'None'}</div>
+        <div>User: {user?.name || 'None'}</div>
+      </div>
       {/* Video Container with Touch Areas */}
       <div className="relative w-full" style={{
         height: window.innerWidth <= 768 ? '70vh' : '100vh'
