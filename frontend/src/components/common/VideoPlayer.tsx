@@ -685,19 +685,32 @@ export const VideoPlayer: React.FC = () => {
   const handleMobileTouch = (e: React.TouchEvent, side: 'left' | 'right') => {
     if (window.innerWidth > 768) return; // Only for mobile
 
+    e.preventDefault(); // Prevent default touch behavior
     const now = Date.now();
     
-    if (lastTap && lastTap.side === side && now - lastTap.time < 300) {
-      // Double tap detected
-      e.preventDefault();
+    if (lastTap && lastTap.side === side && now - lastTap.time < 250) {
+      // Double tap detected - faster response time
       if (side === 'left') {
         seekBy(10); // Left = move forward
+        console.log('📱 Mobile: Double tap LEFT - Forward +10s');
       } else {
         seekBy(-10); // Right = move backward  
+        console.log('📱 Mobile: Double tap RIGHT - Backward -10s');
       }
+      
+      // Visual feedback - brief flash
+      const flashElement = side === 'left' ? 'mobile-left-flash' : 'mobile-right-flash';
+      const element = document.getElementById(flashElement);
+      if (element) {
+        element.style.opacity = '0.3';
+        setTimeout(() => {
+          element.style.opacity = '0';
+        }, 200);
+      }
+      
       setLastTap(null);
     } else {
-      // Single tap
+      // Single tap - just register for potential double tap
       setLastTap({ time: now, side });
     }
   };
@@ -742,26 +755,69 @@ export const VideoPlayer: React.FC = () => {
           />
         )}
 
-        {/* Mobile Touch Areas for Double Tap (Only on Mobile) */}
+        {/* Mobile Touch Areas for Smooth UX (Only on Mobile) */}
         {window.innerWidth <= 768 && (
           <>
-            {/* Left side - Double tap to go backward */}
+            {/* Left side - Double tap for forward */}
             <div
-              className="absolute top-0 left-0 w-1/3 h-full z-5"
-              onTouchEnd={(e) => handleMobileTouch(e, 'left')}
-            />
+              className="absolute top-0 left-0 w-1/2 h-full z-5 flex items-center justify-start pl-8"
+              onTouchStart={(e) => handleMobileTouch(e, 'left')}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                WebkitUserSelect: 'none',
+                userSelect: 'none'
+              }}
+            >
+              {/* Visual feedback overlay */}
+              <div 
+                id="mobile-left-flash"
+                className="absolute inset-0 bg-blue-400 rounded-r-full opacity-0 transition-opacity duration-200 pointer-events-none"
+                style={{ zIndex: -1 }}
+              />
+              <div className="text-white/30 text-xs font-medium">⏩ Double tap</div>
+            </div>
             
-            {/* Center - Single tap for play/pause */}
+            {/* Right side - Double tap for backward */}
             <div
-              className="absolute top-0 left-1/3 w-1/3 h-full z-5"
-              onTouchEnd={togglePlayPause}
-            />
+              className="absolute top-0 right-0 w-1/2 h-full z-5 flex items-center justify-end pr-8"
+              onTouchStart={(e) => handleMobileTouch(e, 'right')}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                WebkitUserSelect: 'none',
+                userSelect: 'none'
+              }}
+            >
+              {/* Visual feedback overlay */}
+              <div 
+                id="mobile-right-flash"
+                className="absolute inset-0 bg-blue-400 rounded-l-full opacity-0 transition-opacity duration-200 pointer-events-none"
+                style={{ zIndex: -1 }}
+              />
+              <div className="text-white/30 text-xs font-medium">Double tap ⏪</div>
+            </div>
             
-            {/* Right side - Double tap to go forward */}
+            {/* Center circle - Single tap for play/pause */}
             <div
-              className="absolute top-0 right-0 w-1/3 h-full z-5"
-              onTouchEnd={(e) => handleMobileTouch(e, 'right')}
-            />
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 z-10 flex items-center justify-center"
+              onTouchStart={(e) => {
+                e.preventDefault();
+                togglePlayPause();
+                console.log('📱 Mobile: Center tap - Play/Pause');
+              }}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                WebkitUserSelect: 'none',
+                userSelect: 'none'
+              }}
+            >
+              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+                {videoState.isPlaying ? (
+                  <Pause size={20} className="text-white" />
+                ) : (
+                  <Play size={20} className="text-white ml-0.5" />
+                )}
+              </div>
+            </div>
           </>
         )}
       </div>
