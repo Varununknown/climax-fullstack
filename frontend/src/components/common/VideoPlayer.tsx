@@ -291,12 +291,13 @@ export const VideoPlayer: React.FC = () => {
     };
 
     const onWaiting = () => {
-      // Fast loading indication - reduced delay for better UX
+      // Disable loading indicator to prevent "buffering" text
+      // Only show loading if waiting for more than 2 seconds
       setTimeout(() => {
-        if (video.readyState < 3) { // Only if still not ready
+        if (video.readyState < 3 && video.networkState === 2) { // Only if really stuck
           setVideoLoading(true);
         }
-      }, 200); // Faster response - 200ms instead of 500ms
+      }, 2000); // Much longer delay - only for real buffering issues
     };
 
     const onPlay = () => {
@@ -691,11 +692,11 @@ export const VideoPlayer: React.FC = () => {
     if (lastTap && lastTap.side === side && now - lastTap.time < 250) {
       // Double tap detected - faster response time
       if (side === 'left') {
-        seekBy(10); // User taps LEFT = go forward in video  
-        console.log('📱 Mobile: User tapped LEFT side - Forward +10s');
+        seekBy(10); // LEFT taps = FORWARD 
+        console.log('📱 LEFT tap - FORWARD +10s');
       } else {
-        seekBy(-10); // User taps RIGHT = go backward in video
-        console.log('📱 Mobile: User tapped RIGHT side - Backward -10s');
+        seekBy(-10); // RIGHT taps = BACKWARD  
+        console.log('📱 RIGHT tap - BACKWARD -10s');
       }
       
       // Visual feedback - brief flash
@@ -751,6 +752,8 @@ export const VideoPlayer: React.FC = () => {
             onContextMenu={(e) => e.preventDefault()}
             preload="metadata"
             playsInline
+            autoPlay
+            muted // Required for autoplay in most browsers
             controls={false} // Use custom controls only
             // Remove onClick completely for mobile, only desktop gets click-to-play
             {...(window.innerWidth > 768 && { onClick: togglePlayPause })}
@@ -779,7 +782,7 @@ export const VideoPlayer: React.FC = () => {
                     style={{ zIndex: -1 }}
                   />
                   <div className="text-white/60 text-sm font-medium bg-black/30 px-3 py-1 rounded-full">
-                    +10s ⏩
+                    ⏩ +10s
                   </div>
                 </div>
               )}
@@ -804,7 +807,7 @@ export const VideoPlayer: React.FC = () => {
                     style={{ zIndex: -1 }}
                   />
                   <div className="text-white/60 text-sm font-medium bg-black/30 px-3 py-1 rounded-full">
-                    -10s ⏪
+                    ⏪ -10s  
                   </div>
                 </div>
               )}
