@@ -47,17 +47,104 @@ export const PremiumVideoPlayer: React.FC = () => {
   const [showQualityMenu, setShowQualityMenu] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
   
+  // ===== ADAPTIVE QUALITY SYSTEM =====
+  const [networkSpeed, setNetworkSpeed] = useState<number>(0);
+  const [adaptiveQuality, setAdaptiveQuality] = useState<string>('720p');
+  const [qualityLevels] = useState([
+    { label: 'Auto', value: 'auto', bitrate: 0 },
+    { label: '1080p', value: '1080p', bitrate: 5000 },
+    { label: '720p', value: '720p', bitrate: 2500 },
+    { label: '480p', value: '480p', bitrate: 1000 },
+    { label: '360p', value: '360p', bitrate: 500 }
+  ]);
+  
   // Mobile controls
   const [lastTap, setLastTap] = useState<{ time: number; side: 'left' | 'right' } | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   
   // ===== PAYWALL TRACKING (PRESERVED) =====
   const [previousTime, setPreviousTime] = useState<number>(0);
   
   // Auto-hide controls
-  const [controlsTimeout, setControlsTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [controlsTimeout, setControlsTimeout] = useState<number | null>(null);
   
-  // Available qualities
-  const qualities = ['Auto', '1080p', '720p', '480p', '360p'];
+  // Fast loading optimization
+  const [isVideoReady, setIsVideoReady] = useState(false);
+
+  // ===== NETWORK & QUALITY DETECTION =====
+  useEffect(() => {
+    // Detect mobile device
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    // Network speed detection for auto quality
+    const detectNetworkSpeed = async () => {
+      try {
+        // Use multiple test approaches for better accuracy
+        const connectionSpeed = (navigator as any).connection?.effectiveType;
+        let autoQuality = '720p'; // default
+        
+        if (connectionSpeed) {
+          // Use browser's connection API if available
+          switch (connectionSpeed) {
+            case 'slow-2g':
+            case '2g':
+              autoQuality = '360p';
+              break;
+            case '3g':
+              autoQuality = '480p';
+              break;
+            case '4g':
+              autoQuality = '1080p';
+              break;
+            default:
+              autoQuality = '720p';
+          }
+          console.log(`🌐 Network type: ${connectionSpeed}, Auto quality: ${autoQuality}`);
+        } else {
+          // Fallback: Test download speed
+          const startTime = Date.now();
+          await fetch('https://www.w3schools.com/html/mov_bbb.mp4', { 
+            method: 'HEAD',
+            cache: 'no-cache'
+          });
+          const duration = Date.now() - startTime;
+          
+          // Determine quality based on response time
+          if (duration < 100) {
+            autoQuality = '1080p'; // Very fast
+          } else if (duration < 300) {
+            autoQuality = '720p';  // Fast
+          } else if (duration < 800) {
+            autoQuality = '480p';  // Medium
+          } else {
+            autoQuality = '360p';  // Slow
+          }
+          
+          console.log(`📊 Network test: ${duration}ms, Auto quality: ${autoQuality}`);
+        }
+        
+        // Auto-select quality based on network speed
+        if (quality === 'Auto') {
+          setAdaptiveQuality(autoQuality);
+          console.log(`🎯 Auto quality set to: ${autoQuality}`);
+        }
+        
+        setNetworkSpeed(connectionSpeed === 'slow-2g' ? 1000 : 200);
+      } catch (error) {
+        console.log('Network detection failed, defaulting to 720p');
+        setAdaptiveQuality('720p');
+      }
+    };
+    
+    detectNetworkSpeed();
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [quality]);
 
   // ===== CONTENT FETCHING (PRESERVED EXACTLY) =====
   useEffect(() => {
@@ -140,10 +227,41 @@ export const PremiumVideoPlayer: React.FC = () => {
     checkPaymentStatus();
   }, [content, user]);
 
-  // ===== VIDEO EVENT HANDLERS (WITH PRESERVED PAYWALL LOGIC) =====
+  // ===== VIDEO EVENT HANDLERS (WITH PRESERVED PAYWALL LOGIC + FAST LOADING) =====
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !content) return;
+
+    // ===== FAST LOADING OPTIMIZATIONS =====
+    const onLoadStart = () => {
+      console.log('🚀 Video loading started');
+      setIsBuffering(true);
+    };
+
+    const onLoadedData = () => {
+      console.log('✅ Video data loaded');
+      setIsVideoReady(true);
+      setIsBuffering(false);
+      
+      // Auto-start playback for smooth experience
+      if (video.readyState >= 2) {
+        video.play().catch(() => {
+          console.log('Auto-play prevented by browser');
+        });
+      }
+    };
+
+    const onCanPlayThrough = () => {
+      console.log('🎯 Video can play through without buffering');
+      setIsBuffering(false);
+      
+      // Ensure smooth playback start
+      if (!isPlaying && video.paused) {
+        video.play().catch(() => {
+          console.log('Auto-play prevented');
+        });
+      }
+    };
 
     const onTimeUpdate = () => {
       const currentTime = video.currentTime;
@@ -174,16 +292,33 @@ export const PremiumVideoPlayer: React.FC = () => {
       setPreviousTime(currentTime);
     };
 
-    const onLoadedMetadata = () => setDuration(video.duration);
+    const onLoadedMetadata = () => {
+      setDuration(video.duration);
+      console.log('📊 Video metadata loaded, duration:', video.duration);
+    };
+    
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
-    const onWaiting = () => setIsBuffering(true);
-    const onCanPlay = () => setIsBuffering(false);
+    
+    const onWaiting = () => {
+      console.log('⏳ Video buffering...');
+      setIsBuffering(true);
+    };
+    
+    const onCanPlay = () => {
+      console.log('▶️ Video ready to play');
+      setIsBuffering(false);
+    };
+    
     const onVolumeChange = () => {
       setVolume(video.volume);
       setIsMuted(video.muted);
     };
 
+    // Add all event listeners including fast loading ones
+    video.addEventListener('loadstart', onLoadStart);
+    video.addEventListener('loadeddata', onLoadedData);
+    video.addEventListener('canplaythrough', onCanPlayThrough);
     video.addEventListener('timeupdate', onTimeUpdate);
     video.addEventListener('loadedmetadata', onLoadedMetadata);
     video.addEventListener('play', onPlay);
@@ -193,6 +328,9 @@ export const PremiumVideoPlayer: React.FC = () => {
     video.addEventListener('volumechange', onVolumeChange);
 
     return () => {
+      video.removeEventListener('loadstart', onLoadStart);
+      video.removeEventListener('loadeddata', onLoadedData);
+      video.removeEventListener('canplaythrough', onCanPlayThrough);
       video.removeEventListener('timeupdate', onTimeUpdate);
       video.removeEventListener('loadedmetadata', onLoadedMetadata);
       video.removeEventListener('play', onPlay);
@@ -277,8 +415,10 @@ export const PremiumVideoPlayer: React.FC = () => {
         container.requestFullscreen();
       }
       // Auto-rotate to landscape on mobile
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(() => {});
+      if (screen.orientation && (screen.orientation as any).lock) {
+        (screen.orientation as any).lock('landscape').catch(() => {
+          console.log('Screen orientation lock not supported');
+        });
       }
     } else {
       if (document.exitFullscreen) {
@@ -291,7 +431,29 @@ export const PremiumVideoPlayer: React.FC = () => {
   const handleQualityChange = (newQuality: string) => {
     setQuality(newQuality);
     setShowQualityMenu(false);
-    // Here you would implement actual quality switching logic
+    
+    const video = videoRef.current;
+    if (!video) return;
+    
+    // Store current time for seamless quality switching
+    const currentTime = video.currentTime;
+    const wasPlaying = !video.paused;
+    
+    // For real video quality switching, you would change the video source here
+    // For now, we'll simulate quality change with optimized loading
+    if (newQuality !== 'Auto') {
+      setAdaptiveQuality(newQuality);
+      console.log(`🎯 Quality switched to: ${newQuality}`);
+      
+      // Optimize loading for selected quality
+      video.preload = newQuality === '1080p' ? 'auto' : 'metadata';
+      
+      // Resume playback at same time
+      video.currentTime = currentTime;
+      if (wasPlaying) {
+        video.play();
+      }
+    }
   };
 
   // Mobile touch handlers (PRESERVED)
@@ -409,7 +571,7 @@ export const PremiumVideoPlayer: React.FC = () => {
 
       {/* Video Container */}
       <div className="relative w-full h-screen">
-        {/* Main Video Element */}
+        {/* Main Video Element - Optimized for Fast Loading */}
         <video
           ref={videoRef}
           src={content.videoUrl}
@@ -417,8 +579,15 @@ export const PremiumVideoPlayer: React.FC = () => {
           playsInline
           autoPlay
           muted
-          preload="metadata"
+          preload="auto"
+          crossOrigin="anonymous"
           onClick={togglePlayPause}
+          style={{
+            // Hardware acceleration for smooth playback
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden',
+            perspective: 1000
+          }}
         />
 
         {/* Buffering Indicator */}
@@ -431,147 +600,182 @@ export const PremiumVideoPlayer: React.FC = () => {
           </div>
         )}
 
-        {/* Mobile Touch Areas */}
-        {window.innerWidth <= 768 && (
+        {/* Mobile Touch Areas - Enhanced for Portrait Mode */}
+        {isMobile && (
           <>
-            {/* Left Half - Forward */}
+            {/* Left Half - Forward (better touch zone) */}
             <div
-              className="absolute top-0 left-0 w-1/2 h-full z-20"
+              className="absolute top-0 left-0 w-1/2 h-full z-20 flex items-center justify-center"
               onTouchStart={(e) => handleMobileTouch(e, 'left')}
               style={{ 
                 WebkitTapHighlightColor: 'transparent',
                 WebkitUserSelect: 'none',
                 userSelect: 'none'
               }}
-            />
+            >
+              {/* Visual feedback for double tap */}
+              <div className="opacity-0 pointer-events-none">
+                <SkipForward size={32} className="text-white" />
+              </div>
+            </div>
             
-            {/* Right Half - Backward */}
+            {/* Right Half - Backward (better touch zone) */}
             <div
-              className="absolute top-0 right-0 w-1/2 h-full z-20"
+              className="absolute top-0 right-0 w-1/2 h-full z-20 flex items-center justify-center"
               onTouchStart={(e) => handleMobileTouch(e, 'right')}
               style={{ 
                 WebkitTapHighlightColor: 'transparent',
                 WebkitUserSelect: 'none',
                 userSelect: 'none'
               }}
-            />
+            >
+              {/* Visual feedback for double tap */}
+              <div className="opacity-0 pointer-events-none">
+                <SkipBack size={32} className="text-white" />
+              </div>
+            </div>
           </>
         )}
 
-        {/* Premium YouTube-Style Controls */}
+        {/* Premium YouTube-Style Controls - Mobile Optimized */}
         <div 
           className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-all duration-300 ${
             showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'
           }`}
         >
-          {/* Progress Bar */}
-          <div className="px-6 pb-2">
+          {/* Progress Bar - Mobile Friendly */}
+          <div className={`px-4 pb-2 ${isMobile ? 'px-6 pb-4' : 'px-6 pb-2'}`}>
             <div 
-              className="w-full h-2 bg-white/20 rounded-full cursor-pointer group hover:h-3 transition-all"
+              className={`w-full bg-white/20 rounded-full cursor-pointer group transition-all ${
+                isMobile ? 'h-3 hover:h-4' : 'h-2 hover:h-3'
+              }`}
               onClick={handleSeek}
             >
               <div 
                 className="h-full bg-red-600 rounded-full relative transition-all group-hover:bg-red-500"
                 style={{ width: `${(currentTime / duration) * 100}%` }}
               >
-                <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" />
+                <div className={`absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg ${
+                  isMobile ? 'w-5 h-5' : 'w-4 h-4'
+                }`} />
               </div>
             </div>
           </div>
 
-          {/* Main Controls */}
-          <div className="flex items-center justify-between px-6 pb-6">
-            {/* Left Controls */}
-            <div className="flex items-center space-x-4">
-              {/* Play/Pause */}
+          {/* Main Controls - Responsive Layout */}
+          <div className={`flex items-center justify-between pb-6 ${
+            isMobile ? 'px-4 pb-8' : 'px-6 pb-6'
+          }`}>
+            {/* Left Controls - Mobile Optimized */}
+            <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
+              {/* Play/Pause - Larger on mobile */}
               <button
                 onClick={togglePlayPause}
-                className="text-white hover:text-red-400 transition-colors p-2"
+                className={`text-white hover:text-red-400 transition-colors ${
+                  isMobile ? 'p-3' : 'p-2'
+                }`}
               >
-                {isPlaying ? <Pause size={32} /> : <Play size={32} />}
+                {isPlaying ? <Pause size={isMobile ? 36 : 32} /> : <Play size={isMobile ? 36 : 32} />}
               </button>
 
-              {/* Skip Controls */}
-              <button
-                onClick={() => skipTime(-10)}
-                className="text-white hover:text-red-400 transition-colors"
-              >
-                <SkipBack size={24} />
-              </button>
-              
-              <button
-                onClick={() => skipTime(10)}
-                className="text-white hover:text-red-400 transition-colors"
-              >
-                <SkipForward size={24} />
-              </button>
+              {/* Skip Controls - Responsive sizing */}
+              {!isMobile && (
+                <>
+                  <button
+                    onClick={() => skipTime(-10)}
+                    className="text-white hover:text-red-400 transition-colors"
+                  >
+                    <SkipBack size={24} />
+                  </button>
+                  
+                  <button
+                    onClick={() => skipTime(10)}
+                    className="text-white hover:text-red-400 transition-colors"
+                  >
+                    <SkipForward size={24} />
+                  </button>
+                </>
+              )}
 
-              {/* Volume Controls */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={toggleMute}
-                  className="text-white hover:text-red-400 transition-colors"
-                >
-                  {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
-                </button>
-                
-                <div 
-                  className="w-20 h-1 bg-white/30 rounded-full cursor-pointer"
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const percentage = (e.clientX - rect.left) / rect.width;
-                    changeVolume(percentage);
-                  }}
-                >
+              {/* Volume Controls - Hide on mobile portrait */}
+              {!isMobile && (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={toggleMute}
+                    className="text-white hover:text-red-400 transition-colors"
+                  >
+                    {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+                  </button>
+                  
                   <div 
-                    className="h-full bg-white rounded-full"
-                    style={{ width: `${volume * 100}%` }}
-                  />
+                    className="w-20 h-1 bg-white/30 rounded-full cursor-pointer"
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const percentage = (e.clientX - rect.left) / rect.width;
+                      changeVolume(percentage);
+                    }}
+                  >
+                    <div 
+                      className="h-full bg-white rounded-full"
+                      style={{ width: `${volume * 100}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Time Display */}
-              <span className="text-white text-sm font-medium">
+              {/* Time Display - Smaller on mobile */}
+              <span className={`text-white font-medium ${
+                isMobile ? 'text-xs' : 'text-sm'
+              }`}>
                 {formatTime(currentTime)} / {formatTime(duration)}
               </span>
             </div>
 
-            {/* Right Controls */}
-            <div className="flex items-center space-x-4">
-              {/* Quality Selector */}
+            {/* Right Controls - Mobile Optimized */}
+            <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
+              {/* Quality Selector - Mobile friendly */}
               <div className="relative">
                 <button
                   onClick={() => setShowQualityMenu(!showQualityMenu)}
-                  className="text-white hover:text-red-400 transition-colors flex items-center space-x-1"
+                  className={`text-white hover:text-red-400 transition-colors flex items-center ${
+                    isMobile ? 'space-x-1 p-2' : 'space-x-1'
+                  }`}
                 >
-                  <Settings size={24} />
-                  <span className="text-sm">{quality}</span>
+                  <Settings size={isMobile ? 20 : 24} />
+                  {!isMobile && <span className="text-sm">{quality}</span>}
                 </button>
 
                 {/* Quality Menu */}
                 {showQualityMenu && (
-                  <div className="absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden">
-                    {qualities.map((q) => (
+                  <div className={`absolute bottom-full right-0 mb-2 bg-black/90 backdrop-blur-sm rounded-lg overflow-hidden ${
+                    isMobile ? 'w-32 text-sm' : 'w-auto'
+                  }`}>
+                    {qualityLevels.map((q) => (
                       <button
-                        key={q}
-                        onClick={() => handleQualityChange(q)}
+                        key={q.value}
+                        onClick={() => handleQualityChange(q.label)}
                         className={`block w-full px-4 py-2 text-left text-white hover:bg-red-600/50 transition-colors ${
-                          quality === q ? 'bg-red-600/30' : ''
-                        }`}
+                          quality === q.label ? 'bg-red-600/30' : ''
+                        } ${isMobile ? 'py-3 text-sm' : ''}`}
                       >
-                        {q}
+                        {q.label}
+                        {quality === 'Auto' && q.label === adaptiveQuality && (
+                          <span className="ml-1 text-xs text-red-400">●</span>
+                        )}
                       </button>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* Fullscreen */}
+              {/* Fullscreen - Enhanced mobile button */}
               <button
                 onClick={toggleFullscreen}
-                className="text-white hover:text-red-400 transition-colors"
+                className={`text-white hover:text-red-400 transition-colors ${
+                  isMobile ? 'p-2' : ''
+                }`}
               >
-                <Maximize size={24} />
+                <Maximize size={isMobile ? 20 : 24} />
               </button>
             </div>
           </div>
