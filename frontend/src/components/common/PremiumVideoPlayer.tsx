@@ -47,9 +47,11 @@ export const PremiumVideoPlayer: React.FC = () => {
   const [showQualityMenu, setShowQualityMenu] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
   
-  // ===== ADAPTIVE QUALITY SYSTEM =====
+  // ===== ADAPTIVE STREAMING SYSTEM (Amazon Prime Video Level) =====
   const [networkSpeed, setNetworkSpeed] = useState<number>(0);
   const [adaptiveQuality, setAdaptiveQuality] = useState<string>('720p');
+  const [adaptiveUrls, setAdaptiveUrls] = useState<{[key: string]: string}>({});
+  const [currentVideoUrl, setCurrentVideoUrl] = useState<string>('');
   const [qualityLevels] = useState([
     { label: 'Auto', value: 'auto', bitrate: 0 },
     { label: '1080p', value: '1080p', bitrate: 5000 },
@@ -159,16 +161,32 @@ export const PremiumVideoPlayer: React.FC = () => {
         setLoading(true);
         setError(null);
         const response = await API.get(`/contents/${id}`);
-        setContent(response.data);
+        const contentData = response.data;
+        setContent(contentData);
         
-        // Immediately preload video for faster start
-        if (response.data.videoUrl) {
-          const video = document.createElement('video');
-          video.preload = 'auto';
-          video.src = response.data.videoUrl;
-          video.load(); // Start loading immediately
-          console.log('🚀 Video preloading started');
+        // Set up adaptive streaming URLs if available
+        if (contentData.adaptiveUrls) {
+          setAdaptiveUrls(contentData.adaptiveUrls);
+          console.log('🎯 Adaptive streaming URLs available:', Object.keys(contentData.adaptiveUrls));
         }
+        
+        // Use CDN-optimized URL for immediate loading
+        const videoUrl = contentData.adaptiveUrls?.auto || contentData.videoUrl;
+        setCurrentVideoUrl(videoUrl);
+        
+        // Amazon Prime Video style: Preload multiple qualities
+        if (contentData.adaptiveUrls) {
+          Object.values(contentData.adaptiveUrls as Record<string, string>).forEach((url, index) => {
+            setTimeout(() => {
+              const preloadVideo = document.createElement('video');
+              preloadVideo.preload = 'metadata';
+              preloadVideo.src = url;
+              preloadVideo.load();
+            }, index * 100); // Stagger preloading
+          });
+        }
+        
+        console.log('🚀 CDN-optimized video preloading started');
       } catch (err: any) {
         console.error('Error fetching content:', err);
         setError(err.response?.status === 404 ? 'Content not found' : 'Failed to load content');
@@ -463,20 +481,34 @@ export const PremiumVideoPlayer: React.FC = () => {
     const currentTime = video.currentTime;
     const wasPlaying = !video.paused;
     
-    // For real video quality switching, you would change the video source here
-    // For now, we'll simulate quality change with optimized loading
-    if (newQuality !== 'Auto') {
+    // Amazon Prime Video style: Instant quality switching with CDN URLs
+    let targetUrl = '';
+    
+    if (newQuality === 'Auto') {
+      targetUrl = adaptiveUrls.auto || adaptiveUrls[adaptiveQuality] || currentVideoUrl;
+    } else {
+      const qualityKey = newQuality.toLowerCase();
+      targetUrl = adaptiveUrls[qualityKey] || currentVideoUrl;
       setAdaptiveQuality(newQuality);
-      console.log(`🎯 Quality switched to: ${newQuality}`);
+    }
+    
+    if (targetUrl && targetUrl !== video.src) {
+      console.log(`🎯 Quality switching to: ${newQuality} (${targetUrl})`);
       
-      // Optimize loading for selected quality
-      video.preload = newQuality === '1080p' ? 'auto' : 'metadata';
+      // Seamless quality switch
+      video.src = targetUrl;
+      setCurrentVideoUrl(targetUrl);
       
-      // Resume playback at same time
-      video.currentTime = currentTime;
-      if (wasPlaying) {
-        video.play();
-      }
+      // Resume at exact same time
+      video.addEventListener('loadeddata', function resumePlayback() {
+        video.currentTime = currentTime;
+        if (wasPlaying) {
+          video.play();
+        }
+        video.removeEventListener('loadeddata', resumePlayback);
+      });
+      
+      video.load();
     }
   };
 
@@ -595,10 +627,10 @@ export const PremiumVideoPlayer: React.FC = () => {
 
       {/* Video Container */}
       <div className="relative w-full h-screen">
-        {/* Main Video Element - Ultra-Fast Loading Optimized */}
+        {/* Main Video Element - CDN Optimized for Amazon Prime Video Speed */}
         <video
           ref={videoRef}
-          src={content.videoUrl}
+          src={currentVideoUrl || content.videoUrl}
           className="w-full h-full object-contain bg-black"
           playsInline
           autoPlay
