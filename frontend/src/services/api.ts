@@ -1,14 +1,35 @@
 // src/api.ts
 import axios from "axios";
 
-// Use local development or production backend
-const backendURL = import.meta.env.VITE_BACKEND_URL || 'https://climax-fullstack.onrender.com';
-const apiBaseURL = `${backendURL}/api`;
+// Determine backend at runtime. Try localhost first (dev), but fall back to configured URL if unreachable.
+const PROD_BACKEND = import.meta.env.VITE_BACKEND_URL || 'https://climax-fullstack.onrender.com';
+const PREFERRED_LOCAL = 'http://localhost:5000';
 
-const API = axios.create({
-  baseURL: apiBaseURL,
-  withCredentials: true,
-  timeout: 5000, // Faster timeout
-});
+// Helper: test a URL quickly
+async function testUrl(url: string) {
+  try {
+    const res = await axios.get(url + '/api/contents', { timeout: 1500 });
+    return Array.isArray(res.data);
+  } catch (e) {
+    return false;
+  }
+}
+
+// Build default API instance (will be replaced after health check)
+let API = axios.create({ baseURL: `${PROD_BACKEND}/api`, withCredentials: true, timeout: 5000 });
+
+(async () => {
+  // If running on localhost hostname, prefer local backend when reachable
+  try {
+    const useLocal = await testUrl(PREFERRED_LOCAL);
+    const chosen = useLocal ? PREFERRED_LOCAL : PROD_BACKEND;
+    API = axios.create({ baseURL: `${chosen}/api`, withCredentials: true, timeout: 5000 });
+    // Expose chosen backend for debugging
+    (window as any).__BACKEND__ = chosen;
+    console.log('API: using backend ->', chosen);
+  } catch (e) {
+    console.log('API: falling back to', PROD_BACKEND);
+  }
+})();
 
 export default API;
