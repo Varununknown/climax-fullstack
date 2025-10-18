@@ -412,8 +412,19 @@ export const PremiumVideoPlayer: React.FC = () => {
       video.pause();
     } else {
       console.log('▶️ Playing video');
+      
+      // Try to play, with fallback for CORS issues
       video.play().catch(err => {
         console.error('🚫 Play failed:', err);
+        
+        // If CORS error and we have content, try loading again without crossOrigin
+        if (err.name === 'NotSupportedError' && content?.videoUrl) {
+          console.log('🔄 Retrying video load without CORS restrictions...');
+          video.load(); // Reload the video
+          setTimeout(() => {
+            video.play().catch(e => console.error('🚫 Retry failed:', e));
+          }, 100);
+        }
       });
     }
   };
@@ -652,11 +663,15 @@ export const PremiumVideoPlayer: React.FC = () => {
           playsInline
           muted={true}
           preload="auto"
-          crossOrigin="anonymous"
           onClick={togglePlayPause}
           onError={(e) => {
             console.error('🚫 Video loading error:', e);
             console.error('🚫 Failed URL:', currentVideoUrl || content.videoUrl);
+            const video = e.target as HTMLVideoElement;
+            if (video.error) {
+              console.error('🚫 Video error code:', video.error.code);
+              console.error('🚫 Video error message:', video.error.message);
+            }
           }}
           onLoadStart={() => console.log('🎬 Video load started')}
           onCanPlay={() => console.log('✅ Video can play')}
