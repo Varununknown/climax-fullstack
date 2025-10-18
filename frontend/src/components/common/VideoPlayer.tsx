@@ -683,7 +683,8 @@ export const VideoPlayer: React.FC = () => {
   }
 
   const handleMobileTouch = (e: React.TouchEvent, side: 'left' | 'right') => {
-    if (window.innerWidth > 768) return; // Only for mobile
+    // Work on mobile devices and tablets in any orientation
+    if (window.innerWidth > 1024) return;
 
     e.preventDefault(); // Prevent default touch behavior
     const now = Date.now();
@@ -691,10 +692,10 @@ export const VideoPlayer: React.FC = () => {
     if (lastTap && lastTap.side === side && now - lastTap.time < 250) {
       // Double tap detected - faster response time
       if (side === 'left') {
-        seekBy(-10); // Left = move backward (rewind)
+        seekBy(-10); // Left = backward (from user's perspective)
         console.log('📱 Mobile: Double tap LEFT - Backward -10s');
       } else {
-        seekBy(10); // Right = move forward
+        seekBy(10); // Right = forward (from user's perspective)
         console.log('📱 Mobile: Double tap RIGHT - Forward +10s');
       }
       
@@ -755,10 +756,10 @@ export const VideoPlayer: React.FC = () => {
           />
         )}
 
-        {/* Amazon Prime Style Mobile Touch Areas (Only on Mobile) */}
-        {window.innerWidth <= 768 && (
+        {/* Mobile Touch Areas - Portrait & Landscape */}
+        {window.innerWidth <= 1024 && ( // Work on mobile and tablets
           <>
-            {/* Left side - Double tap ANYWHERE for backward */}
+            {/* Left side - Double tap for backward (user's left) */}
             <div
               className="absolute top-0 left-0 w-1/2 h-full z-5"
               onTouchStart={(e) => handleMobileTouch(e, 'left')}
@@ -768,22 +769,22 @@ export const VideoPlayer: React.FC = () => {
                 userSelect: 'none'
               }}
             >
-              {/* Visual feedback - only show when controls visible */}
-              {videoState.showControls && (
-                <div className="absolute inset-0 flex items-center justify-start pl-8 pointer-events-none">
+              {/* Visual feedback - only show when controls visible AND not playing */}
+              {videoState.showControls && !videoState.isPlaying && (
+                <div className="absolute inset-0 flex items-center justify-start pl-4 md:pl-8 pointer-events-none">
                   <div 
                     id="mobile-left-flash"
-                    className="absolute inset-0 bg-blue-400/20 rounded-r-full opacity-0 transition-opacity duration-200"
+                    className="absolute inset-0 bg-blue-400/10 rounded-r-full opacity-0 transition-opacity duration-200"
                     style={{ zIndex: -1 }}
                   />
-                  <div className="text-white/60 text-sm font-medium bg-black/30 px-3 py-1 rounded-full">
+                  <div className="text-white/50 text-xs md:text-sm font-medium bg-black/20 px-2 md:px-3 py-1 rounded-full">
                     ⏪ -10s
                   </div>
                 </div>
               )}
             </div>
             
-            {/* Right side - Double tap ANYWHERE for forward */}
+            {/* Right side - Double tap for forward (user's right) */}
             <div
               className="absolute top-0 right-0 w-1/2 h-full z-5"
               onTouchStart={(e) => handleMobileTouch(e, 'right')}
@@ -793,15 +794,15 @@ export const VideoPlayer: React.FC = () => {
                 userSelect: 'none'
               }}
             >
-              {/* Visual feedback - only show when controls visible */}
-              {videoState.showControls && (
-                <div className="absolute inset-0 flex items-center justify-end pr-8 pointer-events-none">
+              {/* Visual feedback - only show when controls visible AND not playing */}
+              {videoState.showControls && !videoState.isPlaying && (
+                <div className="absolute inset-0 flex items-center justify-end pr-4 md:pr-8 pointer-events-none">
                   <div 
                     id="mobile-right-flash"
-                    className="absolute inset-0 bg-blue-400/20 rounded-l-full opacity-0 transition-opacity duration-200"
+                    className="absolute inset-0 bg-blue-400/10 rounded-l-full opacity-0 transition-opacity duration-200"
                     style={{ zIndex: -1 }}
                   />
-                  <div className="text-white/60 text-sm font-medium bg-black/30 px-3 py-1 rounded-full">
+                  <div className="text-white/50 text-xs md:text-sm font-medium bg-black/20 px-2 md:px-3 py-1 rounded-full">
                     +10s ⏩
                   </div>
                 </div>
