@@ -70,7 +70,7 @@ export const PremiumVideoPlayer: React.FC = () => {
 
       try {
         setLoading(true);
-        const response = await API.get(`/content/${id}`);
+        const response = await API.get(`/contents/${id}`);
         setContent(response.data);
       } catch (err: any) {
         console.error('Error fetching content:', err);
