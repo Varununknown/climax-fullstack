@@ -51,11 +51,17 @@ export const VideoPlayer: React.FC = () => {
   const [showMobileControls, setShowMobileControls] = useState(false);
   const [lastTap, setLastTap] = useState<{ time: number; side: 'left' | 'right' } | null>(null);
   
+  // Additional UI state
+  const [showPlayButton, setShowPlayButton] = useState(false);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [qualityChangeNotification, setQualityChangeNotification] = useState<string | null>(null);
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  
   // ===== PAYWALL TRACKING (PRESERVED) =====
   const [previousTime, setPreviousTime] = useState<number>(0);
   
   // Auto-hide controls
-  const [controlsTimeout, setControlsTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [controlsTimeout, setControlsTimeout] = useState<number | null>(null);
   
   // Available qualities
   const qualities = ['Auto', '1080p', '720p', '480p', '360p'];
@@ -88,7 +94,8 @@ export const VideoPlayer: React.FC = () => {
           genre: ['test'],
           duration: 120,
           climaxTimestamp: 60,
-          price: 0,
+          premiumPrice: 0,
+          isActive: true,
           createdAt: new Date()
         };
         setContent(testContent);
@@ -232,7 +239,7 @@ export const VideoPlayer: React.FC = () => {
 
     const onTimeUpdate = () => {
       const currentTime = video.currentTime;
-      setVideoState(prev => ({ ...prev, currentTime }));
+      setCurrentTime(currentTime);
       
       // Check if user is moving FORWARD past the climax timestamp (not backward/seeking)
       if (!paymentState.isPaid && currentTime >= content.climaxTimestamp && currentTime > previousTime) {
@@ -241,7 +248,7 @@ export const VideoPlayer: React.FC = () => {
         // Immediately pause and prevent further playback
         video.pause();
         video.currentTime = Math.max(0, content.climaxTimestamp - 1);
-        setVideoState(prev => ({ ...prev, isPlaying: false }));
+        setIsPlaying(false);
         setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
         
         // Remove timeupdate listener temporarily to prevent loop
@@ -260,7 +267,7 @@ export const VideoPlayer: React.FC = () => {
     };
 
     const onLoadedMetadata = () => {
-      setVideoState(prev => ({ ...prev, duration: video.duration }));
+      setDuration(video.duration);
     };
 
     const onCanPlay = () => {
@@ -290,12 +297,12 @@ export const VideoPlayer: React.FC = () => {
     };
 
     const onPlay = () => {
-      setVideoState(prev => ({ ...prev, isPlaying: true }));
+      setIsPlaying(true);
       setVideoLoading(false);
       setShowPlayButton(false);
     };
     
-    const onPause = () => setVideoState(prev => ({ ...prev, isPlaying: false }));
+    const onPause = () => setIsPlaying(false);
 
     video.addEventListener('timeupdate', onTimeUpdate);
     video.addEventListener('loadedmetadata', onLoadedMetadata);
@@ -418,7 +425,7 @@ export const VideoPlayer: React.FC = () => {
     const video = videoRef.current;
     if (!video || !content) return;
 
-    const newTime = Math.max(0, Math.min(videoState.duration, video.currentTime + seconds));
+    const newTime = Math.max(0, Math.min(duration, video.currentTime + seconds));
     
     // Check paywall for forward seeking only
     if (!paymentState.isPaid && newTime > content.climaxTimestamp && seconds > 0) {
@@ -436,7 +443,7 @@ export const VideoPlayer: React.FC = () => {
     const video = videoRef.current;
     if (!video || !content) return;
 
-    const newTime = (percentage / 100) * videoState.duration;
+    const newTime = (percentage / 100) * duration;
     
     // Check paywall - only trigger if seeking FORWARD past climax
     if (!paymentState.isPaid && newTime > content.climaxTimestamp && newTime > video.currentTime) {
@@ -460,7 +467,7 @@ export const VideoPlayer: React.FC = () => {
       : Math.max(0, Math.min(1, video.volume + delta));
     
     video.volume = newVolume;
-    setVideoState(prev => ({ ...prev, volume: newVolume }));
+    setVolume(newVolume);
   };
 
   // ===== FULLSCREEN CONTROLS =====
@@ -472,7 +479,7 @@ export const VideoPlayer: React.FC = () => {
       if (!document.fullscreenElement) {
         // Request fullscreen
         await container.requestFullscreen();
-        setVideoState(prev => ({ ...prev, isFullscreen: true }));
+        setIsFullscreen(true);
         
         // Auto-rotate on mobile devices
         if (window.innerWidth <= 768 && 'screen' in window && 'orientation' in window.screen) {
@@ -484,7 +491,7 @@ export const VideoPlayer: React.FC = () => {
         }
       } else {
         await document.exitFullscreen();
-        setVideoState(prev => ({ ...prev, isFullscreen: false }));
+        setIsFullscreen(false);
         
         // Unlock orientation on mobile when exiting fullscreen
         if (window.innerWidth <= 768 && 'screen' in window && 'orientation' in window.screen) {
@@ -503,7 +510,7 @@ export const VideoPlayer: React.FC = () => {
   // Listen for fullscreen changes
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setVideoState(prev => ({ ...prev, isFullscreen: !!document.fullscreenElement }));
+      setIsFullscreen(!!document.fullscreenElement);
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -514,7 +521,7 @@ export const VideoPlayer: React.FC = () => {
   useEffect(() => {
     const handleResize = () => {
       // Force re-render on resize to apply mobile styles
-      setVideoState(prev => ({ ...prev }));
+      // Force re-render on resize - no state update needed
     };
 
     window.addEventListener('resize', handleResize);
@@ -528,7 +535,7 @@ export const VideoPlayer: React.FC = () => {
 
     if (paymentState.shouldShowModal) {
       video.pause();
-      setVideoState(prev => ({ ...prev, isPlaying: false }));
+      setIsPlaying(false);
       console.log('🛑 Video paused - payment modal opened');
       
       // Additional safeguard: prevent the video from playing while modal is open
@@ -565,7 +572,7 @@ export const VideoPlayer: React.FC = () => {
 
     // For demo purposes - in production you'd have different URLs
     // Just update the UI immediately for fast feedback
-    setVideoState(prev => ({ ...prev, quality }));
+    setQuality(quality);
     setShowQualityMenu(false);
     
     // Show quality change notification immediately
@@ -581,15 +588,15 @@ export const VideoPlayer: React.FC = () => {
   };
 
   // ===== CONTROLS VISIBILITY =====
-  const showControls = () => {
-    setVideoState(prev => ({ ...prev, showControls: true }));
+  const handleShowControls = () => {
+    setShowControls(true);
     
     if (controlsTimeout) {
       clearTimeout(controlsTimeout);
     }
     
     const timeout = setTimeout(() => {
-      setVideoState(prev => ({ ...prev, showControls: false }));
+      setShowControls(false);
     }, 3000);
     
     setControlsTimeout(timeout);
@@ -639,7 +646,7 @@ export const VideoPlayer: React.FC = () => {
   };
 
   const getProgressPercentage = (): number => {
-    return videoState.duration > 0 ? (videoState.currentTime / videoState.duration) * 100 : 0;
+    return duration > 0 ? (currentTime / duration) * 100 : 0;
   };
 
   // ===== LOADING STATE =====
@@ -676,6 +683,7 @@ export const VideoPlayer: React.FC = () => {
     if (window.innerWidth > 768) return; // Only for mobile
 
     e.preventDefault(); // Prevent default touch behavior
+    handleShowControls(); // Show controls on any touch
     const now = Date.now();
     
     if (lastTap && lastTap.side === side && now - lastTap.time < 250) {
@@ -716,8 +724,8 @@ export const VideoPlayer: React.FC = () => {
         height: '100vh',
         minHeight: '100vh'
       }}
-      onMouseMove={showControls}
-      onMouseEnter={showControls}
+      onMouseMove={handleShowControls}
+      onMouseEnter={handleShowControls}
     >
 
       {/* Video Container with Touch Areas */}
@@ -731,7 +739,7 @@ export const VideoPlayer: React.FC = () => {
           <video
             ref={videoRef}
             src={content.videoUrl}
-            className={`w-full h-full ${videoState.isFullscreen ? 'object-cover' : 'object-contain'}`}
+            className={`w-full h-full ${isFullscreen ? 'object-cover' : 'object-contain'}`}
             style={{
               backgroundColor: 'black',
               cursor: window.innerWidth <= 768 ? 'default' : 'pointer',
@@ -763,7 +771,7 @@ export const VideoPlayer: React.FC = () => {
               }}
             >
               {/* Visual feedback - only show when controls visible AND video paused */}
-              {videoState.showControls && !videoState.isPlaying && (
+              {showControls && !isPlaying && (
                 <div className="absolute inset-0 flex items-center justify-start pl-8 pointer-events-none">
                   <div 
                     id="mobile-left-flash"
@@ -788,7 +796,7 @@ export const VideoPlayer: React.FC = () => {
               }}
             >
               {/* Visual feedback - only show when controls visible AND video paused */}
-              {videoState.showControls && !videoState.isPlaying && (
+              {showControls && !isPlaying && (
                 <div className="absolute inset-0 flex items-center justify-end pr-8 pointer-events-none">
                   <div 
                     id="mobile-right-flash"
@@ -842,7 +850,7 @@ export const VideoPlayer: React.FC = () => {
 
       {/* Header Overlay */}
       <div className={`absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent z-10 transition-opacity duration-300 ${
-        videoState.showControls ? 'opacity-100' : 'opacity-0'
+        showControls ? 'opacity-100' : 'opacity-0'
       }`}>
         <div className="flex justify-between items-center">
           <button 
@@ -874,22 +882,22 @@ export const VideoPlayer: React.FC = () => {
                 title="Quality Settings"
               >
                 <Settings size={18} />
-                <span className="text-sm font-medium">{videoState.quality}</span>
+                <span className="text-sm font-medium">{quality}</span>
               </button>
               
               {showQualityMenu && (
                 <div className="absolute right-0 top-12 bg-black/90 rounded-lg shadow-xl min-w-[140px] z-20 backdrop-blur-sm border border-gray-700">
-                  {['auto', '1080p', '720p', '480p', '360p'].map((quality) => (
+                  {['auto', '1080p', '720p', '480p', '360p'].map((qualityOption) => (
                     <button
-                      key={quality}
-                      onClick={() => changeQuality(quality)}
+                      key={qualityOption}
+                      onClick={() => changeQuality(qualityOption)}
                       className={`block w-full text-left px-4 py-2 hover:bg-gray-700 transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                        videoState.quality === quality ? 'bg-blue-600 text-white' : 'text-gray-300'
+                        quality === qualityOption ? 'bg-blue-600 text-white' : 'text-gray-300'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">{quality === 'auto' ? 'Auto' : quality}</span>
-                        {videoState.quality === quality && (
+                        <span className="font-medium">{qualityOption === 'auto' ? 'Auto' : qualityOption}</span>
+                        {quality === qualityOption && (
                           <span className="text-green-400 text-xs">✓</span>
                         )}
                       </div>
@@ -904,7 +912,7 @@ export const VideoPlayer: React.FC = () => {
 
       {/* Controls Overlay */}
       <div className={`absolute left-0 right-0 z-10 transition-opacity duration-300 ${
-        videoState.showControls ? 'opacity-100' : 'opacity-0'
+        showControls ? 'opacity-100' : 'opacity-0'
       }`} style={{
         background: 'linear-gradient(to top, rgba(15, 23, 42, 0.7) 0%, rgba(30, 58, 138, 0.3) 40%, transparent 100%)',
         backdropFilter: 'blur(6px)',
@@ -950,9 +958,9 @@ export const VideoPlayer: React.FC = () => {
           </div>
           
           <div className="flex justify-between text-sm mt-2 text-white/80">
-            <span className="font-medium">{formatTime(videoState.currentTime)}</span>
+            <span className="font-medium">{formatTime(currentTime)}</span>
             <span className="text-xs text-gray-400">Click timeline to seek</span>
-            <span className="font-medium">{formatTime(videoState.duration)}</span>
+            <span className="font-medium">{formatTime(duration)}</span>
           </div>
         </div>
 
@@ -967,7 +975,7 @@ export const VideoPlayer: React.FC = () => {
               gap: window.innerWidth <= 768 ? '4px' : '8px'
             }}>
               <button
-                onClick={() => adjustVolume(videoState.volume > 0 ? 0 : 1)}
+                onClick={() => adjustVolume(volume > 0 ? 0 : 1)}
                 className="text-blue-200 hover:text-white transition-colors"
                 title="Toggle mute"
               >
@@ -1001,14 +1009,14 @@ export const VideoPlayer: React.FC = () => {
                 <div 
                   className="h-full rounded-full transition-all"
                   style={{ 
-                    width: `${videoState.volume * 100}%`,
+                    width: `${volume * 100}%`,
                     background: 'linear-gradient(to right, #3b82f6, #1d4ed8)',
                     boxShadow: '0 0 6px rgba(59, 130, 246, 0.4)'
                   }}
                 />
               </div>
               {window.innerWidth > 768 && (
-                <span className="text-xs text-blue-100 w-6 text-center font-medium">{Math.round(videoState.volume * 100)}</span>
+                <span className="text-xs text-blue-100 w-6 text-center font-medium">{Math.round(volume * 100)}</span>
               )}
             </div>
           </div>
@@ -1041,7 +1049,7 @@ export const VideoPlayer: React.FC = () => {
                 padding: window.innerWidth <= 768 ? '8px' : '10px'
               }}
             >
-              {videoState.isPlaying ? 
+              {isPlaying ? 
                 <Pause size={window.innerWidth <= 768 ? 20 : 24} className="drop-shadow-lg" /> : 
                 <Play size={window.innerWidth <= 768 ? 20 : 24} className="drop-shadow-lg" style={{ marginLeft: window.innerWidth <= 768 ? '1px' : '2px' }} />
               }
@@ -1075,7 +1083,7 @@ export const VideoPlayer: React.FC = () => {
                 padding: window.innerWidth <= 768 ? '6px 8px' : '6px 10px'
               }}
             >
-              {videoState.isFullscreen ? 
+              {isFullscreen ? 
                 <Minimize size={window.innerWidth <= 768 ? 14 : 18} /> : 
                 <Maximize size={window.innerWidth <= 768 ? 14 : 18} />
               }
@@ -1083,8 +1091,6 @@ export const VideoPlayer: React.FC = () => {
           </div>
         </div>
       </div>
-
-      )}
 
       {/* Keyboard Help Overlay */}
       {showKeyboardHelp && (
@@ -1142,11 +1148,8 @@ export const VideoPlayer: React.FC = () => {
               video.currentTime = safePosition;
               
               // Force state updates
-              setVideoState(prev => ({ 
-                ...prev, 
-                isPlaying: false,
-                currentTime: safePosition
-              }));
+              setIsPlaying(false);
+              setCurrentTime(safePosition);
               
               setPreviousTime(safePosition);
               
