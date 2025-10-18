@@ -104,11 +104,11 @@ export const HeroSection: React.FC = () => {
             {/* Play button */}
             <div className="absolute bottom-9 left-1/2 transform -translate-x-1/2 z-20">
               <button
-                onClick={() => navigate(`/watch/${content._id}`)}
+                onClick={() => navigate(`/content/${content._id}`)}
                 className="btn-hero-play"
               >
                 <Play className="w-5 h-5 fill-current" />
-                <span className="ml-3">Play</span>
+                <span className="ml-3">Watch Now</span>
               </button>
             </div>
           </div>

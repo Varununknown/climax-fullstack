@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, Star, Clock, Info, Plus } from 'lucide-react';
+import { Star, Clock, Info, Plus } from 'lucide-react';
 import { Content } from '../../types';
 import { useNavigate } from 'react-router-dom';
 
@@ -37,7 +37,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
       className="group relative cursor-pointer transform transition-all duration-300 hover:scale-100 hover:z-10"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => navigate(`/watch/${content._id}`)} // ✅ FIXED
+      onClick={() => navigate(`/content/${content._id}`)} // ✅ Navigate to Details Page First
     >
       <div className="relative bg-gray-900 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
         <div className={`relative ${cardSizes[size]} overflow-hidden`}>
@@ -99,28 +99,21 @@ export const ContentCard: React.FC<ContentCardProps> = ({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/watch/${content._id}`); // ✅ FIXED
+                  navigate(`/content/${content._id}`); // ✅ Go to Details Page
                 }}
                 className="flex-1 bg-white text-black text-sm font-bold py-2 px-4 rounded hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
               >
-                <Play className="w-4 h-4 fill-current" />
-                <span>Play</span>
+                <Info className="w-4 h-4" />
+                <span>View</span>
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
                 className="bg-gray-700/80 text-white p-2 rounded hover:bg-gray-600 transition-colors"
+                title="Add to Watchlist"
               >
                 <Plus className="w-4 h-4" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                className="bg-gray-700/80 text-white p-2 rounded hover:bg-gray-600 transition-colors"
-              >
-                <Info className="w-4 h-4" />
               </button>
             </div>
           </div>
