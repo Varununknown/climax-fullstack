@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Pause, ArrowLeft, Volume2, Settings, SkipBack, SkipForward, Maximize, Minimize } from 'lucide-react';
+import { Play, Pause, ArrowLeft, Volume2, Settings, SkipBack, SkipForward, Maximize, Minimize, VolumeX, RotateCcw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PaymentModal } from './PaymentModal';
 import { Content } from '../../types';
 import API from '../../services/api';
 
 // =====================================================
-// 🎬 CLEAN VIDEO PLAYER - COMPLETELY REBUILT
+// 🎬 PREMIUM HIGH-CLASS OTT PLATFORM VIDEO PLAYER
 // =====================================================
 
 interface PaymentState {
@@ -16,60 +16,49 @@ interface PaymentState {
   shouldShowModal: boolean;
 }
 
-interface VideoState {
-  isPlaying: boolean;
-  currentTime: number;
-  duration: number;
-  volume: number;
-  isFullscreen: boolean;
-  quality: string;
-  showControls: boolean;
-}
-
 export const VideoPlayer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
-  
-  // Add debugging
-  console.log('🎬 VideoPlayer render - ID:', id);
-  console.log('🎬 VideoPlayer render - User:', user?.name);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // ===== STATE MANAGEMENT =====
   const [content, setContent] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // ===== PAYMENT STATE (PRESERVED BUSINESS LOGIC) =====
   const [paymentState, setPaymentState] = useState<PaymentState>({
     isLoading: true,
     isPaid: false,
     shouldShowModal: false
   });
   
-  const [videoState, setVideoState] = useState<VideoState>({
-    isPlaying: false,
-    currentTime: 0,
-    duration: 0,
-    volume: 1,
-    isFullscreen: false,
-    quality: 'auto',
-    showControls: true
-  });
-
+  // ===== PREMIUM VIDEO PLAYER STATE =====
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [quality, setQuality] = useState('Auto');
   const [showQualityMenu, setShowQualityMenu] = useState(false);
-  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
-  const [controlsTimeout, setControlsTimeout] = useState<number | null>(null);
-  const [videoLoading, setVideoLoading] = useState(false); // Start as false for faster perceived load
-  const [showPlayButton, setShowPlayButton] = useState(false);
-  const [qualityChangeNotification, setQualityChangeNotification] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // ===== MOBILE DOUBLE TAP HANDLING =====
+  const [isBuffering, setIsBuffering] = useState(false);
+  
+  // Mobile controls
+  const [showMobileControls, setShowMobileControls] = useState(false);
   const [lastTap, setLastTap] = useState<{ time: number; side: 'left' | 'right' } | null>(null);
   
-  // ===== PAYWALL TRIGGER TRACKING =====
+  // ===== PAYWALL TRACKING (PRESERVED) =====
   const [previousTime, setPreviousTime] = useState<number>(0);
+  
+  // Auto-hide controls
+  const [controlsTimeout, setControlsTimeout] = useState<NodeJS.Timeout | null>(null);
+  
+  // Available qualities
+  const qualities = ['Auto', '1080p', '720p', '480p', '360p'];
 
   // ===== CONTENT FETCHING =====
   useEffect(() => {
