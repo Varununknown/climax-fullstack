@@ -170,11 +170,15 @@ export const PremiumVideoPlayer: React.FC = () => {
           console.log('🎯 Adaptive streaming URLs available:', Object.keys(contentData.adaptiveUrls));
         }
         
-        // Use CDN-optimized URL for immediate loading
+        // Use CDN-optimized URL for immediate loading - Fixed fallback logic
         const videoUrl = contentData.adaptiveUrls?.auto || contentData.videoUrl;
         setCurrentVideoUrl(videoUrl);
         
-        // Amazon Prime Video style: Preload multiple qualities
+        // Debug logging to see what URL we're using
+        console.log('🎬 Video URL set to:', videoUrl);
+        console.log('🎬 Content data:', contentData.title, 'has adaptiveUrls:', !!contentData.adaptiveUrls);
+        
+        // Amazon Prime Video style: Preload multiple qualities (only if available)
         if (contentData.adaptiveUrls) {
           Object.values(contentData.adaptiveUrls as Record<string, string>).forEach((url, index) => {
             setTimeout(() => {
@@ -184,9 +188,10 @@ export const PremiumVideoPlayer: React.FC = () => {
               preloadVideo.load();
             }, index * 100); // Stagger preloading
           });
+          console.log('🚀 CDN-optimized video preloading started');
+        } else {
+          console.log('📺 Using direct video URL (no adaptive streaming)');
         }
-        
-        console.log('🚀 CDN-optimized video preloading started');
       } catch (err: any) {
         console.error('Error fetching content:', err);
         setError(err.response?.status === 404 ? 'Content not found' : 'Failed to load content');
@@ -386,18 +391,30 @@ export const PremiumVideoPlayer: React.FC = () => {
   // ===== PREMIUM CONTROL FUNCTIONS =====
   const togglePlayPause = () => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video) {
+      console.log('🚫 No video element available');
+      return;
+    }
+
+    console.log('🎬 Toggle play/pause called, current state:', isPlaying);
+    console.log('🎬 Video URL:', video.src);
+    console.log('🎬 Video ready state:', video.readyState);
 
     // PRESERVED PAYWALL CHECK
     if (!paymentState.isPaid && video.currentTime >= (content?.climaxTimestamp || 0) - 1) {
+      console.log('🚫 Paywall triggered');
       setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
       return;
     }
 
     if (isPlaying) {
+      console.log('⏸️ Pausing video');
       video.pause();
     } else {
-      video.play();
+      console.log('▶️ Playing video');
+      video.play().catch(err => {
+        console.error('🚫 Play failed:', err);
+      });
     }
   };
 
@@ -633,11 +650,16 @@ export const PremiumVideoPlayer: React.FC = () => {
           src={currentVideoUrl || content.videoUrl}
           className="w-full h-full object-contain bg-black"
           playsInline
-          autoPlay
-          muted
+          muted={true}
           preload="auto"
           crossOrigin="anonymous"
           onClick={togglePlayPause}
+          onError={(e) => {
+            console.error('🚫 Video loading error:', e);
+            console.error('🚫 Failed URL:', currentVideoUrl || content.videoUrl);
+          }}
+          onLoadStart={() => console.log('🎬 Video load started')}
+          onCanPlay={() => console.log('✅ Video can play')}
           style={{
             // Hardware acceleration for smooth playback
             transform: 'translateZ(0)',
