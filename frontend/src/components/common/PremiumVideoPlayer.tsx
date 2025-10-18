@@ -157,8 +157,18 @@ export const PremiumVideoPlayer: React.FC = () => {
 
       try {
         setLoading(true);
+        setError(null);
         const response = await API.get(`/contents/${id}`);
         setContent(response.data);
+        
+        // Immediately preload video for faster start
+        if (response.data.videoUrl) {
+          const video = document.createElement('video');
+          video.preload = 'auto';
+          video.src = response.data.videoUrl;
+          video.load(); // Start loading immediately
+          console.log('🚀 Video preloading started');
+        }
       } catch (err: any) {
         console.error('Error fetching content:', err);
         setError(err.response?.status === 404 ? 'Content not found' : 'Failed to load content');
@@ -235,7 +245,7 @@ export const PremiumVideoPlayer: React.FC = () => {
     // ===== FAST LOADING OPTIMIZATIONS =====
     const onLoadStart = () => {
       console.log('🚀 Video loading started');
-      setIsBuffering(true);
+      // Don't show buffering immediately for faster perceived loading
     };
 
     const onLoadedData = () => {
@@ -243,19 +253,21 @@ export const PremiumVideoPlayer: React.FC = () => {
       setIsVideoReady(true);
       setIsBuffering(false);
       
-      // Auto-start playback for smooth experience
-      if (video.readyState >= 2) {
-        video.play().catch(() => {
-          console.log('Auto-play prevented by browser');
-        });
-      }
+      // Immediately try to play for instant start
+      setTimeout(() => {
+        if (video.readyState >= 2) {
+          video.play().catch(() => {
+            console.log('Auto-play prevented by browser');
+          });
+        }
+      }, 100);
     };
 
     const onCanPlayThrough = () => {
       console.log('🎯 Video can play through without buffering');
       setIsBuffering(false);
       
-      // Ensure smooth playback start
+      // Ensure instant playback start
       if (!isPlaying && video.paused) {
         video.play().catch(() => {
           console.log('Auto-play prevented');
@@ -301,13 +313,25 @@ export const PremiumVideoPlayer: React.FC = () => {
     const onPause = () => setIsPlaying(false);
     
     const onWaiting = () => {
-      console.log('⏳ Video buffering...');
-      setIsBuffering(true);
+      // Only show buffering after a short delay to avoid flickering
+      setTimeout(() => {
+        if (video.readyState < 3) {
+          console.log('⏳ Video buffering...');
+          setIsBuffering(true);
+        }
+      }, 500);
     };
     
     const onCanPlay = () => {
       console.log('▶️ Video ready to play');
       setIsBuffering(false);
+      
+      // Try immediate playback
+      if (video.paused && !isPlaying) {
+        video.play().catch(() => {
+          console.log('Auto-play prevented');
+        });
+      }
     };
     
     const onVolumeChange = () => {
@@ -523,14 +547,14 @@ export const PremiumVideoPlayer: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // ===== LOADING & ERROR STATES =====
+  // ===== LOADING & ERROR STATES - OPTIMIZED =====
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center text-white">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-600 border-t-transparent mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold mb-2">Loading Premium Content</h2>
-          <p className="text-gray-400">Please wait...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-600 border-t-transparent mx-auto mb-4"></div>
+          <h2 className="text-lg font-semibold mb-2">Loading Premium Content</h2>
+          <p className="text-gray-400 text-sm">Preparing your video...</p>
         </div>
       </div>
     );
@@ -571,7 +595,7 @@ export const PremiumVideoPlayer: React.FC = () => {
 
       {/* Video Container */}
       <div className="relative w-full h-screen">
-        {/* Main Video Element - Optimized for Fast Loading */}
+        {/* Main Video Element - Ultra-Fast Loading Optimized */}
         <video
           ref={videoRef}
           src={content.videoUrl}
@@ -590,12 +614,11 @@ export const PremiumVideoPlayer: React.FC = () => {
           }}
         />
 
-        {/* Buffering Indicator */}
+        {/* Buffering Indicator - Less Intrusive */}
         {isBuffering && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-30">
-            <div className="bg-black/80 rounded-lg p-4 backdrop-blur-sm">
-              <div className="animate-spin rounded-full h-8 w-8 border-3 border-red-600 border-t-transparent mx-auto mb-2"></div>
-              <p className="text-white text-sm">Loading...</p>
+          <div className="absolute top-4 right-4 z-30">
+            <div className="bg-black/60 rounded-full p-3 backdrop-blur-sm">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-red-600 border-t-transparent"></div>
             </div>
           </div>
         )}
