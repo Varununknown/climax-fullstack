@@ -291,12 +291,12 @@ export const VideoPlayer: React.FC = () => {
     };
 
     const onWaiting = () => {
-      // Only show loading after a brief delay to avoid flashing
+      // Fast loading indication - reduced delay for better UX
       setTimeout(() => {
         if (video.readyState < 3) { // Only if still not ready
           setVideoLoading(true);
         }
-      }, 500);
+      }, 200); // Faster response - 200ms instead of 500ms
     };
 
     const onPlay = () => {
@@ -691,11 +691,11 @@ export const VideoPlayer: React.FC = () => {
     if (lastTap && lastTap.side === side && now - lastTap.time < 250) {
       // Double tap detected - faster response time
       if (side === 'left') {
-        seekBy(10); // Left = move forward
-        console.log('📱 Mobile: Double tap LEFT - Forward +10s');
+        seekBy(-10); // Left = move backward (rewind)
+        console.log('📱 Mobile: Double tap LEFT - Backward -10s');
       } else {
-        seekBy(-10); // Right = move backward  
-        console.log('📱 Mobile: Double tap RIGHT - Backward -10s');
+        seekBy(10); // Right = move forward
+        console.log('📱 Mobile: Double tap RIGHT - Forward +10s');
       }
       
       // Visual feedback - brief flash
@@ -747,7 +747,7 @@ export const VideoPlayer: React.FC = () => {
               cursor: window.innerWidth <= 768 ? 'default' : 'pointer'
             }}
             onContextMenu={(e) => e.preventDefault()}
-            preload="auto"
+            preload="metadata"
             playsInline
             controls={false} // Use custom controls only
             // Remove onClick completely for mobile, only desktop gets click-to-play
@@ -755,12 +755,12 @@ export const VideoPlayer: React.FC = () => {
           />
         )}
 
-        {/* Mobile Touch Areas for Smooth UX (Only on Mobile) */}
+        {/* Amazon Prime Style Mobile Touch Areas (Only on Mobile) */}
         {window.innerWidth <= 768 && (
           <>
-            {/* Left side - Double tap for forward */}
+            {/* Left side - Double tap ANYWHERE for backward */}
             <div
-              className="absolute top-0 left-0 w-1/2 h-full z-5 flex items-center justify-start pl-8"
+              className="absolute top-0 left-0 w-1/2 h-full z-5"
               onTouchStart={(e) => handleMobileTouch(e, 'left')}
               style={{ 
                 WebkitTapHighlightColor: 'transparent',
@@ -768,18 +768,24 @@ export const VideoPlayer: React.FC = () => {
                 userSelect: 'none'
               }}
             >
-              {/* Visual feedback overlay */}
-              <div 
-                id="mobile-left-flash"
-                className="absolute inset-0 bg-blue-400 rounded-r-full opacity-0 transition-opacity duration-200 pointer-events-none"
-                style={{ zIndex: -1 }}
-              />
-              <div className="text-white/30 text-xs font-medium">⏩ Double tap</div>
+              {/* Visual feedback - only show when controls visible */}
+              {videoState.showControls && (
+                <div className="absolute inset-0 flex items-center justify-start pl-8 pointer-events-none">
+                  <div 
+                    id="mobile-left-flash"
+                    className="absolute inset-0 bg-blue-400/20 rounded-r-full opacity-0 transition-opacity duration-200"
+                    style={{ zIndex: -1 }}
+                  />
+                  <div className="text-white/60 text-sm font-medium bg-black/30 px-3 py-1 rounded-full">
+                    ⏪ -10s
+                  </div>
+                </div>
+              )}
             </div>
             
-            {/* Right side - Double tap for backward */}
+            {/* Right side - Double tap ANYWHERE for forward */}
             <div
-              className="absolute top-0 right-0 w-1/2 h-full z-5 flex items-center justify-end pr-8"
+              className="absolute top-0 right-0 w-1/2 h-full z-5"
               onTouchStart={(e) => handleMobileTouch(e, 'right')}
               style={{ 
                 WebkitTapHighlightColor: 'transparent',
@@ -787,36 +793,19 @@ export const VideoPlayer: React.FC = () => {
                 userSelect: 'none'
               }}
             >
-              {/* Visual feedback overlay */}
-              <div 
-                id="mobile-right-flash"
-                className="absolute inset-0 bg-blue-400 rounded-l-full opacity-0 transition-opacity duration-200 pointer-events-none"
-                style={{ zIndex: -1 }}
-              />
-              <div className="text-white/30 text-xs font-medium">Double tap ⏪</div>
-            </div>
-            
-            {/* Center circle - Single tap for play/pause */}
-            <div
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 z-10 flex items-center justify-center"
-              onTouchStart={(e) => {
-                e.preventDefault();
-                togglePlayPause();
-                console.log('📱 Mobile: Center tap - Play/Pause');
-              }}
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                WebkitUserSelect: 'none',
-                userSelect: 'none'
-              }}
-            >
-              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-                {videoState.isPlaying ? (
-                  <Pause size={20} className="text-white" />
-                ) : (
-                  <Play size={20} className="text-white ml-0.5" />
-                )}
-              </div>
+              {/* Visual feedback - only show when controls visible */}
+              {videoState.showControls && (
+                <div className="absolute inset-0 flex items-center justify-end pr-8 pointer-events-none">
+                  <div 
+                    id="mobile-right-flash"
+                    className="absolute inset-0 bg-blue-400/20 rounded-l-full opacity-0 transition-opacity duration-200"
+                    style={{ zIndex: -1 }}
+                  />
+                  <div className="text-white/60 text-sm font-medium bg-black/30 px-3 py-1 rounded-full">
+                    +10s ⏩
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}
@@ -836,12 +825,13 @@ export const VideoPlayer: React.FC = () => {
         </div>
       )}
 
-      {/* Video Loading Spinner - Only for significant delays */}
+      {/* Smooth Video Loading - Amazon Prime Style */}
       {videoLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-20">
-          <div className="flex flex-col items-center space-y-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-            <div className="text-white text-sm font-medium">Buffering...</div>
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
+          <div className="flex flex-col items-center space-y-3 bg-black/60 p-6 rounded-lg backdrop-blur-sm">
+            <div className="animate-spin rounded-full h-10 w-10 border-3 border-blue-500/30 border-t-blue-500"></div>
+            <div className="text-white text-base font-medium">Loading</div>
+            <div className="text-white/70 text-xs">Almost ready...</div>
           </div>
         </div>
       )}
@@ -1099,6 +1089,8 @@ export const VideoPlayer: React.FC = () => {
           </div>
         </div>
       </div>
+
+      )}
 
       {/* Keyboard Help Overlay */}
       {showKeyboardHelp && (
