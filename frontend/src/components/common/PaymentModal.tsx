@@ -245,7 +245,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     alt="Payment QR Code"
                     className="w-40 h-40 mx-auto"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200x200?text=QR+Code';
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1582769923195-c6e60dc1d8d6?w=200&h=200&fit=crop&auto=format';
                     }}
                   />
                 </div>

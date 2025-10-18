@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Pencil } from 'lucide-react';
 import { useContent } from '../../context/ContentContext';
-import API from '../../services/api';
 
 interface EditContentModalProps {
   content: any;
@@ -10,16 +9,27 @@ interface EditContentModalProps {
 }
 
 export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onClose, onSuccess }) => {
-  const { categories } = useContent();
+  const { categories, updateContent } = useContent();
 
   const [formData, setFormData] = useState({
     ...content,
     climaxTimestamp: content.climaxTimestamp?.toString() || '',
     duration: content.duration || 0,
+    language: content.language || '', // Ensure language field is initialized
   });
 
   const [newGenre, setNewGenre] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Reset form data when content changes
+  useEffect(() => {
+    setFormData({
+      ...content,
+      climaxTimestamp: content.climaxTimestamp?.toString() || '',
+      duration: content.duration || 0,
+      language: content.language || '',
+    });
+  }, [content]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,22 +37,62 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
     try {
       setLoading(true);
 
+      // Debug: Check what ID we're using
+      console.log('Content object:', content);
+      console.log('Available ID fields:');
+      console.log('- content._id:', content._id);
+      console.log('- content.id:', content.id);
+      console.log('- content.createdAt:', content.createdAt);
+      
+      // Try multiple ID field possibilities
+      const contentId = content._id || content.id;
+      
+      if (!contentId) {
+        console.error('❌ No valid content ID found!');
+        alert('❌ Cannot update: Content ID is missing');
+        return;
+      }
+      
+      console.log('Using ID for update:', contentId);
+
       const payload = {
         ...formData,
         duration: Number(formData.duration),
         climaxTimestamp: Number(formData.climaxTimestamp),
       };
+      
+      console.log('Payload being sent:', payload);
 
-      const response = await API.put(`/contents/${content._id}`, payload); // ✅ FIXED _id
-
-      if (response.status === 200) {
+      // Use context updateContent instead of direct API call
+      try {
+        await updateContent(contentId, payload);
         alert('✅ Content updated successfully!');
         onSuccess();
         onClose();
+      } catch (error: any) {
+        console.error('❌ Update failed in EditContentModal:', error);
+        if (error.response?.status === 404) {
+          const contentId = content._id || content.id;
+          alert(`❌ Content not found on server!\n\nThis content (ID: ${contentId}) exists locally but not on the production database.\n\nPossible solutions:\n1. Start local backend server\n2. Add this content to production database\n3. Use content that exists on production`);
+        } else {
+          alert(`⚠️ Update failed: ${error.response?.status} ${error.response?.statusText}\nCheck console for details.`);
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Update content failed:', error);
-      alert('⚠️ Something went wrong. Check console for details.');
+      console.error('❌ Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
+      
+      if (error.response?.status === 404) {
+        const contentId = content._id || content.id;
+        alert(`❌ Content not found on server!\n\nThis content (ID: ${contentId}) exists locally but not on the production database.\n\nPossible solutions:\n1. Start local backend server\n2. Add this content to production database\n3. Use content that exists on production`);
+      } else {
+        alert(`⚠️ Update failed: ${error.response?.status} ${error.response?.statusText}\nCheck console for details.`);
+      }
     } finally {
       setLoading(false);
     }
@@ -139,6 +189,29 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
             </select>
           </div>
 
+          {/* Language */}
+          <div>
+            <label className="block text-sm text-white mb-1">Language *</label>
+            <select
+              value={formData.language || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, language: e.target.value }))}
+              className="w-full bg-gray-800 text-white rounded px-3 py-2"
+              required
+            >
+              <option value="">Select Language</option>
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Tamil">Tamil</option>
+              <option value="Telugu">Telugu</option>
+              <option value="Malayalam">Malayalam</option>
+              <option value="Kannada">Kannada</option>
+              <option value="Bengali">Bengali</option>
+              <option value="Marathi">Marathi</option>
+              <option value="Gujarati">Gujarati</option>
+              <option value="Punjabi">Punjabi</option>
+            </select>
+          </div>
+
           {/* Thumbnail URL */}
           <div>
             <label className="block text-sm text-white mb-1">Thumbnail URL *</label>
@@ -153,13 +226,13 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
 
           {/* Video URL */}
           <div>
-            <label className="block text-sm text-white mb-1">Video URL *</label>
+            <label className="block text-sm text-white mb-1">Video URL (Optional)</label>
             <input
               type="url"
-              value={formData.videoUrl}
+              value={formData.videoUrl || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, videoUrl: e.target.value }))}
               className="w-full bg-gray-800 text-white rounded px-3 py-2"
-              required
+              placeholder="Leave empty for upcoming content"
             />
           </div>
 

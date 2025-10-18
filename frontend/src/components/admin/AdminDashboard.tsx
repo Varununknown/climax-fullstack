@@ -6,6 +6,7 @@ import { UserManagement } from './UserManagement';
 import { Analytics } from './Analytics';
 import { PaymentSettings } from './PaymentSettings';
 import { PendingPayments } from './PendingPayments';
+import { ImageFixer } from './ImageFixer';
 
 export const AdminDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -13,7 +14,12 @@ export const AdminDashboard: React.FC = () => {
   const renderContent = () => {
     switch (currentPage) {
       case 'content':
-        return <ContentManagement />;
+        return (
+          <div className="space-y-6">
+            <ImageFixer />
+            <ContentManagement />
+          </div>
+        );
       case 'users':
         return <UserManagement />;
       case 'analytics':

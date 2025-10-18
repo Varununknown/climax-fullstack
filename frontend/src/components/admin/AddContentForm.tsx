@@ -14,11 +14,12 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ onClose }) => {
   const [thumbnail, setThumbnail] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [climaxTimestamp, setClimaxTimestamp] = useState('');
+  const [language, setLanguage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !thumbnail || !videoUrl || !climaxTimestamp) {
-      alert('Please fill in all fields');
+    if (!title || !description || !thumbnail || !language) {
+      alert('Please fill in all required fields (Title, Description, Thumbnail, Language)');
       return;
     }
 
@@ -26,8 +27,9 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ onClose }) => {
       title,
       description,
       thumbnail,
-      videoUrl,
-      climaxTimestamp: parseInt(climaxTimestamp),
+      videoUrl: videoUrl || undefined, // Optional: for upcoming content
+      climaxTimestamp: climaxTimestamp ? parseInt(climaxTimestamp) : 0,
+      language,
     };
 
     await addContent(contentData);
@@ -60,21 +62,38 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ onClose }) => {
           />
           <input
             type="text"
-            placeholder="Thumbnail URL"
+            placeholder="Thumbnail URL *"
             value={thumbnail}
             onChange={(e) => setThumbnail(e.target.value)}
             className="w-full border rounded px-3 py-2"
           />
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="w-full border rounded px-3 py-2"
+          >
+            <option value="">Select Language *</option>
+            <option value="English">English</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Tamil">Tamil</option>
+            <option value="Telugu">Telugu</option>
+            <option value="Malayalam">Malayalam</option>
+            <option value="Kannada">Kannada</option>
+            <option value="Bengali">Bengali</option>
+            <option value="Marathi">Marathi</option>
+            <option value="Gujarati">Gujarati</option>
+            <option value="Punjabi">Punjabi</option>
+          </select>
           <input
             type="text"
-            placeholder="Video URL"
+            placeholder="Video URL (Optional - leave empty for upcoming content)"
             value={videoUrl}
             onChange={(e) => setVideoUrl(e.target.value)}
             className="w-full border rounded px-3 py-2"
           />
           <input
             type="number"
-            placeholder="Climax Timestamp (in seconds)"
+            placeholder="Climax Timestamp in seconds (Optional)"
             value={climaxTimestamp}
             onChange={(e) => setClimaxTimestamp(e.target.value)}
             className="w-full border rounded px-3 py-2"

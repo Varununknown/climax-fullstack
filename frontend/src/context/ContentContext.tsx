@@ -77,9 +77,20 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   const updateContent = async (id: string, contentData: Partial<Content>) => {
     try {
+      console.log('🔄 ContentContext: Updating content:', id, contentData);
       const res = await API.put(`/contents/${id}`, contentData);
+      console.log('✅ ContentContext: Content updated successfully:', res.data);
       setContents((prev) => prev.map(c => (c._id === id ? res.data : c)));
-    } catch (err) { console.error(err); }
+      return res.data; // Return the updated content
+    } catch (err: any) { 
+      console.error('❌ ContentContext: Update failed:', err);
+      console.error('❌ Error details:', {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data
+      });
+      throw err; // Re-throw so EditContentModal can handle it
+    }
   };
 
   const deleteContent = async (id: string) => {

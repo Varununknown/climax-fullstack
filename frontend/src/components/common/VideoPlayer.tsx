@@ -82,7 +82,7 @@ export const VideoPlayer: React.FC = () => {
           title: 'Test Video',
           description: 'Test video for debugging',
           videoUrl: 'https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4',
-          thumbnail: 'https://via.placeholder.com/400x600?text=Test+Video',
+          thumbnail: 'https://images.unsplash.com/photo-1489599808050-e1d2b7c9fec0?w=400&h=600&fit=crop&auto=format',
           category: 'action',
           type: 'movie',
           genre: ['test'],

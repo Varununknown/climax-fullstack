@@ -22,6 +22,7 @@ export interface Content {
   createdAt: Date;
   rating?: number;
   genre: string[];
+  language?: string; // Added language field
 }
 
 export interface Category {

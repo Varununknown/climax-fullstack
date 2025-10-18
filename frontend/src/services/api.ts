@@ -15,18 +15,29 @@ async function testUrl(url: string) {
   }
 }
 
+// Force local development when running on localhost
+const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
 // Build default API instance (will be replaced after health check)
-let API = axios.create({ baseURL: `${PROD_BACKEND}/api`, withCredentials: true, timeout: 5000 });
+let API = axios.create({ 
+  baseURL: isLocalDevelopment ? `${PREFERRED_LOCAL}/api` : `${PROD_BACKEND}/api`, 
+  withCredentials: true, 
+  timeout: 5000 
+});
 
 (async () => {
   // If running on localhost hostname, prefer local backend when reachable
   try {
-    const useLocal = await testUrl(PREFERRED_LOCAL);
-    const chosen = useLocal ? PREFERRED_LOCAL : PROD_BACKEND;
-    API = axios.create({ baseURL: `${chosen}/api`, withCredentials: true, timeout: 5000 });
-    // Expose chosen backend for debugging
-    (window as any).__BACKEND__ = chosen;
-    console.log('API: using backend ->', chosen);
+    if (isLocalDevelopment) {
+      const useLocal = await testUrl(PREFERRED_LOCAL);
+      const chosen = useLocal ? PREFERRED_LOCAL : PROD_BACKEND;
+      API = axios.create({ baseURL: `${chosen}/api`, withCredentials: true, timeout: 5000 });
+      // Expose chosen backend for debugging
+      (window as any).__BACKEND__ = chosen;
+      console.log('🔧 DEV MODE: API using backend ->', chosen);
+    } else {
+      console.log('🚀 PROD MODE: API using backend ->', PROD_BACKEND);
+    }
   } catch (e) {
     console.log('API: falling back to', PROD_BACKEND);
   }

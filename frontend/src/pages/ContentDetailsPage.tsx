@@ -18,7 +18,17 @@ export const ContentDetailsPage: React.FC = () => {
   const [content, setContent] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'synopsis'|'cast'|'videos'|'posters'>('synopsis');
+  const [activeTab, setActiveTab] = useState<'synopsis'|'cast'|'videos'>('synopsis');
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -70,7 +80,7 @@ export const ContentDetailsPage: React.FC = () => {
       <div className="text-center text-white">
         <h2 className="text-2xl font-semibold mb-3">Content unavailable</h2>
         <p className="text-gray-400 mb-6">{error || 'Not found'}</p>
-        <button onClick={() => navigate('/')} className="bg-red-600 px-4 py-2 rounded">Go Home</button>
+        <button onClick={() => navigate('/')} className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 px-4 py-2 rounded-lg font-medium transition-all">Go Home</button>
       </div>
     </div>
   );
@@ -83,8 +93,43 @@ export const ContentDetailsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* Amazon Prime Style Header - Text Always Visible, Background Appears on Scroll */}
+      <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled 
+          ? 'bg-black/90 backdrop-blur-md border-b border-white/10' 
+          : 'bg-transparent'
+      }`}>
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-3">
+              <div className="text-transparent bg-gradient-to-r from-white to-gray-300 bg-clip-text font-bold text-3xl tracking-widest font-mono">CLIMAX</div>
+            </div>
+            <nav className="hidden md:flex space-x-8 text-base">
+              <a href="/" className="text-white/90 hover:text-white transition-colors font-medium">Home</a>
+              <a href="/" className="text-white/90 hover:text-white transition-colors font-medium">Movies</a>
+              <a href="/" className="text-white/90 hover:text-white transition-colors font-medium">TV Shows</a>
+              <a href="/" className="text-white/90 hover:text-white transition-colors font-medium">Live TV</a>
+              <span className="text-white/40">|</span>
+              <a href="/" className="text-white/90 hover:text-white transition-colors font-medium">Subscriptions</a>
+            </nav>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button className="bg-gradient-to-r from-gray-900 via-purple-700 to-gray-800 hover:from-gray-800 hover:via-purple-600 hover:to-gray-700 px-6 py-2.5 rounded-lg text-base font-medium transition-all shadow-lg border border-purple-500/30">
+              Join Climax
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Back Button */}
+      <div className="fixed top-24 left-6 z-40">
+        <button onClick={() => navigate('/')} className="bg-gradient-to-r from-black/80 to-gray-900/80 backdrop-blur-md hover:from-gray-900/80 hover:to-black/80 text-white p-3 rounded-full shadow-lg transition-all">
+          <ArrowLeft size={20} />
+        </button>
+      </div>
+
       {/* Top Poster */}
-      <div className="relative">
+      <div className="relative pt-20">
         <div className="h-72 sm:h-96 lg:h-[420px] bg-cover bg-center" style={{backgroundImage:`linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.95)), url(${content.thumbnail})`}}/>
         <div className="absolute inset-0 flex items-end p-6">
           <div className="max-w-4xl w-full mx-auto flex items-end gap-6">
@@ -100,16 +145,16 @@ export const ContentDetailsPage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-3">
-                <button onClick={handleWatch} className="bg-white text-black rounded-full py-3 px-6 flex items-center gap-3 shadow-lg hover:scale-[1.01] transition-transform">
+                <button onClick={handleWatch} className="bg-gradient-to-r from-white/90 via-slate-200/80 to-white/90 backdrop-blur-lg text-black rounded-full py-3 px-6 flex items-center gap-3 shadow-lg hover:from-white hover:via-slate-100 hover:to-white hover:scale-[1.01] transition-all border border-white/20">
                   <Play />
-                  <span className="font-semibold">Watch First Episode</span>
+                  <span className="font-semibold">Watch Now</span>
                 </button>
 
-                <button onClick={() => { navigator.clipboard?.writeText(window.location.href); alert('Link copied'); }} className="text-gray-300 p-3 rounded-full bg-black/40">
+                <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-3 rounded-full shadow-lg transition-all">
                   <Share />
                 </button>
 
-                <button className="text-gray-300 p-3 rounded-full bg-black/40">
+                <button className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-3 rounded-full shadow-lg transition-all">
                   <Plus />
                 </button>
               </div>
@@ -124,9 +169,9 @@ export const ContentDetailsPage: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <div className="border-b border-gray-800">
           <nav className="flex gap-6 text-sm">
-            {['synopsis','cast','videos','posters'].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab as any)} className={`py-3 pb-4 ${activeTab===tab? 'text-white border-b-2 border-purple-500':'text-gray-400'}`}>
-                {tab === 'posters' ? 'Posters & Wallpapers' : tab.charAt(0).toUpperCase()+tab.slice(1)}
+            {['synopsis','cast','videos'].map(tab => (
+              <button key={tab} onClick={() => setActiveTab(tab as any)} className={`py-3 pb-4 transition-all ${activeTab===tab? 'text-white border-b-2 border-purple-500':'text-gray-400 hover:text-white'}`}>
+                {tab.charAt(0).toUpperCase()+tab.slice(1)}
               </button>
             ))}
           </nav>
@@ -134,29 +179,76 @@ export const ContentDetailsPage: React.FC = () => {
 
         <div className="pt-6">
           {activeTab === 'synopsis' && (
-            <div>
-              <h2 className="text-xl font-semibold mb-3">Synopsis</h2>
-              <p className="text-gray-300 leading-relaxed mb-6">{content.description}</p>
+            <div className="flex gap-8">
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold mb-3">Synopsis</h2>
+                <p className="text-gray-300 leading-relaxed mb-6">{content.description}</p>
+                
+                <div className="border-t border-gray-800 pt-6">
+                  <h3 className="text-lg font-semibold mb-4">More Details</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-400">Genre:</span>
+                      <span className="ml-2 text-white">{content.genre?.join(', ')}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Duration:</span>
+                      <span className="ml-2 text-white">{durationText}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Rating:</span>
+                      <span className="ml-2 text-white">UA 16+</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Year:</span>
+                      <span className="ml-2 text-white">{new Date().getFullYear()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-              <div className="flex gap-8 items-center border-t border-gray-800 pt-6">
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-2">Season 1</h3>
-                  <div className="space-y-3">
-                    {/* Example episode row - in your real data you would map episodes */}
-                    <div className="flex items-center justify-between bg-gray-900/60 p-3 rounded">
-                      <div className="flex items-center gap-3">
-                        <div className="w-24 h-14 bg-gray-800 rounded overflow-hidden">
-                          <img src={content.thumbnail} className="w-full h-full object-cover" />
-                        </div>
-                        <div>
-                          <div className="font-medium">S1 E1 · Skeletons in the Closet</div>
-                          <div className="text-xs text-gray-400">10 Oct 2025 · 42m</div>
-                        </div>
+              {/* Events Section - Right Side */}
+              <div className="w-96 mt-4">
+                <h3 className="text-xl font-semibold mb-4">Events</h3>
+                <div className="space-y-3">
+                  {/* Example episode row - in your real data you would map episodes */}
+                  <div className="bg-gray-900/60 p-4 rounded-lg">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-20 h-12 bg-gray-800 rounded overflow-hidden">
+                        <img src={content.thumbnail} className="w-full h-full object-cover" />
                       </div>
-                      <div className="flex items-center gap-3">
-                        <button onClick={handleWatch} className="text-gray-100 bg-red-600 px-3 py-2 rounded">Play</button>
-                        <button className="text-gray-300 p-2 rounded bg-black/40"><Download /></button>
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">Event 1 · Skeletons in the Closet</div>
+                        <div className="text-xs text-gray-400">10 Oct 2025 · 42m</div>
                       </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={handleWatch} className="flex-1 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-lg">
+                        Participate Now
+                      </button>
+                      <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 rounded-lg transition-all">
+                        <Share />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-900/60 p-4 rounded-lg">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-20 h-12 bg-gray-800 rounded overflow-hidden">
+                        <img src={content.thumbnail} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">Event 2 · Mystery Unfolds</div>
+                        <div className="text-xs text-gray-400">12 Oct 2025 · 38m</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={handleWatch} className="flex-1 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-lg">
+                        Participate Now
+                      </button>
+                      <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 rounded-lg transition-all">
+                        <Share />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -191,25 +283,14 @@ export const ContentDetailsPage: React.FC = () => {
                       <div className="font-medium">Official Trailer</div>
                       <div className="text-xs text-gray-400">2:30</div>
                     </div>
-                    <button className="p-2 bg-white text-black rounded"><Play /></button>
+                    <button className="p-2 bg-gradient-to-r from-white to-gray-100 hover:from-gray-100 hover:to-white text-black rounded-lg transition-all shadow-lg"><Play /></button>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {activeTab === 'posters' && (
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Posters & Wallpapers</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="rounded overflow-hidden">
-                    <img src={content.thumbnail} className="w-full h-40 object-cover" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
       </div>
     </div>

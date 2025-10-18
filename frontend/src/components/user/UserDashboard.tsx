@@ -47,7 +47,21 @@ export const UserDashboard: React.FC = () => {
     if (currentPage === 'movies') filtered = filtered.filter(c => c.type === 'movie');
     else if (currentPage === 'series') filtered = filtered.filter(c => c.type === 'series');
     else if (currentPage === 'shows') filtered = filtered.filter(c => c.type === 'show');
-    else if (selectedCategory !== 'all') filtered = filtered.filter(c => c.category === selectedCategory);
+    else if (selectedCategory === 'latest') {
+      // Latest Releases: Full-length movies with video URLs added recently
+      filtered = filtered.filter(c => c.type === 'movie' && c.videoUrl);
+    }
+    else if (selectedCategory === 'upcoming') {
+      // Upcoming movies: Content without video URLs (thumbnail only)
+      filtered = filtered.filter(c => c.type === 'movie' && !c.videoUrl);
+    }
+    else if (['Hindi', 'English', 'Tamil', 'Telugu', 'Malayalam', 'Kannada', 'Bengali', 'Marathi', 'Gujarati', 'Punjabi'].includes(selectedCategory)) {
+      // Language filter
+      filtered = filtered.filter(c => c.language === selectedCategory || c.genre.includes(selectedCategory));
+    }
+    else if (selectedCategory !== 'all') {
+      filtered = filtered.filter(c => c.category === selectedCategory);
+    }
 
     return filtered;
   };
@@ -59,7 +73,13 @@ export const UserDashboard: React.FC = () => {
       case 'movies': return 'Movies';
       case 'series': return 'TV Shows';
       case 'shows': return 'Shows';
-      case 'browse': return selectedCategory === 'all' ? 'Browse All' : selectedCategory;
+      case 'browse': 
+        if (selectedCategory === 'latest') return 'Latest Releases';
+        if (selectedCategory === 'upcoming') return 'Upcoming Movies';
+        if (['Hindi', 'English', 'Tamil', 'Telugu', 'Malayalam', 'Kannada', 'Bengali', 'Marathi', 'Gujarati', 'Punjabi'].includes(selectedCategory)) {
+          return `${selectedCategory} Content`;
+        }
+        return selectedCategory === 'all' ? 'Browse All' : selectedCategory;
       default: return 'Popular Content';
     }
   };
@@ -97,6 +117,91 @@ export const UserDashboard: React.FC = () => {
           <ProfilePage />  // ✅ Render ProfilePage here
         ) : currentPage === 'home' && !searchQuery ? (
           <div className="space-y-8">
+            {/* EXPLORE Section */}
+            <div>
+              <div className="flex items-center justify-center mb-4 md:mb-8">
+                <div className="flex-1 h-px bg-gray-600 max-w-32"></div>
+                <h2 className="text-gray-400 font-light text-sm md:text-lg mx-4 md:mx-6 tracking-widest">EXPLORE</h2>
+                <div className="flex-1 h-px bg-gray-600 max-w-32"></div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 md:gap-6 mb-8 md:mb-12">
+                <div 
+                  onClick={() => {
+                    setSelectedCategory('latest');
+                    setCurrentPage('browse');
+                  }}
+                  className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer group shadow-2xl"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-white text-sm md:text-xl font-semibold mb-1">Latest Releases</h3>
+                    </div>
+                    <div className="w-12 h-12 md:w-20 md:h-20 flex items-center justify-center mx-auto md:mx-0">
+                      <svg className="w-8 h-8 md:w-16 md:h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"/>
+                        <circle cx="8" cy="11" r="1" fill="currentColor"/>
+                        <circle cx="12" cy="11" r="1" fill="currentColor"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div 
+                  onClick={() => {
+                    setSelectedCategory('upcoming');
+                    setCurrentPage('browse');
+                  }}
+                  className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer group shadow-2xl"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-white text-sm md:text-xl font-semibold mb-1">Upcoming movies</h3>
+                    </div>
+                    <div className="w-12 h-12 md:w-20 md:h-20 flex items-center justify-center mx-auto md:mx-0">
+                      <svg className="w-8 h-8 md:w-16 md:h-16 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7.01 5 5 7.01 5 9.5S7.01 14 9.5 14 14 11.99 14 9.5 11.99 5 9.5 5Z"/>
+                        <circle cx="9.5" cy="9.5" r="2" stroke="white" strokeWidth="0.5" fill="none"/>
+                        <circle cx="9.5" cy="9.5" r="1" fill="white"/>
+                        <path d="M8 8l3 3M11 8l-3 3" stroke="white" strokeWidth="0.5"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Enjoy in Your Own Language Section */}
+            <div>
+              <div className="flex items-center justify-center mb-4 md:mb-8">
+                <div className="flex-1 h-px bg-gray-600 max-w-32"></div>
+                <h2 className="text-gray-400 font-light text-xs md:text-lg mx-3 md:mx-6 tracking-widest">ENJOY IN YOUR OWN LANGUAGE</h2>
+                <div className="flex-1 h-px bg-gray-600 max-w-32"></div>
+              </div>
+              
+              <div className="overflow-x-auto scrollbar-hide mb-6">
+                <div className="flex gap-2 md:gap-3 pb-2 min-w-max">
+                  {['Kannada', 'Hindi', 'English', 'Tamil', 'Telugu', 'Malayalam', 'Bengali', 'Marathi', 'Gujarati', 'Punjabi'].map((language) => (
+                    <button
+                      key={language}
+                      onClick={() => handleCategorySelect(language)}
+                      className="px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-gray-800/40 to-gray-700/40 backdrop-blur-md border border-gray-600/30 text-gray-300 rounded-lg text-xs md:text-sm hover:border-gray-400/50 hover:text-white hover:from-gray-700/50 hover:to-gray-600/50 transition-all whitespace-nowrap shadow-lg"
+                    >
+                      {language}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <ContentGrid 
+                contents={contents.filter(c => c.type === 'movie').slice(0, 6)} 
+                title="" 
+                layout="horizontal" 
+                cardSize="large" 
+                showAll={() => setCurrentPage('movies')} 
+              />
+            </div>
+
             <ContentGrid contents={contents.slice(0, 8)} title="Continue watching" layout="horizontal" cardSize="large" />
             <ContentGrid contents={primeContent} title="Free - Included with Prime" layout="horizontal" cardSize="large" showAll={() => setCurrentPage('movies')} />
             <ContentGrid contents={rentContent} title="Rent or buy" layout="horizontal" cardSize="large" showAll={() => handleCategorySelect('Action')} />

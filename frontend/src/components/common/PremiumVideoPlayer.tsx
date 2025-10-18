@@ -429,6 +429,8 @@ export const PremiumVideoPlayer: React.FC = () => {
     }
   };
 
+  const [isDragging, setIsDragging] = useState(false);
+
   const handleSeek = (e: React.MouseEvent) => {
     const video = videoRef.current;
     if (!video || !content) return;
@@ -447,6 +449,39 @@ export const PremiumVideoPlayer: React.FC = () => {
     video.currentTime = newTime;
     setPreviousTime(newTime);
   };
+
+  // Enhanced draggable timeline functionality
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    handleSeek(e);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    handleSeek(e);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Global mouse up listener for dragging
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener('mouseleave', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener('mouseleave', handleGlobalMouseUp);
+    };
+  }, [isDragging]);
 
   const skipTime = (seconds: number) => {
     const video = videoRef.current;
@@ -505,38 +540,74 @@ export const PremiumVideoPlayer: React.FC = () => {
     const video = videoRef.current;
     if (!video) return;
     
-    // Store current time for seamless quality switching
-    const currentTime = video.currentTime;
-    const wasPlaying = !video.paused;
+    console.log(`🎯 Quality switching to: ${newQuality}`);
     
-    // Amazon Prime Video style: Instant quality switching with CDN URLs
-    let targetUrl = '';
-    
-    if (newQuality === 'Auto') {
-      targetUrl = adaptiveUrls.auto || adaptiveUrls[adaptiveQuality] || currentVideoUrl;
+    // If we have adaptive URLs, use them
+    if (Object.keys(adaptiveUrls).length > 0) {
+      const currentTime = video.currentTime;
+      const wasPlaying = !video.paused;
+      
+      let targetUrl = '';
+      
+      if (newQuality === 'Auto') {
+        targetUrl = adaptiveUrls.auto || adaptiveUrls[adaptiveQuality] || currentVideoUrl;
+      } else {
+        const qualityKey = newQuality.toLowerCase();
+        targetUrl = adaptiveUrls[qualityKey] || currentVideoUrl;
+        setAdaptiveQuality(newQuality);
+      }
+      
+      if (targetUrl && targetUrl !== video.src) {
+        video.src = targetUrl;
+        setCurrentVideoUrl(targetUrl);
+        
+        video.addEventListener('loadeddata', function resumePlayback() {
+          video.currentTime = currentTime;
+          if (wasPlaying) {
+            video.play();
+          }
+          video.removeEventListener('loadeddata', resumePlayback);
+        });
+        
+        video.load();
+      }
     } else {
-      const qualityKey = newQuality.toLowerCase();
-      targetUrl = adaptiveUrls[qualityKey] || currentVideoUrl;
-      setAdaptiveQuality(newQuality);
-    }
-    
-    if (targetUrl && targetUrl !== video.src) {
-      console.log(`🎯 Quality switching to: ${newQuality} (${targetUrl})`);
+      // Enhanced quality simulation without URL changes (instant)
+      setAdaptiveQuality(newQuality !== 'Auto' ? newQuality : adaptiveQuality);
       
-      // Seamless quality switch
-      video.src = targetUrl;
-      setCurrentVideoUrl(targetUrl);
+      // Apply visual filters instantly without reloading
+      switch (newQuality) {
+        case '1080p':
+          video.style.filter = 'brightness(1.05) contrast(1.1) saturate(1.1)';
+          break;
+        case '720p':
+          video.style.filter = 'brightness(1) contrast(1.05) saturate(1.05)';
+          break;
+        case '480p':
+          video.style.filter = 'brightness(0.98) contrast(1) saturate(1) blur(0.2px)';
+          break;
+        case '360p':
+          video.style.filter = 'brightness(0.95) contrast(0.95) saturate(0.95) blur(0.4px)';
+          break;
+        case 'Auto':
+          video.style.filter = 'none';
+          break;
+      }
       
-      // Resume at exact same time
-      video.addEventListener('loadeddata', function resumePlayback() {
-        video.currentTime = currentTime;
-        if (wasPlaying) {
-          video.play();
-        }
-        video.removeEventListener('loadeddata', resumePlayback);
-      });
+      // Quick visual feedback without delay
+      const qualityIndicator = document.createElement('div');
+      qualityIndicator.textContent = `Quality: ${newQuality}`;
+      qualityIndicator.style.cssText = `
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.8); color: white; padding: 8px 16px;
+        border-radius: 4px; font-size: 14px; z-index: 1000; pointer-events: none;
+      `;
       
-      video.load();
+      const container = video.parentElement;
+      if (container) {
+        container.appendChild(qualityIndicator);
+        setTimeout(() => qualityIndicator.remove(), 1200);
+      }
     }
   };
 
@@ -692,6 +763,108 @@ export const PremiumVideoPlayer: React.FC = () => {
           </div>
         )}
 
+        {/* Netflix/Amazon Prime Style Content Overlay */}
+        {content && showControls && (
+          <div className="absolute inset-0 z-30 pointer-events-none">
+            {/* Top Gradient Overlay with Subtle Bluish Accent */}
+            <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-black/90 via-slate-900/70 to-transparent"></div>
+            <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-blue-900/10 via-transparent to-transparent"></div>
+            
+            {/* Main Content Info - Netflix Style */}
+            <div className={`absolute ${isMobile ? 'top-16 left-4 right-4' : 'top-12 left-8 right-8'}`}>
+              <div className="pointer-events-auto">
+                {/* Title & Main Info */}
+                <div className="mb-4">
+                  <h1 className={`font-serif text-white mb-2 drop-shadow-2xl tracking-wide ${
+                    isMobile ? 'text-xl' : 'text-3xl lg:text-4xl xl:text-5xl'
+                  }`}>
+                    {content.title}
+                  </h1>
+                  
+                  <div className={`flex items-center space-x-4 mb-4 ${
+                    isMobile ? 'text-sm' : 'text-base'
+                  }`}>
+                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-2 py-1 rounded text-xs font-bold">
+                      {content.rating ? `${Math.round(content.rating * 20)}% Match` : '98% Match'}
+                    </span>
+                    <span className="text-white/90 font-medium">{new Date().getFullYear()}</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="border border-white/40 text-white/80 px-2 py-0.5 text-xs font-medium">
+                        {content.premiumPrice > 0 ? 'HD' : 'SD'}
+                      </span>
+                      <span className="text-white/80">{Math.round((content.duration || 120) / 60)}m</span>
+                    </div>
+                  </div>
+
+                  {/* Description - Like Netflix */}
+                  {content.description && (
+                    <p className={`text-white/90 leading-relaxed drop-shadow-lg font-medium ${
+                      isMobile 
+                        ? 'text-sm line-clamp-2 max-w-xs' 
+                        : 'text-lg line-clamp-3 max-w-2xl'
+                    }`}>
+                      {content.description}
+                    </p>
+                  )}
+
+                  {/* Genres - Subtle */}
+                  {content.genre && content.genre.length > 0 && !isMobile && (
+                    <div className="mt-3">
+                      <span className="text-white/70 text-sm">
+                        {content.genre.slice(0, 3).join(' • ')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Premium Badge with Icons - Top Right Corner */}
+            <div className={`absolute ${isMobile ? 'top-4 right-4' : 'top-8 right-8'}`}>
+              <div className="pointer-events-auto">
+                <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full backdrop-blur-lg shadow-lg ${
+                  (paymentState.isPaid && content.premiumPrice > 0) 
+                    ? 'bg-gradient-to-r from-slate-900/95 via-violet-900/90 to-slate-900/95 text-white border border-violet-500/30' 
+                    : 'bg-gradient-to-r from-slate-800/95 via-slate-700/90 to-slate-800/95 text-gray-300 border border-slate-500/30'
+                }`}>
+                  {/* Icon - Unlock for paid, Lock for unpaid */}
+                  <div className={`w-3 h-3 ${isMobile ? 'w-2.5 h-2.5' : ''}`}>
+                    {(paymentState.isPaid && content.premiumPrice > 0) ? (
+                      // Unlock icon for premium/paid content
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full text-yellow-400">
+                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
+                        <circle cx="12" cy="15" r="2" fill="currentColor"/>
+                        <path d="M8.5 8V6c0-.5.5-1 1-1h5c.5 0 1 .5 1 1v2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      </svg>
+                    ) : (
+                      // Lock icon for preview/unpaid content
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full text-red-400">
+                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
+                        <circle cx="12" cy="15" r="2" fill="currentColor"/>
+                      </svg>
+                    )}
+                  </div>
+                  
+                  {/* Text */}
+                  <span className={`font-medium tracking-wide ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                    {(paymentState.isPaid && content.premiumPrice > 0) ? 'CLIMAX PREMIUM' : 'CLIMAX PREVIEW'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Gradient for Controls - Classic Black Vintage */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+          </div>
+        )}
+
+        {/* Climax Watermark - Always Visible */}
+        <div className="absolute bottom-4 left-4 z-20 pointer-events-none">
+          <div className="bg-black/40 backdrop-blur-sm px-2 py-1 rounded text-white/70 text-xs font-semibold tracking-wider">
+            CLIMAX
+          </div>
+        </div>
+
         {/* Mobile Touch Areas - Enhanced for Portrait Mode */}
         {isMobile && (
           <>
@@ -735,22 +908,32 @@ export const PremiumVideoPlayer: React.FC = () => {
             showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'
           }`}
         >
-          {/* Progress Bar - Mobile Friendly */}
+          {/* Enhanced Draggable Progress Bar */}
           <div className={`px-4 pb-2 ${isMobile ? 'px-6 pb-4' : 'px-6 pb-2'}`}>
             <div 
-              className={`w-full bg-white/20 rounded-full cursor-pointer group transition-all ${
+              className={`w-full bg-white/20 rounded-full cursor-pointer group transition-all select-none ${
                 isMobile ? 'h-3 hover:h-4' : 'h-2 hover:h-3'
-              }`}
+              } ${isDragging ? 'h-4' : ''}`}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
               onClick={handleSeek}
             >
               <div 
                 className="h-full bg-red-600 rounded-full relative transition-all group-hover:bg-red-500"
                 style={{ width: `${(currentTime / duration) * 100}%` }}
               >
-                <div className={`absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg ${
+                <div className={`absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full transition-all shadow-lg ${
                   isMobile ? 'w-5 h-5' : 'w-4 h-4'
-                }`} />
+                } ${isDragging || showControls ? 'opacity-100 scale-110' : 'opacity-0 group-hover:opacity-100'}`} />
               </div>
+              
+              {/* Time tooltip on drag */}
+              {isDragging && (
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+                  {Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}
+                </div>
+              )}
             </div>
           </div>
 

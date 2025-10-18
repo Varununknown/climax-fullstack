@@ -15,6 +15,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
   size = 'medium' 
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const navigate = useNavigate();
 
   const formatDuration = (seconds: number) => {
@@ -42,9 +43,10 @@ export const ContentCard: React.FC<ContentCardProps> = ({
       <div className="relative bg-gray-900 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300">
         <div className={`relative ${cardSizes[size]} overflow-hidden`}>
           <img
-            src={content.thumbnail}
+            src={imageError ? 'https://images.unsplash.com/photo-1489599808050-e1d2b7c9fec0?w=400&h=225&fit=crop' : content.thumbnail}
             alt={content.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={() => setImageError(true)}
           />
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

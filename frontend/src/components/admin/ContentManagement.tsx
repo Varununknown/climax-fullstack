@@ -1,31 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Eye, EyeOff, Search, Filter } from 'lucide-react';
 import { useContent } from '../../context/ContentContext';
 import { AddContentModal } from './AddContentModal';
 import { EditContentModal } from './EditContentModal';
-import API from '../../services/api'; // 👈 Needed for fetchAllContents
+import { ImageFixer } from './ImageFixer';
 
 export const ContentManagement: React.FC = () => {
-  const { contents, setContents, deleteContent, updateContent } = useContent(); // 👈 use setContents
+  const { contents, deleteContent, updateContent } = useContent(); // ✅ Removed setContents
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingContent, setEditingContent] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
-
-  // ✅ New: fetchAllContents that updates context
-  const fetchAllContents = async () => {
-    try {
-      const res = await API.get('/contents');
-      setContents(res.data);
-    } catch (err) {
-      console.error('❌ Failed to fetch contents:', err);
-    }
-  };
-
-  useEffect(() => {
-    fetchAllContents();
-  }, []);
 
   const filteredContents = contents.filter(content => {
     const matchesSearch = content.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -49,6 +35,9 @@ export const ContentManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Image Fixer */}
+      <ImageFixer />
+      
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
@@ -200,7 +189,7 @@ export const ContentManagement: React.FC = () => {
           onClose={() => setShowAddModal(false)}
           onSuccess={() => {
             setShowAddModal(false);
-            fetchAllContents(); // refresh list
+            // Content context automatically updates the contents list
           }}
         />
       )}
@@ -212,7 +201,7 @@ export const ContentManagement: React.FC = () => {
           onClose={() => setEditingContent(null)}
           onSuccess={() => {
             setEditingContent(null);
-            fetchAllContents(); // refresh list
+            // Content context automatically updates the contents list
           }}
         />
       )}
