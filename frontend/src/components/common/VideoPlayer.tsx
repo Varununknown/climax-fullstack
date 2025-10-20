@@ -49,7 +49,6 @@ export const VideoPlayer: React.FC = () => {
   
   // Mobile controls - ALWAYS show on mobile
   const [showMobileControls, setShowMobileControls] = useState(true);
-  const [lastTap, setLastTap] = useState<{ time: number; side: 'left' | 'right' } | null>(null);
   
   // Additional UI state
   const [showPlayButton, setShowPlayButton] = useState(false);
@@ -390,7 +389,7 @@ export const VideoPlayer: React.FC = () => {
   useEffect(() => {
     // Add a non-passive touchstart listener to suppress the passive listener warning
     // This tells the browser we're not going to preventDefault on touchstart
-    const suppressWarning = (e: TouchEvent) => {
+    const suppressWarning = () => {
       // Do nothing - just prevent the warning
     };
     
@@ -618,7 +617,7 @@ export const VideoPlayer: React.FC = () => {
   };
 
   // Safe wrapper for touch events (no preventDefault)
-  const handleTouchShowControls = (e: React.TouchEvent) => {
+  const handleTouchShowControls = () => {
     // Don't call preventDefault here - it's a passive listener
     handleShowControls();
   };
@@ -700,40 +699,6 @@ export const VideoPlayer: React.FC = () => {
     );
   }
 
-  const handleMobileTouch = (e: React.TouchEvent, side: 'left' | 'right') => {
-    if (window.innerWidth > 768) return; // Only for mobile
-
-    // Note: Cannot use e.preventDefault() here as this is called from onTouchStart (passive listener)
-    handleShowControls(); // Show controls on any touch
-    const now = Date.now();
-    
-    if (lastTap && lastTap.side === side && now - lastTap.time < 250) {
-      // Double tap detected - faster response time
-      if (side === 'left') {
-        seekBy(10); // LEFT taps = FORWARD 
-        console.log('📱 LEFT tap - FORWARD +10s');
-      } else {
-        seekBy(-10); // RIGHT taps = BACKWARD  
-        console.log('📱 RIGHT tap - BACKWARD -10s');
-      }
-      
-      // Visual feedback - brief flash
-      const flashElement = side === 'left' ? 'mobile-left-flash' : 'mobile-right-flash';
-      const element = document.getElementById(flashElement);
-      if (element) {
-        element.style.opacity = '0.3';
-        setTimeout(() => {
-          element.style.opacity = '0';
-        }, 200);
-      }
-      
-      setLastTap(null);
-    } else {
-      // Single tap - just register for potential double tap
-      setLastTap({ time: now, side });
-    }
-  };
-
   // ===== MAIN RENDER =====
   console.log('🎬 Render state - Loading:', loading, 'Error:', error, 'Content:', !!content);
   
@@ -782,60 +747,17 @@ export const VideoPlayer: React.FC = () => {
             {...(window.innerWidth > 768 && { onClick: togglePlayPause })}
           />
         )}
-
-        {/* Amazon Prime Style Mobile Touch Areas (Only on Mobile) */}
+        {/* Mobile Touch - Just show controls */}
         {window.innerWidth <= 768 && (
-          <>
-            {/* Left side - Double tap ANYWHERE for backward */}
-            <div
-              className="absolute top-0 left-0 w-1/2 h-full z-5"
-              onTouchStart={(e) => handleMobileTouch(e, 'left')}
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                WebkitUserSelect: 'none',
-                userSelect: 'none'
-              }}
-            >
-              {/* Visual feedback - only show when controls visible AND video paused */}
-              {showControls && !isPlaying && (
-                <div className="absolute inset-0 flex items-center justify-start pl-8 pointer-events-none">
-                  <div 
-                    id="mobile-left-flash"
-                    className="absolute inset-0 bg-blue-400/20 rounded-r-full opacity-0 transition-opacity duration-200"
-                    style={{ zIndex: -1 }}
-                  />
-                  <div className="text-white/60 text-sm font-medium bg-black/30 px-3 py-1 rounded-full">
-                    ⏩ +10s
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Right side - Double tap ANYWHERE for forward */}
-            <div
-              className="absolute top-0 right-0 w-1/2 h-full z-5"
-              onTouchStart={(e) => handleMobileTouch(e, 'right')}
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                WebkitUserSelect: 'none',
-                userSelect: 'none'
-              }}
-            >
-              {/* Visual feedback - only show when controls visible AND video paused */}
-              {showControls && !isPlaying && (
-                <div className="absolute inset-0 flex items-center justify-end pr-8 pointer-events-none">
-                  <div 
-                    id="mobile-right-flash"
-                    className="absolute inset-0 bg-blue-400/20 rounded-l-full opacity-0 transition-opacity duration-200"
-                    style={{ zIndex: -1 }}
-                  />
-                  <div className="text-white/60 text-sm font-medium bg-black/30 px-3 py-1 rounded-full">
-                    ⏪ -10s  
-                  </div>
-                </div>
-              )}
-            </div>
-          </>
+          <div
+            className="absolute inset-0 z-5"
+            onTouchStart={handleTouchShowControls}
+            style={{ 
+              WebkitTapHighlightColor: 'transparent',
+              WebkitUserSelect: 'none',
+              userSelect: 'none'
+            }}
+          />
         )}
       </div>
 
