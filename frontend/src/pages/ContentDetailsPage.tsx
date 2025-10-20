@@ -122,14 +122,14 @@ export const ContentDetailsPage: React.FC = () => {
       </div>
 
       {/* Back Button */}
-      <div className="fixed top-20 sm:top-24 left-4 sm:left-6 z-40">
-        <button onClick={() => navigate('/')} className="bg-gradient-to-r from-black/80 to-gray-900/80 backdrop-blur-md hover:from-gray-900/80 hover:to-black/80 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all">
-          <ArrowLeft size={18} className="sm:size-5" />
+      <div className="fixed top-24 left-6 z-40">
+        <button onClick={() => navigate('/')} className="bg-gradient-to-r from-black/80 to-gray-900/80 backdrop-blur-md hover:from-gray-900/80 hover:to-black/80 text-white p-3 rounded-full shadow-lg transition-all">
+          <ArrowLeft size={20} />
         </button>
       </div>
 
       {/* Top Poster */}
-      <div className="relative pt-28 sm:pt-20">
+      <div className="relative pt-20">
         <div className="h-64 sm:h-72 md:h-96 lg:h-[420px] bg-cover bg-center" style={{backgroundImage:`linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.95)), url(${content.thumbnail})`}}/>
         <div className="absolute inset-0 flex items-end p-4 sm:p-6">
           <div className="max-w-5xl mx-auto w-full flex flex-col sm:flex-row items-start sm:items-end gap-3 sm:gap-6">
