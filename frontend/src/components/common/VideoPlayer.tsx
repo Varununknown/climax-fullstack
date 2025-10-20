@@ -386,6 +386,21 @@ export const VideoPlayer: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [paymentState.isPaid, paymentState.shouldShowModal, content]);
 
+  // ===== SUPPRESS PASSIVE EVENT LISTENER WARNING =====
+  useEffect(() => {
+    // Add a non-passive touchstart listener to suppress the passive listener warning
+    // This tells the browser we're not going to preventDefault on touchstart
+    const suppressWarning = (e: TouchEvent) => {
+      // Do nothing - just prevent the warning
+    };
+    
+    window.addEventListener('touchstart', suppressWarning, { passive: true });
+    
+    return () => {
+      window.removeEventListener('touchstart', suppressWarning);
+    };
+  }, []);
+
   // ===== PLAYER CONTROLS =====
   const togglePlayPause = () => {
     const video = videoRef.current;
@@ -852,7 +867,7 @@ export const VideoPlayer: React.FC = () => {
             <button 
               onClick={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(-10); }}
               onTouchStart={(e) => { e.stopPropagation(); }}
-              onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(-10); }}
+              onTouchEnd={(e) => { e.stopPropagation(); seekBy(-10); }}
               className="flex items-center justify-center text-white transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
               title="Backward 10s"
               style={{
@@ -870,7 +885,7 @@ export const VideoPlayer: React.FC = () => {
             <button 
               onClick={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
               onTouchStart={(e) => { e.stopPropagation(); }}
-              onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
+              onTouchEnd={(e) => { e.stopPropagation(); togglePlayPause(); }}
               className="rounded-full transition-all backdrop-blur-md shadow-2xl border-2 text-white active:scale-95"
               title="Play/Pause"
               style={{
@@ -895,7 +910,7 @@ export const VideoPlayer: React.FC = () => {
             <button 
               onClick={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(10); }}
               onTouchStart={(e) => { e.stopPropagation(); }}
-              onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(10); }}
+              onTouchEnd={(e) => { e.stopPropagation(); seekBy(10); }}
               className="flex items-center justify-center text-white transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
               title="Forward 10s"
               style={{
