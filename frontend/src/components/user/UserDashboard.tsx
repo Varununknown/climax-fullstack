@@ -131,18 +131,12 @@ export const UserDashboard: React.FC = () => {
                     setSelectedCategory('latest');
                     setCurrentPage('browse');
                   }}
-                  className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer group shadow-2xl"
+                  className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer group shadow-2xl relative overflow-hidden"
                 >
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                  <img src="/logo1.jpg" alt="Latest Releases" className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-50 group-hover:opacity-70 transition-opacity" />
+                  <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
                     <div className="flex-1">
                       <h3 className="text-white text-sm md:text-xl font-semibold mb-1">Latest Releases</h3>
-                    </div>
-                    <div className="w-12 h-12 md:w-20 md:h-20 flex items-center justify-center mx-auto md:mx-0">
-                      <svg className="w-8 h-8 md:w-16 md:h-16 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z"/>
-                        <circle cx="8" cy="11" r="1" fill="currentColor"/>
-                        <circle cx="12" cy="11" r="1" fill="currentColor"/>
-                      </svg>
                     </div>
                   </div>
                 </div>
@@ -152,19 +146,12 @@ export const UserDashboard: React.FC = () => {
                     setSelectedCategory('upcoming');
                     setCurrentPage('browse');
                   }}
-                  className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer group shadow-2xl"
+                  className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer group shadow-2xl relative overflow-hidden"
                 >
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                  <img src="/logo2.jpg" alt="Upcoming Movies" className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-50 group-hover:opacity-70 transition-opacity" />
+                  <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
                     <div className="flex-1">
                       <h3 className="text-white text-sm md:text-xl font-semibold mb-1">Upcoming movies</h3>
-                    </div>
-                    <div className="w-12 h-12 md:w-20 md:h-20 flex items-center justify-center mx-auto md:mx-0">
-                      <svg className="w-8 h-8 md:w-16 md:h-16 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7.01 5 5 7.01 5 9.5S7.01 14 9.5 14 14 11.99 14 9.5 11.99 5 9.5 5Z"/>
-                        <circle cx="9.5" cy="9.5" r="2" stroke="white" strokeWidth="0.5" fill="none"/>
-                        <circle cx="9.5" cy="9.5" r="1" fill="white"/>
-                        <path d="M8 8l3 3M11 8l-3 3" stroke="white" strokeWidth="0.5"/>
-                      </svg>
                     </div>
                   </div>
                 </div>
