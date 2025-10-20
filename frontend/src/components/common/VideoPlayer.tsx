@@ -385,21 +385,6 @@ export const VideoPlayer: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [paymentState.isPaid, paymentState.shouldShowModal, content]);
 
-  // ===== SUPPRESS PASSIVE EVENT LISTENER WARNING =====
-  useEffect(() => {
-    // Add a non-passive touchstart listener to suppress the passive listener warning
-    // This tells the browser we're not going to preventDefault on touchstart
-    const suppressWarning = () => {
-      // Do nothing - just prevent the warning
-    };
-    
-    window.addEventListener('touchstart', suppressWarning, { passive: true });
-    
-    return () => {
-      window.removeEventListener('touchstart', suppressWarning);
-    };
-  }, []);
-
   // ===== PLAYER CONTROLS =====
   const togglePlayPause = () => {
     const video = videoRef.current;
@@ -616,12 +601,6 @@ export const VideoPlayer: React.FC = () => {
     setControlsTimeout(timeout);
   };
 
-  // Safe wrapper for touch events (no preventDefault)
-  const handleTouchShowControls = () => {
-    // Don't call preventDefault here - it's a passive listener
-    handleShowControls();
-  };
-
   useEffect(() => {
     return () => {
       if (controlsTimeout) {
@@ -713,7 +692,6 @@ export const VideoPlayer: React.FC = () => {
       onMouseMove={handleShowControls}
       onMouseEnter={handleShowControls}
       onClick={handleShowControls}
-      onTouchStart={handleTouchShowControls}
     >
 
       {/* Video Container with Touch Areas */}
@@ -721,7 +699,6 @@ export const VideoPlayer: React.FC = () => {
         height: window.innerWidth <= 768 ? '70vh' : '100vh'
       }}
       onClick={handleShowControls}
-      onTouchStart={handleTouchShowControls}
       >
 
 
@@ -747,11 +724,11 @@ export const VideoPlayer: React.FC = () => {
             {...(window.innerWidth > 768 && { onClick: togglePlayPause })}
           />
         )}
-        {/* Mobile Touch - Just show controls */}
+        {/* Mobile Touch - Just show controls via onClick (no onTouchStart) */}
         {window.innerWidth <= 768 && (
           <div
             className="absolute inset-0 z-5"
-            onTouchStart={handleTouchShowControls}
+            onClick={handleShowControls}
             style={{ 
               WebkitTapHighlightColor: 'transparent',
               WebkitUserSelect: 'none',
