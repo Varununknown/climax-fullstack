@@ -134,7 +134,7 @@ export const ContentDetailsPage: React.FC = () => {
       </div>
 
       {/* Content Section - Below Background */}
-      <div className="relative -mt-20 sm:-mt-32 md:-mt-40 lg:-mt-48 z-10 pt-8 sm:pt-0">
+      <div className="relative -mt-20 sm:-mt-32 md:-mt-40 lg:-mt-48 z-10 pt-2 sm:pt-0">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-start sm:items-end gap-3 sm:gap-6 pb-4 sm:pb-6">
           <img src={content.thumbnail} alt={content.title} className="w-32 sm:w-36 md:w-48 lg:w-56 rounded-lg shadow-2xl object-cover flex-shrink-0" />
 
