@@ -752,7 +752,7 @@ export const VideoPlayer: React.FC = () => {
       {showPlayButton && (
         <div 
           className="absolute inset-0 flex items-center justify-center bg-slate-900/30 z-20 pointer-events-auto" 
-          onClick={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
+          onClick={(e) => { e.stopPropagation(); togglePlayPause(); }}
           onTouchEnd={(e) => { e.stopPropagation(); togglePlayPause(); }}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
         >
@@ -773,7 +773,7 @@ export const VideoPlayer: React.FC = () => {
         <div className={`absolute inset-0 flex items-center justify-center z-25 pointer-events-auto`}>
           <div className="flex items-center gap-4 sm:gap-8" style={{ touchAction: 'manipulation' }}>
             <button 
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(-10); }}
+              onClick={(e) => { e.stopPropagation(); seekBy(-10); }}
               onTouchEnd={(e) => { e.stopPropagation(); seekBy(-10); }}
               className="flex items-center justify-center text-white transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
               title="Backward 10s"
@@ -790,7 +790,7 @@ export const VideoPlayer: React.FC = () => {
             </button>
 
             <button 
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
+              onClick={(e) => { e.stopPropagation(); togglePlayPause(); }}
               onTouchEnd={(e) => { e.stopPropagation(); togglePlayPause(); }}
               className="rounded-full transition-all backdrop-blur-md shadow-2xl border-2 text-white active:scale-95"
               title="Play/Pause"
@@ -814,7 +814,7 @@ export const VideoPlayer: React.FC = () => {
             </button>
 
             <button 
-              onClick={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(10); }}
+              onClick={(e) => { e.stopPropagation(); seekBy(10); }}
               onTouchEnd={(e) => { e.stopPropagation(); seekBy(10); }}
               className="flex items-center justify-center text-white transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
               title="Forward 10s"

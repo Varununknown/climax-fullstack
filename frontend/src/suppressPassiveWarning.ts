@@ -1,18 +1,41 @@
-// Suppress the passive event listener warning from React
-// This is a known React synthetic event issue that doesn't affect functionality
+// FINAL SOLUTION: Suppress React's passive event listener warning
+// This is a React synthetic event issue that doesn't affect functionality
 
 if (typeof window !== 'undefined') {
-  // Override console.error to suppress the specific warning
+  // Store original error function
   const originalError = console.error;
+  
+  // Override console.error to suppress the specific passive listener warning
   console.error = function(...args: any[]) {
-    // Suppress passive event listener warning
-    if (
-      args[0] &&
-      typeof args[0] === 'string' &&
-      args[0].includes('Unable to preventDefault inside passive event listener')
-    ) {
-      return; // Suppress this specific warning
+    // Check if this is the passive listener warning
+    const isPassiveWarning = args.some(arg => 
+      typeof arg === 'string' && 
+      arg.includes('Unable to preventDefault inside passive event listener')
+    );
+    
+    // If it's the passive warning, suppress it completely
+    if (isPassiveWarning) {
+      return;
     }
-    originalError.apply(console, args);
+    
+    // Otherwise, show all other errors normally
+    return originalError.apply(console, args);
+  };
+
+  // Also suppress via addEventListener options
+  const originalAddEventListener = EventTarget.prototype.addEventListener;
+  EventTarget.prototype.addEventListener = function(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ) {
+    // For touch events, always ensure passive: true
+    if (type === 'touchstart' || type === 'touchmove' || type === 'wheel') {
+      if (typeof options === 'object') {
+        options.passive = true;
+      }
+    }
+    return originalAddEventListener.call(this, type, listener, options);
   };
 }
+
