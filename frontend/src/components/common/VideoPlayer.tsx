@@ -820,12 +820,19 @@ export const VideoPlayer: React.FC = () => {
 
       {/* Big Play Button Overlay */}
       {showPlayButton && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/30 z-20" onClick={togglePlayPause}>
-          <div className="rounded-full p-6 backdrop-blur-sm cursor-pointer transition-all transform hover:scale-110 shadow-2xl border-2"
+        <div 
+          className="absolute inset-0 flex items-center justify-center bg-slate-900/30 z-20 pointer-events-auto" 
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
+          onTouchStart={(e) => { e.stopPropagation(); e.preventDefault(); }}
+          onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+        >
+          <div className="rounded-full p-6 backdrop-blur-sm cursor-pointer transition-all transform active:scale-95 shadow-2xl border-2"
                style={{
                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.4) 0%, rgba(29, 78, 216, 0.6) 100%)',
                  borderColor: 'rgba(59, 130, 246, 0.6)',
-                 boxShadow: '0 0 50px rgba(59, 130, 246, 0.5), inset 0 4px 20px rgba(255, 255, 255, 0.1)'
+                 boxShadow: '0 0 50px rgba(59, 130, 246, 0.5), inset 0 4px 20px rgba(255, 255, 255, 0.1)',
+                 touchAction: 'manipulation'
                }}>
             <Play size={48} className="text-white ml-1 drop-shadow-2xl" />
           </div>
@@ -834,26 +841,29 @@ export const VideoPlayer: React.FC = () => {
 
       {/* Center Controls Overlay - Play/Pause + Forward/Backward */}
       {!showPlayButton && showControls && (
-        <div className={`absolute inset-0 flex items-center justify-center z-25 ${showControls ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-          <div className="flex items-center gap-4 sm:gap-8 pointer-events-auto" style={{ touchAction: 'manipulation' }}>
+        <div className={`absolute inset-0 flex items-center justify-center z-25 pointer-events-auto`}>
+          <div className="flex items-center gap-4 sm:gap-8" style={{ touchAction: 'manipulation' }}>
             <button 
-              onClick={(e) => { e.stopPropagation(); seekBy(-10); }}
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(-10); }}
+              onTouchStart={(e) => { e.stopPropagation(); e.preventDefault(); }}
               onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(-10); }}
-              className="flex items-center justify-center text-white hover:text-blue-300 transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
+              className="flex items-center justify-center text-white transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
               title="Backward 10s"
               style={{
                 background: 'rgba(0, 0, 0, 0.6)',
                 padding: '14px',
                 width: '60px',
                 height: '60px',
-                touchAction: 'manipulation'
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
               }}
             >
               <SkipBack size={30} />
             </button>
 
             <button 
-              onClick={(e) => { e.stopPropagation(); togglePlayPause(); }}
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
+              onTouchStart={(e) => { e.stopPropagation(); e.preventDefault(); }}
               onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
               className="rounded-full transition-all backdrop-blur-md shadow-2xl border-2 text-white active:scale-95"
               title="Play/Pause"
@@ -866,7 +876,8 @@ export const VideoPlayer: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                touchAction: 'manipulation'
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
               }}
             >
               {isPlaying ? 
@@ -876,16 +887,18 @@ export const VideoPlayer: React.FC = () => {
             </button>
 
             <button 
-              onClick={(e) => { e.stopPropagation(); seekBy(10); }}
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(10); }}
+              onTouchStart={(e) => { e.stopPropagation(); e.preventDefault(); }}
               onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(10); }}
-              className="flex items-center justify-center text-white hover:text-blue-300 transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
+              className="flex items-center justify-center text-white transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
               title="Forward 10s"
               style={{
                 background: 'rgba(0, 0, 0, 0.6)',
                 padding: '14px',
                 width: '60px',
                 height: '60px',
-                touchAction: 'manipulation'
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
               }}
             >
               <SkipForward size={30} />
