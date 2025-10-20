@@ -122,7 +122,7 @@ export const ContentDetailsPage: React.FC = () => {
       </div>
 
       {/* Back Button */}
-      <div className="fixed top-24 left-6 z-40">
+      <div className="fixed top-16 left-6 z-50">
         <button onClick={() => navigate('/')} className="bg-gradient-to-r from-black/80 to-gray-900/80 backdrop-blur-md hover:from-gray-900/80 hover:to-black/80 text-white p-3 rounded-full shadow-lg transition-all">
           <ArrowLeft size={20} />
         </button>
