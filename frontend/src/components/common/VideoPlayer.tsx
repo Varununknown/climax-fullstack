@@ -726,6 +726,8 @@ export const VideoPlayer: React.FC = () => {
       }}
       onMouseMove={handleShowControls}
       onMouseEnter={handleShowControls}
+      onClick={handleShowControls}
+      onTouchStart={handleShowControls}
     >
 
       {/* Video Container with Touch Areas */}
@@ -832,52 +834,55 @@ export const VideoPlayer: React.FC = () => {
         <div className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none">
           <div className="flex items-center gap-4 sm:gap-8 pointer-events-auto">
             <button 
-              onClick={() => seekBy(-10)}
-              className="flex items-center justify-center text-white hover:text-blue-300 transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 hover:scale-110"
+              onClick={(e) => { e.stopPropagation(); seekBy(-10); }}
+              onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(-10); }}
+              className="flex items-center justify-center text-white hover:text-blue-300 transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
               title="Backward 10s (←)"
               style={{
                 background: 'rgba(0, 0, 0, 0.4)',
                 padding: '12px',
-                width: '48px',
-                height: '48px'
+                width: '56px',
+                height: '56px'
               }}
             >
-              <SkipBack size={24} />
+              <SkipBack size={28} />
             </button>
 
             <button 
-              onClick={togglePlayPause}
-              className="rounded-full transition-all backdrop-blur-md shadow-2xl border-2 text-white hover:scale-110"
+              onClick={(e) => { e.stopPropagation(); togglePlayPause(); }}
+              onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
+              className="rounded-full transition-all backdrop-blur-md shadow-2xl border-2 text-white active:scale-95"
               title="Play/Pause (Space)"
               style={{
                 background: 'rgba(0, 0, 0, 0.5)',
                 borderColor: 'rgba(255, 255, 255, 0.3)',
                 padding: '16px',
-                width: '64px',
-                height: '64px',
+                width: '72px',
+                height: '72px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
             >
               {isPlaying ? 
-                <Pause size={32} className="drop-shadow-2xl" /> : 
-                <Play size={32} className="drop-shadow-2xl ml-1" />
+                <Pause size={36} className="drop-shadow-2xl" /> : 
+                <Play size={36} className="drop-shadow-2xl ml-1" />
               }
             </button>
 
             <button 
-              onClick={() => seekBy(10)}
-              className="flex items-center justify-center text-white hover:text-blue-300 transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 hover:scale-110"
+              onClick={(e) => { e.stopPropagation(); seekBy(10); }}
+              onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(10); }}
+              className="flex items-center justify-center text-white hover:text-blue-300 transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
               title="Forward 10s (→)"
               style={{
                 background: 'rgba(0, 0, 0, 0.4)',
                 padding: '12px',
-                width: '48px',
-                height: '48px'
+                width: '56px',
+                height: '56px'
               }}
             >
-              <SkipForward size={24} />
+              <SkipForward size={28} />
             </button>
           </div>
         </div>
