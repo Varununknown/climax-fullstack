@@ -733,7 +733,10 @@ export const VideoPlayer: React.FC = () => {
       {/* Video Container with Touch Areas */}
       <div className="relative w-full" style={{
         height: window.innerWidth <= 768 ? '70vh' : '100vh'
-      }}>
+      }}
+      onClick={handleShowControls}
+      onTouchStart={handleShowControls}
+      >
 
 
         {/* Video Element - Only show if we have content */}
@@ -746,7 +749,8 @@ export const VideoPlayer: React.FC = () => {
               backgroundColor: 'black',
               cursor: window.innerWidth <= 768 ? 'default' : 'pointer',
               width: '100%',
-              height: '100%'
+              height: '100%',
+              pointerEvents: 'none'
             }}
             onContextMenu={(e) => e.preventDefault()}
             preload="metadata"
@@ -831,42 +835,44 @@ export const VideoPlayer: React.FC = () => {
 
       {/* Center Controls Overlay - Play/Pause + Forward/Backward */}
       {!showPlayButton && showControls && (
-        <div className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none">
-          <div className="flex items-center gap-4 sm:gap-8 pointer-events-auto">
+        <div className={`absolute inset-0 flex items-center justify-center z-25 ${showControls ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+          <div className="flex items-center gap-4 sm:gap-8 pointer-events-auto" style={{ touchAction: 'manipulation' }}>
             <button 
               onClick={(e) => { e.stopPropagation(); seekBy(-10); }}
               onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(-10); }}
               className="flex items-center justify-center text-white hover:text-blue-300 transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
-              title="Backward 10s (←)"
+              title="Backward 10s"
               style={{
-                background: 'rgba(0, 0, 0, 0.4)',
-                padding: '12px',
-                width: '56px',
-                height: '56px'
+                background: 'rgba(0, 0, 0, 0.6)',
+                padding: '14px',
+                width: '60px',
+                height: '60px',
+                touchAction: 'manipulation'
               }}
             >
-              <SkipBack size={28} />
+              <SkipBack size={30} />
             </button>
 
             <button 
               onClick={(e) => { e.stopPropagation(); togglePlayPause(); }}
               onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
               className="rounded-full transition-all backdrop-blur-md shadow-2xl border-2 text-white active:scale-95"
-              title="Play/Pause (Space)"
+              title="Play/Pause"
               style={{
-                background: 'rgba(0, 0, 0, 0.5)',
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                padding: '16px',
-                width: '72px',
-                height: '72px',
+                background: 'rgba(0, 0, 0, 0.7)',
+                borderColor: 'rgba(255, 255, 255, 0.4)',
+                padding: '18px',
+                width: '80px',
+                height: '80px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                touchAction: 'manipulation'
               }}
             >
               {isPlaying ? 
-                <Pause size={36} className="drop-shadow-2xl" /> : 
-                <Play size={36} className="drop-shadow-2xl ml-1" />
+                <Pause size={40} className="drop-shadow-2xl" /> : 
+                <Play size={40} className="drop-shadow-2xl ml-1" />
               }
             </button>
 
@@ -874,15 +880,16 @@ export const VideoPlayer: React.FC = () => {
               onClick={(e) => { e.stopPropagation(); seekBy(10); }}
               onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); seekBy(10); }}
               className="flex items-center justify-center text-white hover:text-blue-300 transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
-              title="Forward 10s (→)"
+              title="Forward 10s"
               style={{
-                background: 'rgba(0, 0, 0, 0.4)',
-                padding: '12px',
-                width: '56px',
-                height: '56px'
+                background: 'rgba(0, 0, 0, 0.6)',
+                padding: '14px',
+                width: '60px',
+                height: '60px',
+                touchAction: 'manipulation'
               }}
             >
-              <SkipForward size={28} />
+              <SkipForward size={30} />
             </button>
           </div>
         </div>
@@ -910,8 +917,8 @@ export const VideoPlayer: React.FC = () => {
       )}
 
       {/* Header Overlay */}
-      <div className={`absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent z-10 transition-opacity duration-300 ${
-        showControls ? 'opacity-100' : 'opacity-0'
+      <div className={`absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent z-30 transition-opacity duration-300 ${
+        showControls ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}>
         <div className="flex justify-between items-center">
           <button 
@@ -972,13 +979,13 @@ export const VideoPlayer: React.FC = () => {
       </div>
 
       {/* Controls Overlay */}
-      <div className={`absolute left-0 right-0 z-10 transition-opacity duration-300 ${
-        showControls ? 'opacity-100' : 'opacity-0'
+      <div className={`absolute left-0 right-0 z-30 transition-opacity duration-300 ${
+        showControls ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`} style={{
         background: 'linear-gradient(to top, rgba(15, 23, 42, 0.7) 0%, rgba(30, 58, 138, 0.3) 40%, transparent 100%)',
         backdropFilter: 'blur(6px)',
-        padding: window.innerWidth <= 768 ? '8px' : '12px',
-        bottom: window.innerWidth <= 768 ? '20px' : '0px' // Lift controls up on mobile
+        padding: window.innerWidth <= 768 ? '12px' : '12px',
+        bottom: window.innerWidth <= 768 ? '0px' : '0px'
       }}>
         {/* Progress Bar */}
         <div style={{ marginBottom: window.innerWidth <= 768 ? '12px' : '20px' }}>
