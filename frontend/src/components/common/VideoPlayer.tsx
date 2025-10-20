@@ -602,6 +602,12 @@ export const VideoPlayer: React.FC = () => {
     setControlsTimeout(timeout);
   };
 
+  // Safe wrapper for touch events (no preventDefault)
+  const handleTouchShowControls = (e: React.TouchEvent) => {
+    // Don't call preventDefault here - it's a passive listener
+    handleShowControls();
+  };
+
   useEffect(() => {
     return () => {
       if (controlsTimeout) {
@@ -727,7 +733,7 @@ export const VideoPlayer: React.FC = () => {
       onMouseMove={handleShowControls}
       onMouseEnter={handleShowControls}
       onClick={handleShowControls}
-      onTouchStart={handleShowControls}
+      onTouchStart={handleTouchShowControls}
     >
 
       {/* Video Container with Touch Areas */}
@@ -735,7 +741,7 @@ export const VideoPlayer: React.FC = () => {
         height: window.innerWidth <= 768 ? '70vh' : '100vh'
       }}
       onClick={handleShowControls}
-      onTouchStart={handleShowControls}
+      onTouchStart={handleTouchShowControls}
       >
 
 
@@ -824,7 +830,7 @@ export const VideoPlayer: React.FC = () => {
           className="absolute inset-0 flex items-center justify-center bg-slate-900/30 z-20 pointer-events-auto" 
           onClick={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
           onTouchStart={(e) => { e.stopPropagation(); }}
-          onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); togglePlayPause(); }}
+          onTouchEnd={(e) => { e.stopPropagation(); togglePlayPause(); }}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
         >
           <div className="rounded-full p-6 backdrop-blur-sm cursor-pointer transition-all transform active:scale-95 shadow-2xl border-2"
