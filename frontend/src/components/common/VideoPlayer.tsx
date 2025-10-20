@@ -303,12 +303,20 @@ export const VideoPlayer: React.FC = () => {
     
     const onPause = () => setIsPlaying(false);
 
+    // Prevent browser's native double-tap seek on video
+    const preventDoubleTapSeek = (e: TouchEvent) => {
+      // Block all native touch gestures on the video
+      e.preventDefault();
+    };
+
     video.addEventListener('timeupdate', onTimeUpdate);
     video.addEventListener('loadedmetadata', onLoadedMetadata);
     video.addEventListener('canplay', onCanPlay);
     video.addEventListener('waiting', onWaiting);
     video.addEventListener('play', onPlay);
     video.addEventListener('pause', onPause);
+    video.addEventListener('touchstart', preventDoubleTapSeek, { passive: false });
+    video.addEventListener('touchend', preventDoubleTapSeek, { passive: false });
 
     return () => {
       video.removeEventListener('timeupdate', onTimeUpdate);
@@ -317,6 +325,8 @@ export const VideoPlayer: React.FC = () => {
       video.removeEventListener('waiting', onWaiting);
       video.removeEventListener('play', onPlay);
       video.removeEventListener('pause', onPause);
+      video.removeEventListener('touchstart', preventDoubleTapSeek);
+      video.removeEventListener('touchend', preventDoubleTapSeek);
     };
   };
 
