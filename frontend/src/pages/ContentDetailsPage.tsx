@@ -99,12 +99,12 @@ export const ContentDetailsPage: React.FC = () => {
           ? 'bg-black/90 backdrop-blur-md border-b border-white/10' 
           : 'bg-transparent'
       }`}>
-        <div className="flex items-center justify-between px-4 sm:px-6 py-4">
-          <div className="flex items-center space-x-4 sm:space-x-8">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-3">
-              <div className="text-transparent bg-gradient-to-r from-white to-gray-300 bg-clip-text font-bold text-2xl sm:text-3xl tracking-widest font-mono">CLIMAX</div>
+              <div className="text-transparent bg-gradient-to-r from-white to-gray-300 bg-clip-text font-bold text-3xl tracking-widest font-mono">CLIMAX</div>
             </div>
-            <nav className="hidden md:flex space-x-6 lg:space-x-8 text-sm lg:text-base">
+            <nav className="hidden md:flex space-x-8 text-base">
               <a href="/" className="text-white/90 hover:text-white transition-colors font-medium">Home</a>
               <a href="/" className="text-white/90 hover:text-white transition-colors font-medium">Movies</a>
               <a href="/" className="text-white/90 hover:text-white transition-colors font-medium">TV Shows</a>
@@ -114,7 +114,7 @@ export const ContentDetailsPage: React.FC = () => {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="bg-gradient-to-r from-gray-900 via-purple-700 to-gray-800 hover:from-gray-800 hover:via-purple-600 hover:to-gray-700 px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-base font-medium transition-all shadow-lg border border-purple-500/30 whitespace-nowrap">
+            <button className="bg-gradient-to-r from-gray-900 via-purple-700 to-gray-800 hover:from-gray-800 hover:via-purple-600 hover:to-gray-700 px-6 py-2.5 rounded-lg text-base font-medium transition-all shadow-lg border border-purple-500/30">
               Join Climax
             </button>
           </div>
@@ -130,47 +130,47 @@ export const ContentDetailsPage: React.FC = () => {
 
       {/* Top Poster */}
       <div className="relative pt-20">
-        <div className="h-48 sm:h-72 md:h-96 lg:h-[420px] bg-cover bg-center" style={{backgroundImage:`linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.95)), url(${content.thumbnail})`}}/>
-        <div className="absolute inset-0 flex items-end p-4 sm:p-6">
-          <div className="w-full mx-auto flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6">
-            <img src={content.thumbnail} alt={content.title} className="w-24 sm:w-36 md:w-48 lg:w-56 rounded-lg shadow-2xl object-cover flex-shrink-0" />
+        <div className="h-72 sm:h-96 lg:h-[420px] bg-cover bg-center" style={{backgroundImage:`linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.95)), url(${content.thumbnail})`}}/>
+        <div className="absolute inset-0 flex items-end p-6">
+          <div className="max-w-4xl w-full mx-auto flex items-end gap-6">
+            <img src={content.thumbnail} alt={content.title} className="w-36 sm:w-48 md:w-56 rounded-lg shadow-2xl object-cover" />
 
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold">{content.title}</h1>
-              <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-300 mt-2 mb-3">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">{content.title}</h1>
+              <div className="flex items-center gap-3 text-sm text-gray-300 mt-2 mb-3">
                 <span className="px-2 py-1 bg-gray-800 rounded">{new Date().getFullYear()}</span>
-                <span className="bg-gray-800 px-2 py-1 rounded">UA 16+</span>
+                <span className="text-xs bg-gray-800 px-2 py-1 rounded">UA 16+</span>
                 <span>{durationText}</span>
-                <span className="hidden sm:inline">{content.genre?.slice(0,3).join(' • ')}</span>
+                <span>{content.genre?.slice(0,3).join(' • ')}</span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                <button onClick={handleWatch} className="bg-gradient-to-r from-white/90 via-slate-200/80 to-white/90 backdrop-blur-lg text-black rounded-full py-2 sm:py-3 px-4 sm:px-6 flex items-center gap-2 sm:gap-3 shadow-lg hover:from-white hover:via-slate-100 hover:to-white hover:scale-[1.01] transition-all border border-white/20 text-sm sm:text-base">
-                  <Play size={18} />
+              <div className="flex items-center gap-3">
+                <button onClick={handleWatch} className="bg-gradient-to-r from-white/90 via-slate-200/80 to-white/90 backdrop-blur-lg text-black rounded-full py-3 px-6 flex items-center gap-3 shadow-lg hover:from-white hover:via-slate-100 hover:to-white hover:scale-[1.01] transition-all border border-white/20">
+                  <Play />
                   <span className="font-semibold">Watch Now</span>
                 </button>
 
-                <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all">
-                  <Share size={18} />
+                <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-3 rounded-full shadow-lg transition-all">
+                  <Share />
                 </button>
 
-                <button className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all">
-                  <Plus size={18} />
+                <button className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-3 rounded-full shadow-lg transition-all">
+                  <Plus />
                 </button>
               </div>
 
-              <p className="text-gray-300 mt-3 sm:mt-4 text-sm sm:text-base leading-relaxed hidden sm:block">{content.description}</p>
+              <p className="text-gray-300 mt-4 max-w-2xl leading-relaxed">{content.description}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Tabs + Content */}
-      <div className="w-full mx-auto px-4 sm:px-6 md:px-8 py-6 md:max-w-6xl md:mx-auto">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
         <div className="border-b border-gray-800">
-          <nav className="flex gap-4 sm:gap-6 text-sm overflow-x-auto">
+          <nav className="flex gap-6 text-sm">
             {['synopsis','cast','videos'].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab as any)} className={`py-3 pb-4 whitespace-nowrap transition-all ${activeTab===tab? 'text-white border-b-2 border-purple-500':'text-gray-400 hover:text-white'}`}>
+              <button key={tab} onClick={() => setActiveTab(tab as any)} className={`py-3 pb-4 transition-all ${activeTab===tab? 'text-white border-b-2 border-purple-500':'text-gray-400 hover:text-white'}`}>
                 {tab.charAt(0).toUpperCase()+tab.slice(1)}
               </button>
             ))}
@@ -179,14 +179,14 @@ export const ContentDetailsPage: React.FC = () => {
 
         <div className="pt-6">
           {activeTab === 'synopsis' && (
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-              <div className="flex-1 min-w-0">
+            <div className="flex gap-8">
+              <div className="flex-1">
                 <h2 className="text-xl font-semibold mb-3">Synopsis</h2>
                 <p className="text-gray-300 leading-relaxed mb-6">{content.description}</p>
                 
                 <div className="border-t border-gray-800 pt-6">
                   <h3 className="text-lg font-semibold mb-4">More Details</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-gray-400">Genre:</span>
                       <span className="ml-2 text-white">{content.genre?.join(', ')}</span>
@@ -208,7 +208,7 @@ export const ContentDetailsPage: React.FC = () => {
               </div>
 
               {/* Events Section - Right Side */}
-              <div className="w-full lg:w-96 mt-4 lg:mt-0 flex-shrink-0">
+              <div className="w-96 mt-4">
                 <h3 className="text-xl font-semibold mb-4">Events</h3>
                 <div className="space-y-3">
                   {/* Example episode row - in your real data you would map episodes */}
@@ -258,14 +258,14 @@ export const ContentDetailsPage: React.FC = () => {
 
           {activeTab === 'cast' && (
             <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Cast & Crew</h2>
-              <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4">
+              <h2 className="text-xl font-semibold mb-4">Cast & Crew</h2>
+              <div className="flex gap-6 overflow-x-auto pb-4">
                 {[1,2,3,4].map(i => (
-                  <div key={i} className="w-20 sm:w-28 text-center flex-shrink-0">
-                    <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full overflow-hidden mx-auto mb-2">
+                  <div key={i} className="w-28 text-center">
+                    <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-2">
                       <img src={content.thumbnail} className="w-full h-full object-cover" />
                     </div>
-                    <div className="text-xs sm:text-sm">Actor {i}</div>
+                    <div className="text-sm">Actor {i}</div>
                   </div>
                 ))}
               </div>
@@ -274,16 +274,16 @@ export const ContentDetailsPage: React.FC = () => {
 
           {activeTab === 'videos' && (
             <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Videos</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <h2 className="text-xl font-semibold mb-4">Videos</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="rounded overflow-hidden bg-gray-900/60">
-                  <img src={content.thumbnail} className="w-full h-32 sm:h-44 object-cover" />
+                  <img src={content.thumbnail} className="w-full h-44 object-cover" />
                   <div className="p-3 flex items-center justify-between">
                     <div>
-                      <div className="font-medium text-sm">Official Trailer</div>
+                      <div className="font-medium">Official Trailer</div>
                       <div className="text-xs text-gray-400">2:30</div>
                     </div>
-                    <button className="p-2 bg-gradient-to-r from-white to-gray-100 hover:from-gray-100 hover:to-white text-black rounded-lg transition-all shadow-lg"><Play size={18} /></button>
+                    <button className="p-2 bg-gradient-to-r from-white to-gray-100 hover:from-gray-100 hover:to-white text-black rounded-lg transition-all shadow-lg"><Play /></button>
                   </div>
                 </div>
               </div>
