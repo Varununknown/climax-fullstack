@@ -303,20 +303,12 @@ export const VideoPlayer: React.FC = () => {
     
     const onPause = () => setIsPlaying(false);
 
-    // Prevent browser's native double-tap seek on video
-    const preventDoubleTapSeek = (e: TouchEvent) => {
-      // Block all native touch gestures on the video
-      e.preventDefault();
-    };
-
     video.addEventListener('timeupdate', onTimeUpdate);
     video.addEventListener('loadedmetadata', onLoadedMetadata);
     video.addEventListener('canplay', onCanPlay);
     video.addEventListener('waiting', onWaiting);
     video.addEventListener('play', onPlay);
     video.addEventListener('pause', onPause);
-    video.addEventListener('touchstart', preventDoubleTapSeek, { passive: false });
-    video.addEventListener('touchend', preventDoubleTapSeek, { passive: false });
 
     return () => {
       video.removeEventListener('timeupdate', onTimeUpdate);
@@ -325,8 +317,6 @@ export const VideoPlayer: React.FC = () => {
       video.removeEventListener('waiting', onWaiting);
       video.removeEventListener('play', onPlay);
       video.removeEventListener('pause', onPause);
-      video.removeEventListener('touchstart', preventDoubleTapSeek);
-      video.removeEventListener('touchend', preventDoubleTapSeek);
     };
   };
 
@@ -722,7 +712,8 @@ export const VideoPlayer: React.FC = () => {
               backgroundColor: 'black',
               cursor: 'default',
               width: '100%',
-              height: '100%'
+              height: '100%',
+              pointerEvents: 'none'
             }}
             onContextMenu={(e) => e.preventDefault()}
             preload="metadata"
@@ -730,8 +721,16 @@ export const VideoPlayer: React.FC = () => {
             autoPlay
             muted // Required for autoplay in most browsers
             controls={false} // Use custom controls only
-            // Remove onClick completely for mobile, only desktop gets click-to-play
-            {...(window.innerWidth > 768 && { onClick: togglePlayPause })}
+          />
+        )}
+        {/* Desktop Click - Toggle play/pause on click */}
+        {window.innerWidth > 768 && (
+          <div
+            className="absolute inset-0 z-5"
+            onClick={togglePlayPause}
+            style={{ 
+              pointerEvents: 'auto'
+            }}
           />
         )}
         {/* Mobile Touch - Just show controls via onClick (no onTouchStart) */}
@@ -742,7 +741,8 @@ export const VideoPlayer: React.FC = () => {
             style={{ 
               WebkitTapHighlightColor: 'transparent',
               WebkitUserSelect: 'none',
-              userSelect: 'none'
+              userSelect: 'none',
+              pointerEvents: 'auto'
             }}
           />
         )}
