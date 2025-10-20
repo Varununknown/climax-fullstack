@@ -132,7 +132,7 @@ export const ContentDetailsPage: React.FC = () => {
       <div className="relative pt-20">
         <div className="h-48 sm:h-72 md:h-96 lg:h-[420px] bg-cover bg-center" style={{backgroundImage:`linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.95)), url(${content.thumbnail})`}}/>
         <div className="absolute inset-0 flex items-end p-4 sm:p-6">
-          <div className="w-full mx-auto flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6">
+          <div className="max-w-5xl mx-auto w-full flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6">
             <img src={content.thumbnail} alt={content.title} className="w-24 sm:w-36 md:w-48 lg:w-56 rounded-lg shadow-2xl object-cover flex-shrink-0" />
 
             <div className="flex-1 min-w-0">
@@ -166,7 +166,7 @@ export const ContentDetailsPage: React.FC = () => {
       </div>
 
       {/* Tabs + Content */}
-      <div className="w-full mx-auto px-4 sm:px-6 md:px-8 py-6 md:max-w-6xl md:mx-auto">
+      <div className="mx-auto px-4 sm:px-6 py-6 max-w-5xl">
         <div className="border-b border-gray-800">
           <nav className="flex gap-4 sm:gap-6 text-sm overflow-x-auto">
             {['synopsis','cast','videos'].map(tab => (
