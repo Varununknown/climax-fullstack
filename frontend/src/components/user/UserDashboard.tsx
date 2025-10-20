@@ -95,7 +95,6 @@ export const UserDashboard: React.FC = () => {
       <Header
         onSearch={handleSearch}
         currentPage={currentPage}
-        onNavigate={handleNavigate} // updated
       />
 
       {currentPage === 'home' && !searchQuery && <HeroSection />}
