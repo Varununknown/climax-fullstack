@@ -682,7 +682,7 @@ export const VideoPlayer: React.FC = () => {
   const handleMobileTouch = (e: React.TouchEvent, side: 'left' | 'right') => {
     if (window.innerWidth > 768) return; // Only for mobile
 
-    e.preventDefault(); // Prevent default touch behavior
+    // Note: Cannot use e.preventDefault() here as this is called from onTouchStart (passive listener)
     handleShowControls(); // Show controls on any touch
     const now = Date.now();
     
