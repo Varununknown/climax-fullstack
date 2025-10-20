@@ -748,13 +748,13 @@ export const VideoPlayer: React.FC = () => {
         )}
       </div>
 
-      {/* Big Play Button Overlay */}
+      {/* Big Play Button Overlay - HIDDEN */}
       {showPlayButton && (
         <div 
-          className="absolute inset-0 flex items-center justify-center bg-slate-900/30 z-20 pointer-events-auto" 
+          className="absolute inset-0 flex items-center justify-center bg-slate-900/30 z-20 pointer-events-none" 
+          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', display: 'none' }}
           onClick={(e) => { e.stopPropagation(); togglePlayPause(); }}
           onTouchEnd={(e) => { e.stopPropagation(); togglePlayPause(); }}
-          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
         >
           <div className="rounded-full p-6 backdrop-blur-sm cursor-pointer transition-all transform active:scale-95 shadow-2xl border-2"
                style={{
@@ -768,9 +768,9 @@ export const VideoPlayer: React.FC = () => {
         </div>
       )}
 
-      {/* Center Controls Overlay - Play/Pause + Forward/Backward */}
+      {/* Center Controls Overlay - HIDDEN - Play/Pause + Forward/Backward */}
       {!showPlayButton && showControls && (
-        <div className={`absolute inset-0 flex items-center justify-center z-25 pointer-events-auto`}>
+        <div className={`absolute inset-0 flex items-center justify-center z-25 pointer-events-none`} style={{ display: 'none' }}>
           <div className="flex items-center gap-4 sm:gap-8" style={{ touchAction: 'manipulation' }}>
             <button 
               onClick={(e) => { e.stopPropagation(); seekBy(-10); }}
