@@ -129,9 +129,9 @@ export const ContentDetailsPage: React.FC = () => {
       </div>
 
       {/* Top Poster */}
-      <div className="relative pt-20">
+      <div className="relative pt-20 sm:pt-20">
         <div className="h-64 sm:h-72 md:h-96 lg:h-[420px] bg-cover bg-center" style={{backgroundImage:`linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.95)), url(${content.thumbnail})`}}/>
-        <div className="absolute inset-0 flex items-end p-4 sm:p-6">
+        <div className="absolute inset-0 flex items-end p-4 sm:p-6 pt-12 sm:pt-6">
           <div className="max-w-5xl mx-auto w-full flex flex-col sm:flex-row items-start sm:items-end gap-3 sm:gap-6">
             <img src={content.thumbnail} alt={content.title} className="w-32 sm:w-36 md:w-48 lg:w-56 rounded-lg shadow-2xl object-cover flex-shrink-0" />
 
