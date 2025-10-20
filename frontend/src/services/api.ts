@@ -2,7 +2,7 @@
 import axios from "axios";
 
 // Determine backend at runtime. Try localhost first (dev), but fall back to configured URL if unreachable.
-const PROD_BACKEND = import.meta.env.VITE_BACKEND_URL || 'https://climax-backend.onrender.com';
+const PROD_BACKEND = import.meta.env.VITE_BACKEND_URL || 'https://climax-fullstack.onrender.com';
 const PREFERRED_LOCAL = 'http://localhost:5000';
 
 // Helper: test a URL quickly
