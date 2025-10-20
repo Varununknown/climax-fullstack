@@ -47,8 +47,8 @@ export const VideoPlayer: React.FC = () => {
   const [showQualityMenu, setShowQualityMenu] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
   
-  // Mobile controls
-  const [showMobileControls, setShowMobileControls] = useState(false);
+  // Mobile controls - ALWAYS show on mobile
+  const [showMobileControls, setShowMobileControls] = useState(true);
   const [lastTap, setLastTap] = useState<{ time: number; side: 'left' | 'right' } | null>(null);
   
   // Additional UI state
@@ -747,10 +747,9 @@ export const VideoPlayer: React.FC = () => {
             className={`w-full h-full ${isFullscreen ? 'object-cover' : 'object-contain'}`}
             style={{
               backgroundColor: 'black',
-              cursor: window.innerWidth <= 768 ? 'default' : 'pointer',
+              cursor: 'default',
               width: '100%',
-              height: '100%',
-              pointerEvents: 'none'
+              height: '100%'
             }}
             onContextMenu={(e) => e.preventDefault()}
             preload="metadata"
