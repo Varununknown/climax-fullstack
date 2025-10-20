@@ -827,6 +827,62 @@ export const VideoPlayer: React.FC = () => {
         </div>
       )}
 
+      {/* Center Controls Overlay - Play/Pause + Forward/Backward */}
+      {!showPlayButton && showControls && (
+        <div className="absolute inset-0 flex items-center justify-center z-15 pointer-events-none">
+          <div className="flex items-center gap-4 sm:gap-8 pointer-events-auto">
+            <button 
+              onClick={() => seekBy(-10)}
+              className="flex items-center justify-center text-white hover:text-blue-300 transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 hover:scale-110"
+              title="Backward 10s (←)"
+              style={{
+                background: 'rgba(0, 0, 0, 0.4)',
+                padding: '12px',
+                width: '48px',
+                height: '48px'
+              }}
+            >
+              <SkipBack size={24} />
+            </button>
+
+            <button 
+              onClick={togglePlayPause}
+              className="rounded-full transition-all backdrop-blur-md shadow-2xl border-2 text-white hover:scale-110"
+              title="Play/Pause (Space)"
+              style={{
+                background: 'rgba(0, 0, 0, 0.5)',
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                padding: '16px',
+                width: '64px',
+                height: '64px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {isPlaying ? 
+                <Pause size={32} className="drop-shadow-2xl" /> : 
+                <Play size={32} className="drop-shadow-2xl ml-1" />
+              }
+            </button>
+
+            <button 
+              onClick={() => seekBy(10)}
+              className="flex items-center justify-center text-white hover:text-blue-300 transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 hover:scale-110"
+              title="Forward 10s (→)"
+              style={{
+                background: 'rgba(0, 0, 0, 0.4)',
+                padding: '12px',
+                width: '48px',
+                height: '48px'
+              }}
+            >
+              <SkipForward size={24} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Smooth Video Loading - Amazon Prime Style */}
       {videoLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
@@ -966,8 +1022,10 @@ export const VideoPlayer: React.FC = () => {
 
         {/* Control Buttons */}
         <div className="flex items-center justify-center relative">
-          {/* Left Side - Volume Control (Positioned Absolutely) */}
-          <div className="absolute left-0 flex items-center">
+
+          {/* Center - Volume and Fullscreen only */}
+          <div className="flex items-center justify-center w-full" style={{ gap: window.innerWidth <= 768 ? '12px' : '16px' }}>
+            {/* Volume Control */}
             <div className="flex items-center rounded-md backdrop-blur-sm shadow-md" style={{
               background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.4) 100%)',
               border: '1px solid rgba(59, 130, 246, 0.2)',
@@ -984,7 +1042,7 @@ export const VideoPlayer: React.FC = () => {
               <div 
                 className="bg-slate-600/40 rounded-full cursor-pointer shadow-inner"
                 style={{
-                  width: window.innerWidth <= 768 ? '40px' : '64px',
+                  width: window.innerWidth <= 768 ? '50px' : '80px',
                   height: '4px'
                 }}
                 onClick={(e) => {
@@ -1019,60 +1077,8 @@ export const VideoPlayer: React.FC = () => {
                 <span className="text-xs text-blue-100 w-6 text-center font-medium">{Math.round(volume * 100)}</span>
               )}
             </div>
-          </div>
 
-          {/* Center - Main Playback Controls (Truly Centered) */}
-          <div className="flex items-center" style={{ gap: window.innerWidth <= 768 ? '8px' : '12px' }}>
-            <button 
-              onClick={() => seekBy(-10)}
-              className="flex items-center text-white hover:text-blue-300 transition-colors rounded-md backdrop-blur-sm shadow-md"
-              title="Backward 10s (←)"
-              style={{
-                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.4) 100%)',
-                border: '1px solid rgba(59, 130, 246, 0.2)',
-                padding: window.innerWidth <= 768 ? '6px 8px' : '6px 10px',
-                gap: window.innerWidth <= 768 ? '2px' : '4px'
-              }}
-            >
-              <SkipBack size={window.innerWidth <= 768 ? 14 : 16} />
-              {window.innerWidth > 768 && <span className="text-xs font-medium">10s</span>}
-            </button>
-
-            <button 
-              onClick={togglePlayPause}
-              className="rounded-full transition-colors backdrop-blur-sm shadow-xl border text-white hover:text-blue-200"
-              title="Play/Pause (Space)"
-              style={{
-                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 58, 138, 0.5) 100%)',
-                borderColor: 'rgba(59, 130, 246, 0.3)',
-                boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)',
-                padding: window.innerWidth <= 768 ? '8px' : '10px'
-              }}
-            >
-              {isPlaying ? 
-                <Pause size={window.innerWidth <= 768 ? 20 : 24} className="drop-shadow-lg" /> : 
-                <Play size={window.innerWidth <= 768 ? 20 : 24} className="drop-shadow-lg" style={{ marginLeft: window.innerWidth <= 768 ? '1px' : '2px' }} />
-              }
-            </button>
-
-            <button 
-              onClick={() => seekBy(10)}
-              className="flex items-center text-white hover:text-blue-300 transition-colors rounded-md backdrop-blur-sm shadow-md"
-              title="Forward 10s (→)"
-              style={{
-                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 58, 138, 0.4) 100%)',
-                border: '1px solid rgba(59, 130, 246, 0.2)',
-                padding: window.innerWidth <= 768 ? '6px 8px' : '6px 10px',
-                gap: window.innerWidth <= 768 ? '2px' : '4px'
-              }}
-            >
-              {window.innerWidth > 768 && <span className="text-xs font-medium">10s</span>}
-              <SkipForward size={window.innerWidth <= 768 ? 14 : 16} />
-            </button>
-          </div>
-
-          {/* Right Side - Fullscreen Control (Positioned Absolutely) */}
-          <div className="absolute right-0 flex items-center">
+            {/* Fullscreen Control */}
             <button 
               onClick={toggleFullscreen}
               className="text-white hover:text-blue-300 transition-colors rounded-md backdrop-blur-sm shadow-md"
