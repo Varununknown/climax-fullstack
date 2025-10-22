@@ -612,110 +612,25 @@ export const PremiumVideoPlayer: React.FC = () => {
   };
 
   // Mobile touch handlers (PRESERVED)
-  // ===== DIRECT NATIVE TOUCH HANDLERS - ATTACHED TO VIDEO ELEMENT =====
-  // Runs AFTER video element mounts, completely independent of React events
-  useEffect(() => {
-    if (!videoRef.current) return;
-    const video = videoRef.current;
+  // ===== MOBILE TOUCH HANDLER FOR LEFT/RIGHT ZONES =====
+  // Handles touches on the actual touch zone divs that receive the touches
+  const handleMobileTouch = (e: React.TouchEvent, zone: 'left' | 'right' | 'center') => {
+    e.preventDefault();
+    e.stopPropagation();
 
-    const handleVideoTouch = (e: TouchEvent) => {
-      // Only handle on mobile
-      if (window.innerWidth > 768) return;
-
-      const touch = e.touches[0];
-      if (!touch) return;
-
-      const rect = video.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const width = rect.width;
-
-      // Call actions immediately
-      try {
-        if (x < width * 0.33) {
-          // LEFT: Play/Pause
-          togglePlayPause();
-        } else if (x < width * 0.66) {
-          // CENTER: Show controls
-          setShowControls(true);
-          if (controlsTimeout) clearTimeout(controlsTimeout);
-          const timeout = setTimeout(() => {
-            if (isPlaying) setShowControls(false);
-          }, 3000);
-          setControlsTimeout(timeout as any);
-        } else {
-          // RIGHT: Play/Pause
-          togglePlayPause();
-        }
-      } catch (err) {
-        console.error('Touch handler error:', err);
-      }
-    };
-
-    // Attach listener DIRECTLY to video element - NOT passive
-    video.addEventListener('touchend', handleVideoTouch, { passive: false, capture: false });
-    video.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    }, { passive: false, capture: false });
-
-    return () => {
-      video.removeEventListener('touchend', handleVideoTouch);
-      video.removeEventListener('touchstart', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    };
-  }, [isPlaying, controlsTimeout]);
-
-  // ===== SIMPLIFIED MOBILE TOUCH CONTROLS =====
-  // This works at the DOM level, independent of React event system
-  useEffect(() => {
-    if (!isMobile || !containerRef.current) return;
-
-    const container = containerRef.current;
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleContainerTouch = (e: TouchEvent) => {
-      if (e.touches.length === 0) return;
-
-      const touch = e.touches[0];
-      const rect = container.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const width = rect.width;
-
-      // LEFT SIDE (33%) - Play/Pause
-      if (x < width * 0.33) {
-        e.preventDefault();
-        e.stopPropagation();
-        togglePlayPause();
-      }
-      // CENTER (33-66%) - Show controls
-      else if (x < width * 0.66) {
-        e.preventDefault();
-        e.stopPropagation();
-        setShowControls(true);
-        if (controlsTimeout) clearTimeout(controlsTimeout);
-        const timeout = setTimeout(() => {
-          if (isPlaying) setShowControls(false);
-        }, 3000);
-        setControlsTimeout(timeout as any);
-      }
-      // RIGHT SIDE (33%) - Play/Pause
-      else {
-        e.preventDefault();
-        e.stopPropagation();
-        togglePlayPause();
-      }
-    };
-
-    // Add the listener ONCE at the container level
-    container.addEventListener('touchend', handleContainerTouch, { passive: false });
-
-    return () => {
-      container.removeEventListener('touchend', handleContainerTouch);
-    };
-  }, [isMobile, isPlaying, controlsTimeout]);
+    if (zone === 'left' || zone === 'right') {
+      // Left and right = Play/Pause
+      togglePlayPause();
+    } else if (zone === 'center') {
+      // Center = Show controls
+      setShowControls(true);
+      if (controlsTimeout) clearTimeout(controlsTimeout);
+      const timeout = setTimeout(() => {
+        if (isPlaying) setShowControls(false);
+      }, 3000);
+      setControlsTimeout(timeout as any);
+    }
+  };
 
   const handleMobileTouch = (_e: React.TouchEvent, side: 'left' | 'right') => {
     if (window.innerWidth > 768) return;
@@ -973,37 +888,41 @@ export const PremiumVideoPlayer: React.FC = () => {
         {/* Mobile Touch Areas - Enhanced for Portrait Mode */}
         {isMobile && (
           <>
-            {/* Left Half - Forward (better touch zone) */}
+            {/* Left Half - Play/Pause */}
             <div
-              className="absolute top-0 left-0 w-1/2 h-full z-20 flex items-center justify-center"
-              onTouchStart={(e) => handleMobileTouch(e, 'left')}
+              className="absolute top-0 left-0 w-1/3 h-full z-25 flex items-center justify-center cursor-pointer"
+              onTouchEnd={(e) => handleMobileTouch(e, 'left')}
+              onTouchStart={(e) => e.preventDefault()}
               style={{ 
                 WebkitTapHighlightColor: 'transparent',
                 WebkitUserSelect: 'none',
                 userSelect: 'none'
               }}
-            >
-              {/* Visual feedback for double tap */}
-              <div className="opacity-0 pointer-events-none">
-                <SkipForward size={32} className="text-white" />
-              </div>
-            </div>
+            />
             
-            {/* Right Half - Backward (better touch zone) */}
+            {/* Center - Show Controls */}
             <div
-              className="absolute top-0 right-0 w-1/2 h-full z-20 flex items-center justify-center"
-              onTouchStart={(e) => handleMobileTouch(e, 'right')}
+              className="absolute top-0 left-1/3 w-1/3 h-full z-25 flex items-center justify-center cursor-pointer"
+              onTouchEnd={(e) => handleMobileTouch(e, 'center')}
+              onTouchStart={(e) => e.preventDefault()}
               style={{ 
                 WebkitTapHighlightColor: 'transparent',
                 WebkitUserSelect: 'none',
                 userSelect: 'none'
               }}
-            >
-              {/* Visual feedback for double tap */}
-              <div className="opacity-0 pointer-events-none">
-                <SkipBack size={32} className="text-white" />
-              </div>
-            </div>
+            />
+            
+            {/* Right Half - Play/Pause */}
+            <div
+              className="absolute top-0 right-0 w-1/3 h-full z-25 flex items-center justify-center cursor-pointer"
+              onTouchEnd={(e) => handleMobileTouch(e, 'right')}
+              onTouchStart={(e) => e.preventDefault()}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                WebkitUserSelect: 'none',
+                userSelect: 'none'
+              }}
+            />
           </>
         )}
 

@@ -609,98 +609,20 @@ export const VideoPlayer: React.FC = () => {
     };
   }, [controlsTimeout]);
 
-  // ===== DIRECT NATIVE TOUCH HANDLERS - ATTACHED TO VIDEO ELEMENT =====
-  // Runs AFTER video element mounts, completely independent of React events
-  useEffect(() => {
-    if (!videoRef.current) return;
-    const video = videoRef.current;
+  // ===== MOBILE TOUCH HANDLER FOR TOUCH ZONE DIVS =====
+  // Handles touches on the actual touch zone divs that receive the touches
+  const handleMobileTouch = (e: React.TouchEvent, zone: 'left' | 'right' | 'center') => {
+    e.preventDefault();
+    e.stopPropagation();
 
-    const handleVideoTouch = (e: TouchEvent) => {
-      // Only handle on mobile
-      if (window.innerWidth > 768) return;
-
-      const touch = e.touches[0];
-      if (!touch) return;
-
-      const rect = video.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const width = rect.width;
-
-      // Call actions immediately
-      try {
-        if (x < width * 0.33) {
-          // LEFT: Play/Pause
-          togglePlayPause();
-        } else if (x < width * 0.66) {
-          // CENTER: Show controls
-          handleShowControls();
-        } else {
-          // RIGHT: Play/Pause
-          togglePlayPause();
-        }
-      } catch (err) {
-        console.error('Touch handler error:', err);
-      }
-    };
-
-    // Attach listener DIRECTLY to video element - NOT passive
-    video.addEventListener('touchend', handleVideoTouch, { passive: false, capture: false });
-    video.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-    }, { passive: false, capture: false });
-
-    return () => {
-      video.removeEventListener('touchend', handleVideoTouch);
-      video.removeEventListener('touchstart', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    };
-  }, [isPlaying]);
-
-  // ===== FALLBACK CONTAINER-LEVEL TOUCH DETECTION =====
-  // If video-level listeners don't work, container will catch them
-  useEffect(() => {
-    const isMobileView = window.innerWidth <= 768;
-    if (!isMobileView || !containerRef.current) return;
-
-    const container = containerRef.current;
-
-    const handleContainerTouch = (e: TouchEvent) => {
-      if (e.touches.length === 0) return;
-
-      const touch = e.touches[0];
-      const rect = container.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const width = rect.width;
-
-      // LEFT SIDE (33%) - Play/Pause
-      if (x < width * 0.33) {
-        e.preventDefault();
-        e.stopPropagation();
-        togglePlayPause();
-      }
-      // CENTER (33-66%) - Show controls
-      else if (x < width * 0.66) {
-        e.preventDefault();
-        e.stopPropagation();
-        handleShowControls();
-      }
-      // RIGHT SIDE (33%) - Play/Pause
-      else {
-        e.preventDefault();
-        e.stopPropagation();
-        togglePlayPause();
-      }
-    };
-
-    container.addEventListener('touchend', handleContainerTouch, { passive: false });
-
-    return () => {
-      container.removeEventListener('touchend', handleContainerTouch);
-    };
-  }, [isPlaying]);
+    if (zone === 'left' || zone === 'right') {
+      // Left and right = Play/Pause
+      togglePlayPause();
+    } else if (zone === 'center') {
+      // Center = Show controls
+      handleShowControls();
+    }
+  };
 
   // ===== SUCCESS HANDLERS =====
   const handlePaymentSuccess = () => {
@@ -825,6 +747,50 @@ export const VideoPlayer: React.FC = () => {
               pointerEvents: 'auto'
             }}
           />
+        )}
+
+        {/* Mobile Touch Areas - THREE ZONES */}
+        {window.innerWidth <= 768 && (
+          <>
+            {/* Left Third - Play/Pause */}
+            <div
+              className="absolute top-0 left-0 w-1/3 h-full z-25 flex items-center justify-center cursor-pointer"
+              onTouchEnd={(e) => handleMobileTouch(e, 'left')}
+              onTouchStart={(e) => e.preventDefault()}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                WebkitUserSelect: 'none',
+                userSelect: 'none',
+                pointerEvents: 'auto'
+              }}
+            />
+            
+            {/* Center Third - Show Controls */}
+            <div
+              className="absolute top-0 left-1/3 w-1/3 h-full z-25 flex items-center justify-center cursor-pointer"
+              onTouchEnd={(e) => handleMobileTouch(e, 'center')}
+              onTouchStart={(e) => e.preventDefault()}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                WebkitUserSelect: 'none',
+                userSelect: 'none',
+                pointerEvents: 'auto'
+              }}
+            />
+            
+            {/* Right Third - Play/Pause */}
+            <div
+              className="absolute top-0 right-0 w-1/3 h-full z-25 flex items-center justify-center cursor-pointer"
+              onTouchEnd={(e) => handleMobileTouch(e, 'right')}
+              onTouchStart={(e) => e.preventDefault()}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                WebkitUserSelect: 'none',
+                userSelect: 'none',
+                pointerEvents: 'auto'
+              }}
+            />
+          </>
         )}
         {/* Mobile Touch - Just show controls via onClick (no onTouchStart) */}
         {window.innerWidth <= 768 && (
