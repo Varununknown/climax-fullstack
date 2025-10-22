@@ -735,6 +735,7 @@ export const PremiumVideoPlayer: React.FC = () => {
           muted={true}
           preload="auto"
           onClick={togglePlayPause}
+          onTouchEnd={(e) => { e.stopPropagation(); togglePlayPause(); }}
           onError={(e) => {
             console.error('🚫 Video loading error:', e);
             console.error('🚫 Failed URL:', currentVideoUrl || content.videoUrl);
@@ -946,6 +947,7 @@ export const PremiumVideoPlayer: React.FC = () => {
               {/* Play/Pause - Larger on mobile */}
               <button
                 onClick={togglePlayPause}
+                onTouchEnd={(e) => { e.stopPropagation(); togglePlayPause(); }}
                 className={`text-white hover:text-red-400 transition-colors ${
                   isMobile ? 'p-3' : 'p-2'
                 }`}
@@ -958,6 +960,7 @@ export const PremiumVideoPlayer: React.FC = () => {
                 <>
                   <button
                     onClick={() => skipTime(-10)}
+                    onTouchEnd={(e) => { e.stopPropagation(); skipTime(-10); }}
                     className="text-white hover:text-red-400 transition-colors"
                   >
                     <SkipBack size={24} />
@@ -965,6 +968,7 @@ export const PremiumVideoPlayer: React.FC = () => {
                   
                   <button
                     onClick={() => skipTime(10)}
+                    onTouchEnd={(e) => { e.stopPropagation(); skipTime(10); }}
                     className="text-white hover:text-red-400 transition-colors"
                   >
                     <SkipForward size={24} />
@@ -977,6 +981,7 @@ export const PremiumVideoPlayer: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={toggleMute}
+                    onTouchEnd={(e) => { e.stopPropagation(); toggleMute(); }}
                     className="text-white hover:text-red-400 transition-colors"
                   >
                     {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
@@ -1012,6 +1017,7 @@ export const PremiumVideoPlayer: React.FC = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowQualityMenu(!showQualityMenu)}
+                  onTouchEnd={(e) => { e.stopPropagation(); setShowQualityMenu(!showQualityMenu); }}
                   className={`text-white hover:text-red-400 transition-colors flex items-center ${
                     isMobile ? 'space-x-1 p-2' : 'space-x-1'
                   }`}
@@ -1029,6 +1035,7 @@ export const PremiumVideoPlayer: React.FC = () => {
                       <button
                         key={q.value}
                         onClick={() => handleQualityChange(q.label)}
+                        onTouchEnd={(e) => { e.stopPropagation(); handleQualityChange(q.label); }}
                         className={`block w-full px-4 py-2 text-left text-white hover:bg-red-600/50 transition-colors ${
                           quality === q.label ? 'bg-red-600/30' : ''
                         } ${isMobile ? 'py-3 text-sm' : ''}`}
@@ -1046,6 +1053,7 @@ export const PremiumVideoPlayer: React.FC = () => {
               {/* Fullscreen - Enhanced mobile button */}
               <button
                 onClick={toggleFullscreen}
+                onTouchEnd={(e) => { e.stopPropagation(); toggleFullscreen(); }}
                 className={`text-white hover:text-red-400 transition-colors ${
                   isMobile ? 'p-2' : ''
                 }`}
