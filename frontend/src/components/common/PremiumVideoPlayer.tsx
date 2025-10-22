@@ -483,6 +483,35 @@ export const PremiumVideoPlayer: React.FC = () => {
     };
   }, [isDragging]);
 
+  // ===== NATIVE TOUCH LISTENERS FOR MOBILE CONTROLS =====
+  useEffect(() => {
+    // Attach native touch listeners to all buttons for instant mobile response
+    const attachTouchListeners = () => {
+      const buttons = containerRef.current?.querySelectorAll('button');
+      if (!buttons) return;
+
+      const handleTouchEnd = (e: TouchEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Trigger click programmatically
+        (e.target as HTMLElement)?.click?.();
+      };
+
+      buttons.forEach(button => {
+        button.addEventListener('touchend', handleTouchEnd, { passive: false });
+      });
+
+      return () => {
+        buttons.forEach(button => {
+          button.removeEventListener('touchend', handleTouchEnd);
+        });
+      };
+    };
+
+    const cleanup = attachTouchListeners();
+    return () => cleanup?.();
+  }, []);
+
   const skipTime = (seconds: number) => {
     const video = videoRef.current;
     if (!video || !content) return;
