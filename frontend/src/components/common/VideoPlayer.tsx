@@ -861,6 +861,7 @@ export const VideoPlayer: React.FC = () => {
         <div className="flex justify-between items-center">
           <button 
             onClick={() => navigate(-1)}
+            onTouchEnd={(e) => { e.stopPropagation(); navigate(-1); }}
             className="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors bg-black/50 px-3 py-2 rounded-lg backdrop-blur-sm"
           >
             <ArrowLeft size={20} />
