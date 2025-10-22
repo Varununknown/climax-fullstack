@@ -799,7 +799,6 @@ export const VideoPlayer: React.FC = () => {
         <div 
           className="absolute inset-0 flex items-center justify-center bg-slate-900/30 z-20 pointer-events-auto" 
           onClick={(e) => { e.stopPropagation(); togglePlayPause(); }}
-          onTouchEnd={(e) => { e.stopPropagation(); togglePlayPause(); }}
           style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
         >
           <div className="rounded-full p-6 backdrop-blur-sm cursor-pointer transition-all transform active:scale-95 shadow-2xl border-2"
@@ -820,7 +819,6 @@ export const VideoPlayer: React.FC = () => {
           <div className="flex items-center gap-4 sm:gap-8" style={{ touchAction: 'manipulation' }}>
             <button 
               onClick={(e) => { e.stopPropagation(); seekBy(-10); }}
-              onTouchEnd={(e) => { e.stopPropagation(); seekBy(-10); }}
               className="flex items-center justify-center text-white transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
               title="Backward 10s"
               style={{
@@ -837,7 +835,6 @@ export const VideoPlayer: React.FC = () => {
 
             <button 
               onClick={(e) => { e.stopPropagation(); togglePlayPause(); }}
-              onTouchEnd={(e) => { e.stopPropagation(); togglePlayPause(); }}
               className="rounded-full transition-all backdrop-blur-md shadow-2xl border-2 text-white active:scale-95"
               title="Play/Pause"
               style={{
@@ -861,7 +858,6 @@ export const VideoPlayer: React.FC = () => {
 
             <button 
               onClick={(e) => { e.stopPropagation(); seekBy(10); }}
-              onTouchEnd={(e) => { e.stopPropagation(); seekBy(10); }}
               className="flex items-center justify-center text-white transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
               title="Forward 10s"
               style={{
@@ -907,7 +903,6 @@ export const VideoPlayer: React.FC = () => {
         <div className="flex justify-between items-center">
           <button 
             onClick={() => navigate(-1)}
-            onTouchEnd={(e) => { e.stopPropagation(); navigate(-1); }}
             className="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors bg-black/50 px-3 py-2 rounded-lg backdrop-blur-sm"
           >
             <ArrowLeft size={20} />
