@@ -609,34 +609,51 @@ export const VideoPlayer: React.FC = () => {
     };
   }, [controlsTimeout]);
 
-  // ===== NATIVE TOUCH LISTENERS FOR MOBILE CONTROLS =====
+  // ===== SIMPLIFIED MOBILE TOUCH CONTROLS =====
+  // Container-level touch detection for mobile
   useEffect(() => {
-    // Attach native touch listeners to all buttons for instant mobile response
-    const attachTouchListeners = () => {
-      const buttons = containerRef.current?.querySelectorAll('button');
-      if (!buttons) return;
+    const isMobileView = window.innerWidth <= 768;
+    if (!isMobileView || !containerRef.current) return;
 
-      const handleTouchEnd = (e: TouchEvent) => {
+    const container = containerRef.current;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleContainerTouch = (e: TouchEvent) => {
+      if (e.touches.length === 0) return;
+
+      const touch = e.touches[0];
+      const rect = container.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const width = rect.width;
+
+      // LEFT SIDE (33%) - Play/Pause or skip back
+      if (x < width * 0.33) {
         e.preventDefault();
         e.stopPropagation();
-        // Trigger click programmatically
-        (e.target as HTMLElement)?.click?.();
-      };
-
-      buttons.forEach(button => {
-        button.addEventListener('touchend', handleTouchEnd, { passive: false });
-      });
-
-      return () => {
-        buttons.forEach(button => {
-          button.removeEventListener('touchend', handleTouchEnd);
-        });
-      };
+        togglePlayPause();
+      }
+      // CENTER (33-66%) - Show controls
+      else if (x < width * 0.66) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleShowControls();
+      }
+      // RIGHT SIDE (33%) - Play/Pause or skip forward
+      else {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePlayPause();
+      }
     };
 
-    const cleanup = attachTouchListeners();
-    return () => cleanup?.();
-  }, []);
+    // Add listener at container level
+    container.addEventListener('touchend', handleContainerTouch, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchend', handleContainerTouch);
+    };
+  }, [isPlaying]);
 
   // ===== SUCCESS HANDLERS =====
   const handlePaymentSuccess = () => {

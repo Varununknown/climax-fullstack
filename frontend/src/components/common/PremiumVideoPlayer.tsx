@@ -641,6 +641,56 @@ export const PremiumVideoPlayer: React.FC = () => {
   };
 
   // Mobile touch handlers (PRESERVED)
+  // ===== SIMPLIFIED MOBILE TOUCH CONTROLS =====
+  // This works at the DOM level, independent of React event system
+  useEffect(() => {
+    if (!isMobile || !containerRef.current) return;
+
+    const container = containerRef.current;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleContainerTouch = (e: TouchEvent) => {
+      if (e.touches.length === 0) return;
+
+      const touch = e.touches[0];
+      const rect = container.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const width = rect.width;
+
+      // LEFT SIDE (33%) - Play/Pause
+      if (x < width * 0.33) {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePlayPause();
+      }
+      // CENTER (33-66%) - Show controls
+      else if (x < width * 0.66) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowControls(true);
+        if (controlsTimeout) clearTimeout(controlsTimeout);
+        const timeout = setTimeout(() => {
+          if (isPlaying) setShowControls(false);
+        }, 3000);
+        setControlsTimeout(timeout as any);
+      }
+      // RIGHT SIDE (33%) - Play/Pause
+      else {
+        e.preventDefault();
+        e.stopPropagation();
+        togglePlayPause();
+      }
+    };
+
+    // Add the listener ONCE at the container level
+    container.addEventListener('touchend', handleContainerTouch, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchend', handleContainerTouch);
+    };
+  }, [isMobile, isPlaying, controlsTimeout]);
+
   const handleMobileTouch = (_e: React.TouchEvent, side: 'left' | 'right') => {
     if (window.innerWidth > 768) return;
 
