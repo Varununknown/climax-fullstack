@@ -612,10 +612,10 @@ export const PremiumVideoPlayer: React.FC = () => {
   };
 
   // Mobile touch handlers (PRESERVED)
-  const handleMobileTouch = (e: React.TouchEvent, side: 'left' | 'right') => {
+  const handleMobileTouch = (_e: React.TouchEvent, side: 'left' | 'right') => {
     if (window.innerWidth > 768) return;
 
-    e.preventDefault();
+    // Note: Cannot use _e.preventDefault() - called from onTouchStart (passive listener)
     const now = Date.now();
     
     if (lastTap && lastTap.side === side && now - lastTap.time < 250) {
