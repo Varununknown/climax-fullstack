@@ -612,6 +612,61 @@ export const PremiumVideoPlayer: React.FC = () => {
   };
 
   // Mobile touch handlers (PRESERVED)
+  // ===== DIRECT NATIVE TOUCH HANDLERS - ATTACHED TO VIDEO ELEMENT =====
+  // Runs AFTER video element mounts, completely independent of React events
+  useEffect(() => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+
+    const handleVideoTouch = (e: TouchEvent) => {
+      // Only handle on mobile
+      if (window.innerWidth > 768) return;
+
+      const touch = e.touches[0];
+      if (!touch) return;
+
+      const rect = video.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const width = rect.width;
+
+      // Call actions immediately
+      try {
+        if (x < width * 0.33) {
+          // LEFT: Play/Pause
+          togglePlayPause();
+        } else if (x < width * 0.66) {
+          // CENTER: Show controls
+          setShowControls(true);
+          if (controlsTimeout) clearTimeout(controlsTimeout);
+          const timeout = setTimeout(() => {
+            if (isPlaying) setShowControls(false);
+          }, 3000);
+          setControlsTimeout(timeout as any);
+        } else {
+          // RIGHT: Play/Pause
+          togglePlayPause();
+        }
+      } catch (err) {
+        console.error('Touch handler error:', err);
+      }
+    };
+
+    // Attach listener DIRECTLY to video element - NOT passive
+    video.addEventListener('touchend', handleVideoTouch, { passive: false, capture: false });
+    video.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, { passive: false, capture: false });
+
+    return () => {
+      video.removeEventListener('touchend', handleVideoTouch);
+      video.removeEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    };
+  }, [isPlaying, controlsTimeout]);
+
   // ===== SIMPLIFIED MOBILE TOUCH CONTROLS =====
   // This works at the DOM level, independent of React event system
   useEffect(() => {

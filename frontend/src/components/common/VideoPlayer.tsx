@@ -609,15 +609,63 @@ export const VideoPlayer: React.FC = () => {
     };
   }, [controlsTimeout]);
 
-  // ===== SIMPLIFIED MOBILE TOUCH CONTROLS =====
-  // Container-level touch detection for mobile
+  // ===== DIRECT NATIVE TOUCH HANDLERS - ATTACHED TO VIDEO ELEMENT =====
+  // Runs AFTER video element mounts, completely independent of React events
+  useEffect(() => {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+
+    const handleVideoTouch = (e: TouchEvent) => {
+      // Only handle on mobile
+      if (window.innerWidth > 768) return;
+
+      const touch = e.touches[0];
+      if (!touch) return;
+
+      const rect = video.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const width = rect.width;
+
+      // Call actions immediately
+      try {
+        if (x < width * 0.33) {
+          // LEFT: Play/Pause
+          togglePlayPause();
+        } else if (x < width * 0.66) {
+          // CENTER: Show controls
+          handleShowControls();
+        } else {
+          // RIGHT: Play/Pause
+          togglePlayPause();
+        }
+      } catch (err) {
+        console.error('Touch handler error:', err);
+      }
+    };
+
+    // Attach listener DIRECTLY to video element - NOT passive
+    video.addEventListener('touchend', handleVideoTouch, { passive: false, capture: false });
+    video.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, { passive: false, capture: false });
+
+    return () => {
+      video.removeEventListener('touchend', handleVideoTouch);
+      video.removeEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    };
+  }, [isPlaying]);
+
+  // ===== FALLBACK CONTAINER-LEVEL TOUCH DETECTION =====
+  // If video-level listeners don't work, container will catch them
   useEffect(() => {
     const isMobileView = window.innerWidth <= 768;
     if (!isMobileView || !containerRef.current) return;
 
     const container = containerRef.current;
-    const video = videoRef.current;
-    if (!video) return;
 
     const handleContainerTouch = (e: TouchEvent) => {
       if (e.touches.length === 0) return;
@@ -627,7 +675,7 @@ export const VideoPlayer: React.FC = () => {
       const x = touch.clientX - rect.left;
       const width = rect.width;
 
-      // LEFT SIDE (33%) - Play/Pause or skip back
+      // LEFT SIDE (33%) - Play/Pause
       if (x < width * 0.33) {
         e.preventDefault();
         e.stopPropagation();
@@ -639,7 +687,7 @@ export const VideoPlayer: React.FC = () => {
         e.stopPropagation();
         handleShowControls();
       }
-      // RIGHT SIDE (33%) - Play/Pause or skip forward
+      // RIGHT SIDE (33%) - Play/Pause
       else {
         e.preventDefault();
         e.stopPropagation();
@@ -647,7 +695,6 @@ export const VideoPlayer: React.FC = () => {
       }
     };
 
-    // Add listener at container level
     container.addEventListener('touchend', handleContainerTouch, { passive: false });
 
     return () => {
