@@ -719,6 +719,7 @@ export const PremiumVideoPlayer: React.FC = () => {
       {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
+        onTouchEnd={(e) => { e.stopPropagation(); navigate(-1); }}
         className="absolute top-6 left-6 z-50 bg-black/70 hover:bg-black/90 text-white p-3 rounded-full backdrop-blur-sm transition-all"
       >
         <ArrowLeft size={24} />
