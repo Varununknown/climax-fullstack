@@ -860,6 +860,7 @@ export const PremiumVideoPlayer: React.FC = () => {
           className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-all duration-300 ${
             showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-full'
           }`}
+          onTouchEnd={(e) => e.stopPropagation()}
         >
           {/* Enhanced Draggable Progress Bar */}
           <div className={`px-4 pb-2 ${isMobile ? 'px-6 pb-4' : 'px-6 pb-2'}`}>
