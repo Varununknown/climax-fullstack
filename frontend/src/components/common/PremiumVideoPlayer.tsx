@@ -875,6 +875,31 @@ export const PremiumVideoPlayer: React.FC = () => {
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
+              onTouchStart={(e) => {
+                setIsDragging(true);
+                const touch = e.touches[0];
+                const event = new MouseEvent('mousedown', {
+                  clientX: touch.clientX,
+                  clientY: touch.clientY
+                }) as any;
+                event.currentTarget = e.currentTarget;
+                handleSeek(event);
+              }}
+              onTouchMove={(e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                const event = new MouseEvent('mousemove', {
+                  clientX: touch.clientX,
+                  clientY: touch.clientY
+                }) as any;
+                event.currentTarget = e.currentTarget;
+                handleSeek(event);
+              }}
+              onTouchEnd={(e) => {
+                setIsDragging(false);
+                e.stopPropagation();
+              }}
               onClick={handleSeek}
             >
               <div 
