@@ -719,6 +719,38 @@ export const PremiumVideoPlayer: React.FC = () => {
       className="min-h-screen bg-black relative overflow-hidden"
       onMouseMove={showControlsTemporarily}
       onTouchStart={showControlsTemporarily}
+      onTouchEnd={(e) => {
+        // ULTRA-SIMPLE DIRECT TOUCH HANDLER - MOBILE PORTRAIT
+        if (window.innerWidth > 768) return; // Desktop only
+        
+        const touch = e.changedTouches[0];
+        if (!touch) return;
+        
+        const container = containerRef.current;
+        if (!container) return;
+        
+        const rect = container.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const width = rect.width;
+        
+        console.log('📱 TOUCH DETECTED:', { x, width, zone: x < width * 0.33 ? 'LEFT' : x < width * 0.66 ? 'CENTER' : 'RIGHT' });
+        
+        if (x < width * 0.33) {
+          console.log('👈 LEFT ZONE - PLAY/PAUSE');
+          togglePlayPause();
+        } else if (x < width * 0.66) {
+          console.log('👆 CENTER ZONE - SHOW CONTROLS');
+          setShowControls(true);
+          if (controlsTimeout) clearTimeout(controlsTimeout);
+          const timeout = setTimeout(() => {
+            if (isPlaying) setShowControls(false);
+          }, 3000);
+          setControlsTimeout(timeout as any);
+        } else {
+          console.log('👉 RIGHT ZONE - PLAY/PAUSE');
+          togglePlayPause();
+        }
+      }}
     >
       {/* Back Button */}
       <button
