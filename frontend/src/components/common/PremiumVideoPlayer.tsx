@@ -35,6 +35,10 @@ export const PremiumVideoPlayer: React.FC = () => {
     shouldShowModal: false
   });
   
+  // Payment polling and trigger lock
+  const [paymentPollingInterval, setPaymentPollingInterval] = useState<any>(null);
+  const [hasShownPaymentModal, setHasShownPaymentModal] = useState(false);
+  
   // ===== PREMIUM VIDEO PLAYER STATE =====
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -259,6 +263,55 @@ export const PremiumVideoPlayer: React.FC = () => {
     checkPaymentStatus();
   }, [content, user]);
 
+  // ===== REAL-TIME PAYMENT POLLING (Every 1 second for dynamic status) =====
+  useEffect(() => {
+    if (!content || !user) return;
+
+    const startPolling = () => {
+      const interval = setInterval(async () => {
+        try {
+          // Quick check from server for real-time payment status
+          const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+          const currentPaidStatus = response.data.paid;
+
+          // Update state if status changed
+          setPaymentState(prev => {
+            // If payment was revoked (declined by admin), immediately switch to preview
+            if (prev.isPaid && !currentPaidStatus) {
+              // Clear payment flags
+              const cacheKey = `payment_${user.id}_${content._id}`;
+              localStorage.removeItem(cacheKey);
+              console.log('⚠️ Payment revoked by admin - switching to preview mode');
+              return { ...prev, isPaid: false };
+            }
+
+            // If payment confirmed newly
+            if (!prev.isPaid && currentPaidStatus) {
+              const permanentKey = `payment_permanent_${user.id}_${content._id}`;
+              localStorage.setItem(permanentKey, 'approved');
+              console.log('✅ Payment confirmed dynamically');
+              return { ...prev, isPaid: true };
+            }
+
+            return prev;
+          });
+        } catch (err) {
+          // Silent fail - don't disrupt user experience
+          // If offline, trust last known state
+        }
+      }, 1000); // Poll every 1 second
+
+      return interval;
+    };
+
+    const interval = startPolling();
+    setPaymentPollingInterval(interval);
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [content, user]);
+
   // ===== VIDEO EVENT HANDLERS (WITH PRESERVED PAYWALL LOGIC + FAST LOADING) =====
   useEffect(() => {
     const video = videoRef.current;
@@ -305,11 +358,15 @@ export const PremiumVideoPlayer: React.FC = () => {
       if (!paymentState.isPaid && currentTime >= content.climaxTimestamp && currentTime > previousTime) {
         console.log('🚫 Paywall triggered - user moved FORWARD past climax timestamp');
         
-        // Immediately pause and prevent further playback
-        video.pause();
-        video.currentTime = Math.max(0, content.climaxTimestamp - 1);
-        setIsPlaying(false);
-        setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
+        // Only trigger modal ONCE per session (prevent re-trigger)
+        if (!hasShownPaymentModal) {
+          // Immediately pause and prevent further playback
+          video.pause();
+          video.currentTime = Math.max(0, content.climaxTimestamp - 1);
+          setIsPlaying(false);
+          setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
+          setHasShownPaymentModal(true); // Lock - prevent re-trigger
+        }
         
         // Remove timeupdate listener temporarily to prevent loop
         video.removeEventListener('timeupdate', onTimeUpdate);
@@ -623,6 +680,9 @@ export const PremiumVideoPlayer: React.FC = () => {
       localStorage.setItem(cacheKey, 'true');
       localStorage.setItem(permanentKey, 'approved');
     }
+
+    // Reset trigger lock - allow seeking/replay if user wants to go back
+    setHasShownPaymentModal(false);
 
     // Resume playback
     const video = videoRef.current;
