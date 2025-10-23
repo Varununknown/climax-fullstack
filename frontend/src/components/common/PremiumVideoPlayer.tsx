@@ -61,7 +61,6 @@ export const PremiumVideoPlayer: React.FC = () => {
   ]);
   
   // Mobile controls
-  const [lastTap, setLastTap] = useState<{ time: number; side: 'left' | 'right' } | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   
   // ===== PAYWALL TRACKING (PRESERVED) =====
@@ -613,25 +612,6 @@ export const PremiumVideoPlayer: React.FC = () => {
         if (isPlaying) setShowControls(false);
       }, 3000);
       setControlsTimeout(timeout as any);
-    }
-  };
-
-  const handleMobileTouch = (_e: React.TouchEvent, side: 'left' | 'right') => {
-    if (window.innerWidth > 768) return;
-
-    // Note: Cannot use _e.preventDefault() - called from onTouchStart (passive listener)
-    const now = Date.now();
-    
-    if (lastTap && lastTap.side === side && now - lastTap.time < 250) {
-      // Double tap detected - LEFT = FORWARD, RIGHT = BACKWARD
-      if (side === 'left') {
-        skipTime(10); // LEFT taps = FORWARD 
-      } else {
-        skipTime(-10); // RIGHT taps = BACKWARD  
-      }
-      setLastTap(null);
-    } else {
-      setLastTap({ time: now, side });
     }
   };
 
