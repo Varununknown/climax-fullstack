@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Pause, ArrowLeft, Volume2, Settings, SkipBack, SkipForward, Maximize, VolumeX, RotateCw } from 'lucide-react';
+import { Play, Pause, ArrowLeft, Volume2, Settings, Maximize, VolumeX, RotateCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PaymentModal } from './PaymentModal';
 import { Content } from '../../types';
@@ -483,22 +483,6 @@ export const PremiumVideoPlayer: React.FC = () => {
     };
   }, [isDragging]);
 
-  const skipTime = (seconds: number) => {
-    const video = videoRef.current;
-    if (!video || !content) return;
-
-    const newTime = Math.max(0, Math.min(duration, video.currentTime + seconds));
-    
-    // PRESERVED PAYWALL CHECK for forward seeking only
-    if (!paymentState.isPaid && newTime > content.climaxTimestamp && seconds > 0) {
-      setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
-      return;
-    }
-
-    video.currentTime = newTime;
-    setPreviousTime(newTime);
-  };
-
   const toggleMute = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -980,22 +964,6 @@ export const PremiumVideoPlayer: React.FC = () => {
               {/* Skip Controls - Responsive sizing */}
               {!isMobile && (
                 <>
-                  <button
-                    onClick={() => skipTime(-10)}
-                    className="text-white hover:text-red-400 transition-colors"
-                  >
-                    <SkipBack size={24} />
-                  </button>
-                  
-                  <button
-                    onClick={() => skipTime(10)}
-                    className="text-white hover:text-red-400 transition-colors"
-                  >
-                    <SkipForward size={24} />
-                  </button>
-                </>
-              )}
-
               {/* Volume Controls - Hide on mobile portrait */}
               {!isMobile && (
                 <div className="flex items-center space-x-2">

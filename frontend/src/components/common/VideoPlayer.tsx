@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Pause, ArrowLeft, Volume2, Settings, SkipBack, SkipForward, Maximize, Minimize, VolumeX, RotateCcw } from 'lucide-react';
+import { Play, Pause, ArrowLeft, Volume2, Settings, Maximize, Minimize, VolumeX, RotateCcw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PaymentModal } from './PaymentModal';
 import { Content } from '../../types';
@@ -420,24 +420,6 @@ export const VideoPlayer: React.FC = () => {
     }
   };
 
-  const seekBy = (seconds: number) => {
-    const video = videoRef.current;
-    if (!video || !content) return;
-
-    const newTime = Math.max(0, Math.min(duration, video.currentTime + seconds));
-    
-    // Check paywall for forward seeking only
-    if (!paymentState.isPaid && newTime > content.climaxTimestamp && seconds > 0) {
-      console.log('🚫 Forward skip blocked - payment required');
-      setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
-      return;
-    }
-
-    video.currentTime = newTime;
-    setPreviousTime(newTime); // Update tracking
-    console.log(`📹 Skip ${seconds > 0 ? 'forward' : 'backward'} to ${newTime.toFixed(1)}s`);
-  };
-
   const seekTo = (percentage: number) => {
     const video = videoRef.current;
     if (!video || !content) return;
@@ -826,26 +808,10 @@ export const VideoPlayer: React.FC = () => {
         </div>
       )}
 
-      {/* Center Controls Overlay - Play/Pause + Forward/Backward */}
+      {/* Center Controls Overlay - Play/Pause Only */}
       {!showPlayButton && showControls && (
         <div className={`absolute inset-0 flex items-center justify-center z-25 pointer-events-auto`}>
           <div className="flex items-center gap-4 sm:gap-8" style={{ touchAction: 'manipulation' }}>
-            <button 
-              onClick={(e) => { e.stopPropagation(); seekBy(-10); }}
-              className="flex items-center justify-center text-white transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
-              title="Backward 10s"
-              style={{
-                background: 'rgba(0, 0, 0, 0.6)',
-                padding: '14px',
-                width: '60px',
-                height: '60px',
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
-            >
-              <SkipBack size={30} />
-            </button>
-
             <button 
               onClick={(e) => { e.stopPropagation(); togglePlayPause(); }}
               className="rounded-full transition-all backdrop-blur-md shadow-2xl border-2 text-white active:scale-95"
@@ -867,22 +833,6 @@ export const VideoPlayer: React.FC = () => {
                 <Pause size={40} className="drop-shadow-2xl" /> : 
                 <Play size={40} className="drop-shadow-2xl ml-1" />
               }
-            </button>
-
-            <button 
-              onClick={(e) => { e.stopPropagation(); seekBy(10); }}
-              className="flex items-center justify-center text-white transition-all rounded-full backdrop-blur-md shadow-2xl border border-white/20 active:scale-95"
-              title="Forward 10s"
-              style={{
-                background: 'rgba(0, 0, 0, 0.6)',
-                padding: '14px',
-                width: '60px',
-                height: '60px',
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
-            >
-              <SkipForward size={30} />
             </button>
           </div>
         </div>
