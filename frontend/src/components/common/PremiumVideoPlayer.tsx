@@ -595,22 +595,6 @@ export const PremiumVideoPlayer: React.FC = () => {
   };
 
   // Mobile touch handlers (PRESERVED)
-  // ===== MOBILE TOUCH HANDLER =====
-  const handleMobileTouch = (e: React.TouchEvent, zone: 'left' | 'right' | 'center') => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (zone === 'center') {
-      // Center = Show controls
-      setShowControls(true);
-      if (controlsTimeout) clearTimeout(controlsTimeout);
-      const timeout = setTimeout(() => {
-        if (isPlaying) setShowControls(false);
-      }, 3000);
-      setControlsTimeout(timeout as any);
-    }
-  };
-
   // Auto-hide controls
   const showControlsTemporarily = () => {
     setShowControls(true);
@@ -695,6 +679,29 @@ export const PremiumVideoPlayer: React.FC = () => {
       className="min-h-screen bg-black relative overflow-hidden"
       onMouseMove={showControlsTemporarily}
       onTouchStart={showControlsTemporarily}
+      onTouchEnd={(e) => {
+        // MOBILE ONLY - TAP TOGGLE CONTROLS
+        if (window.innerWidth > 768) return; // Desktop only
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Toggle controls on tap
+        const newShowControls = !showControls;
+        setShowControls(newShowControls);
+        
+        // If showing controls, set auto-hide timer
+        if (newShowControls) {
+          if (controlsTimeout) clearTimeout(controlsTimeout);
+          const timeout = setTimeout(() => {
+            setShowControls(false);
+          }, 3000);
+          setControlsTimeout(timeout as any);
+        } else {
+          // If hiding, clear any pending timeout
+          if (controlsTimeout) clearTimeout(controlsTimeout);
+        }
+      }}
     >
       {/* Back Button */}
       <button
@@ -847,23 +854,8 @@ export const PremiumVideoPlayer: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Touch Areas - Enhanced for Portrait Mode */}
-        {isMobile && (
-          <>
-            {/* Center - Show Controls */}
-            <div
-              className="absolute top-0 left-1/3 w-1/3 h-full z-25 flex items-center justify-center cursor-pointer"
-              onTouchEnd={(e) => handleMobileTouch(e, 'center')}
-              onTouchStart={(e) => e.preventDefault()}
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                WebkitUserSelect: 'none',
-                userSelect: 'none'
-              }}
-            />
-          </>
-        )}
-
+        {/* Mobile Touch Areas - REMOVED - Using container-level tap toggle */}
+        
         {/* Premium YouTube-Style Controls - Mobile Optimized */}
         <div 
           className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent transition-all duration-300 ${
