@@ -976,8 +976,6 @@ export const PremiumVideoPlayer: React.FC = () => {
               </button>
 
               {/* Skip Controls - Responsive sizing */}
-              {!isMobile && (
-                <>
               {/* Volume Controls - Hide on mobile portrait */}
               {!isMobile && (
                 <div className="flex items-center space-x-2">
