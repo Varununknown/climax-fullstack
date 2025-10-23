@@ -282,6 +282,7 @@ export const PremiumVideoPlayer: React.FC = () => {
               const cacheKey = `payment_${user.id}_${content._id}`;
               localStorage.removeItem(cacheKey);
               console.log('⚠️ Payment revoked by admin - switching to preview mode');
+              setHasShownPaymentModal(false); // Unlock trigger so modal can show again
               return { ...prev, isPaid: false };
             }
 
@@ -290,6 +291,7 @@ export const PremiumVideoPlayer: React.FC = () => {
               const permanentKey = `payment_permanent_${user.id}_${content._id}`;
               localStorage.setItem(permanentKey, 'approved');
               console.log('✅ Payment confirmed dynamically');
+              setHasShownPaymentModal(true); // Lock trigger - user paid
               return { ...prev, isPaid: true };
             }
 
@@ -311,6 +313,18 @@ export const PremiumVideoPlayer: React.FC = () => {
       if (interval) clearInterval(interval);
     };
   }, [content, user]);
+
+  // ===== SYNC TRIGGER LOCK WITH PAID STATUS =====
+  // If user refreshes and is already paid, don't show modal again
+  useEffect(() => {
+    if (paymentState.isPaid) {
+      setHasShownPaymentModal(true); // Lock the modal - user already paid
+      console.log('🔒 Trigger locked - user is already paid');
+    } else {
+      setHasShownPaymentModal(false); // Unlock - user not paid, modal can trigger
+      console.log('🔓 Trigger unlocked - user not paid yet');
+    }
+  }, [paymentState.isPaid]);
 
   // ===== VIDEO EVENT HANDLERS (WITH PRESERVED PAYWALL LOGIC + FAST LOADING) =====
   useEffect(() => {
@@ -367,12 +381,19 @@ export const PremiumVideoPlayer: React.FC = () => {
         // Only trigger modal ONCE per session (prevent re-trigger)
         if (!hasShownPaymentModal) {
           console.log('⏸️ Pausing video at paywall');
-          // Immediately pause and prevent further playback
+          
+          // HARD PAUSE - prevent any autoplay resumption
           video.pause();
           video.currentTime = Math.max(0, content.climaxTimestamp - 1);
           setIsPlaying(false);
-          setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
           setHasShownPaymentModal(true); // Lock - prevent re-trigger
+          
+          // CRITICAL: Show modal AFTER setting pause state
+          setPaymentState(prev => ({ 
+            ...prev, 
+            shouldShowModal: true,
+            isLoading: false
+          }));
         }
       }
       
@@ -663,36 +684,46 @@ export const PremiumVideoPlayer: React.FC = () => {
 
   // PRESERVED PAYMENT SUCCESS HANDLER
   const handlePaymentSuccess = () => {
-    console.log('💚 Payment successful! Updating state and resuming video...');
+    console.log('💚 Payment successful! Switching to Climax Premium...');
     
-    // PRESERVE PERMANENT PAYMENT STATUS in localStorage FIRST
+    // SAVE PAYMENT STATUS PERMANENTLY
     if (content && user) {
       const cacheKey = `payment_${user.id}_${content._id}`;
       const permanentKey = `payment_permanent_${user.id}_${content._id}`;
       
       localStorage.setItem(cacheKey, 'true');
       localStorage.setItem(permanentKey, 'approved');
+      console.log('✅ Payment saved to localStorage:', { cacheKey, permanentKey });
     }
 
-    // Update payment state - IMMEDIATELY mark as paid so onTimeUpdate doesn't re-trigger
-    setPaymentState({
-      isLoading: false,
+    // CRITICAL: Close modal first
+    setPaymentState(prev => ({
+      ...prev,
+      shouldShowModal: false,
       isPaid: true,
-      shouldShowModal: false
-    });
+      isLoading: false
+    }));
 
-    // Don't reset trigger lock - keep it true so modal doesn't appear again this session
-    // setHasShownPaymentModal stays true (prevents re-modal)
-
-    // Resume playback smoothly
+    // RESUME VIDEO after a small delay to ensure state updates
     const video = videoRef.current;
     if (video) {
       setTimeout(() => {
+        console.log('▶️ Resuming video from position:', video.currentTime);
+        
+        // Make sure we're at the right position (just before climax)
+        if (video.currentTime < content.climaxTimestamp) {
+          video.currentTime = Math.max(0, content.climaxTimestamp - 0.5);
+        }
+        
+        // Play the video
         video.play().catch(err => {
-          console.log('Play was interrupted or prevented:', err);
+          console.log('Play prevented:', err);
+          setIsPlaying(false);
         });
+        
         setIsPlaying(true);
-      }, 300); // Small delay to let state update properly
+        console.log('✅ Video resumed successfully');
+      }, 100); // Very small delay
     }
   };
 
