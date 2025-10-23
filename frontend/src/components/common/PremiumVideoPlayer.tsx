@@ -678,7 +678,6 @@ export const PremiumVideoPlayer: React.FC = () => {
       ref={containerRef}
       className="min-h-screen bg-black relative overflow-hidden"
       onMouseMove={showControlsTemporarily}
-      onTouchStart={showControlsTemporarily}
       onTouchEnd={(e) => {
         // MOBILE ONLY - TAP TOGGLE CONTROLS
         if (window.innerWidth > 768) return; // Desktop only
