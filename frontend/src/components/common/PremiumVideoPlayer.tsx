@@ -354,12 +354,19 @@ export const PremiumVideoPlayer: React.FC = () => {
       const currentTime = video.currentTime;
       setCurrentTime(currentTime);
       
+      // Check if already paid - if so, don't trigger paywall again
+      // This prevents the continuous loop after payment
+      if (paymentState.isPaid) {
+        return; // Exit early - user has access, no need to check paywall
+      }
+      
       // PRESERVED PAYWALL LOGIC - Check if user is moving FORWARD past the climax timestamp
       if (!paymentState.isPaid && currentTime >= content.climaxTimestamp && currentTime > previousTime) {
         console.log('🚫 Paywall triggered - user moved FORWARD past climax timestamp');
         
         // Only trigger modal ONCE per session (prevent re-trigger)
         if (!hasShownPaymentModal) {
+          console.log('⏸️ Pausing video at paywall');
           // Immediately pause and prevent further playback
           video.pause();
           video.currentTime = Math.max(0, content.climaxTimestamp - 1);
@@ -367,16 +374,6 @@ export const PremiumVideoPlayer: React.FC = () => {
           setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
           setHasShownPaymentModal(true); // Lock - prevent re-trigger
         }
-        
-        // Remove timeupdate listener temporarily to prevent loop
-        video.removeEventListener('timeupdate', onTimeUpdate);
-        
-        // Re-add after a brief delay to allow state to settle
-        setTimeout(() => {
-          if (video && !paymentState.isPaid) {
-            video.addEventListener('timeupdate', onTimeUpdate);
-          }
-        }, 100);
       }
       
       // Update previous time for next comparison
@@ -666,13 +663,9 @@ export const PremiumVideoPlayer: React.FC = () => {
 
   // PRESERVED PAYMENT SUCCESS HANDLER
   const handlePaymentSuccess = () => {
-    setPaymentState({
-      isLoading: false,
-      isPaid: true,
-      shouldShowModal: false
-    });
-
-    // PRESERVED PERMANENT PAYMENT STATUS
+    console.log('💚 Payment successful! Updating state and resuming video...');
+    
+    // PRESERVE PERMANENT PAYMENT STATUS in localStorage FIRST
     if (content && user) {
       const cacheKey = `payment_${user.id}_${content._id}`;
       const permanentKey = `payment_permanent_${user.id}_${content._id}`;
@@ -681,13 +674,25 @@ export const PremiumVideoPlayer: React.FC = () => {
       localStorage.setItem(permanentKey, 'approved');
     }
 
-    // Reset trigger lock - allow seeking/replay if user wants to go back
-    setHasShownPaymentModal(false);
+    // Update payment state - IMMEDIATELY mark as paid so onTimeUpdate doesn't re-trigger
+    setPaymentState({
+      isLoading: false,
+      isPaid: true,
+      shouldShowModal: false
+    });
 
-    // Resume playback
+    // Don't reset trigger lock - keep it true so modal doesn't appear again this session
+    // setHasShownPaymentModal stays true (prevents re-modal)
+
+    // Resume playback smoothly
     const video = videoRef.current;
     if (video) {
-      video.play();
+      setTimeout(() => {
+        video.play().catch(err => {
+          console.log('Play was interrupted or prevented:', err);
+        });
+        setIsPlaying(true);
+      }, 300); // Small delay to let state update properly
     }
   };
 
