@@ -595,16 +595,12 @@ export const PremiumVideoPlayer: React.FC = () => {
   };
 
   // Mobile touch handlers (PRESERVED)
-  // ===== MOBILE TOUCH HANDLER FOR LEFT/RIGHT ZONES =====
-  // Handles touches on the actual touch zone divs that receive the touches
+  // ===== MOBILE TOUCH HANDLER =====
   const handleMobileTouch = (e: React.TouchEvent, zone: 'left' | 'right' | 'center') => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (zone === 'left' || zone === 'right') {
-      // Left and right = Play/Pause
-      togglePlayPause();
-    } else if (zone === 'center') {
+    if (zone === 'center') {
       // Center = Show controls
       setShowControls(true);
       if (controlsTimeout) clearTimeout(controlsTimeout);
@@ -854,34 +850,10 @@ export const PremiumVideoPlayer: React.FC = () => {
         {/* Mobile Touch Areas - Enhanced for Portrait Mode */}
         {isMobile && (
           <>
-            {/* Left Half - Play/Pause */}
-            <div
-              className="absolute top-0 left-0 w-1/3 h-full z-25 flex items-center justify-center cursor-pointer"
-              onTouchEnd={(e) => handleMobileTouch(e, 'left')}
-              onTouchStart={(e) => e.preventDefault()}
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                WebkitUserSelect: 'none',
-                userSelect: 'none'
-              }}
-            />
-            
             {/* Center - Show Controls */}
             <div
               className="absolute top-0 left-1/3 w-1/3 h-full z-25 flex items-center justify-center cursor-pointer"
               onTouchEnd={(e) => handleMobileTouch(e, 'center')}
-              onTouchStart={(e) => e.preventDefault()}
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                WebkitUserSelect: 'none',
-                userSelect: 'none'
-              }}
-            />
-            
-            {/* Right Half - Play/Pause */}
-            <div
-              className="absolute top-0 right-0 w-1/3 h-full z-25 flex items-center justify-center cursor-pointer"
-              onTouchEnd={(e) => handleMobileTouch(e, 'right')}
               onTouchStart={(e) => e.preventDefault()}
               style={{ 
                 WebkitTapHighlightColor: 'transparent',
