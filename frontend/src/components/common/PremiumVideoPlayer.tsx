@@ -721,21 +721,44 @@ export const PremiumVideoPlayer: React.FC = () => {
       onMouseMove={showControlsTemporarily}
       onTouchStart={showControlsTemporarily}
       onTouchEnd={(e) => {
-        // MOBILE ONLY - TAP ANYWHERE TO SHOW/TOGGLE OVERLAY CONTROLS
+        // MOBILE ONLY - ZONE-BASED CONTROLS
         if (window.innerWidth > 768) return; // Desktop only
         
         const touch = e.changedTouches[0];
         if (!touch) return;
         
-        // TAP ANYWHERE = SHOW OVERLAY CONTROLS
-        setShowCenterOverlay(true);
+        const container = containerRef.current;
+        if (!container) return;
         
-        // Clear existing timeout and set new one (4 seconds)
-        if (centerOverlayTimeout) clearTimeout(centerOverlayTimeout);
-        const timeout = setTimeout(() => {
-          setShowCenterOverlay(false);
-        }, 4000);
-        setCenterOverlayTimeout(timeout as any);
+        const rect = container.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const width = rect.width;
+        
+        if (x < width * 0.33) {
+          // LEFT ZONE - SHOW OVERLAY
+          setShowCenterOverlay(true);
+          if (centerOverlayTimeout) clearTimeout(centerOverlayTimeout);
+          const timeout = setTimeout(() => {
+            setShowCenterOverlay(false);
+          }, 4000);
+          setCenterOverlayTimeout(timeout as any);
+        } else if (x < width * 0.66) {
+          // CENTER ZONE - SHOW OVERLAY
+          setShowCenterOverlay(true);
+          if (centerOverlayTimeout) clearTimeout(centerOverlayTimeout);
+          const timeout = setTimeout(() => {
+            setShowCenterOverlay(false);
+          }, 4000);
+          setCenterOverlayTimeout(timeout as any);
+        } else {
+          // RIGHT ZONE - SHOW OVERLAY
+          setShowCenterOverlay(true);
+          if (centerOverlayTimeout) clearTimeout(centerOverlayTimeout);
+          const timeout = setTimeout(() => {
+            setShowCenterOverlay(false);
+          }, 4000);
+          setCenterOverlayTimeout(timeout as any);
+        }
       }}
     >
       {/* Back Button */}
