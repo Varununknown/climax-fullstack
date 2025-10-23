@@ -733,7 +733,8 @@ export const PremiumVideoPlayer: React.FC = () => {
           src={currentVideoUrl || content.videoUrl}
           className="w-full h-full object-contain bg-black"
           playsInline
-          muted={true}
+          autoPlay
+          muted={false}
           preload="auto"
           onClick={togglePlayPause}
           onError={(e) => {
@@ -958,31 +959,8 @@ export const PremiumVideoPlayer: React.FC = () => {
                 {isPlaying ? <Pause size={isMobile ? 36 : 32} /> : <Play size={isMobile ? 36 : 32} />}
               </button>
 
-              {/* Volume Controls - Hide on mobile portrait */}
-              {!isMobile && (
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={toggleMute}
-                    className="text-white hover:text-red-400 transition-colors"
-                  >
-                    {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
-                  </button>
-                  
-                  <div 
-                    className="w-20 h-1 bg-white/30 rounded-full cursor-pointer"
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const percentage = (e.clientX - rect.left) / rect.width;
-                      changeVolume(percentage);
-                    }}
-                  >
-                    <div 
-                      className="h-full bg-white rounded-full"
-                      style={{ width: `${volume * 100}%` }}
-                    />
-                  </div>
-                </div>
-              )}
+              {/* Volume Controls - Hidden (using system audio) */}
+              {/* Removed: Volume controls are now handled by system audio */}
 
               {/* Time Display - Smaller on mobile */}
               <span className={`text-white font-medium ${
