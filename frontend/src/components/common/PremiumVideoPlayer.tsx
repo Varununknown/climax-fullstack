@@ -786,7 +786,9 @@ export const PremiumVideoPlayer: React.FC = () => {
             // Hardware acceleration for smooth playback
             transform: 'translateZ(0)',
             backfaceVisibility: 'hidden',
-            perspective: 1000
+            perspective: 1000,
+            // CRITICAL: Pass touches through video to container handler
+            pointerEvents: 'none'
           }}
         />
 
