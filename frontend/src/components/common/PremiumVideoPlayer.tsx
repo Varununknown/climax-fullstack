@@ -679,26 +679,37 @@ export const PremiumVideoPlayer: React.FC = () => {
       className="min-h-screen bg-black relative overflow-hidden"
       onMouseMove={showControlsTemporarily}
       onTouchEnd={(e) => {
-        // MOBILE ONLY - TAP TOGGLE CONTROLS
-        if (window.innerWidth > 768) return; // Desktop only
+        // TAP TOGGLE CONTROLS - Works on mobile AND fullscreen
+        // Check if touch is on video area (not on progress bar or buttons)
+        const touch = e.changedTouches[0];
+        if (!touch) return;
         
-        e.preventDefault();
-        e.stopPropagation();
+        const container = containerRef.current;
+        if (!container) return;
         
-        // Toggle controls on tap
-        const newShowControls = !showControls;
-        setShowControls(newShowControls);
+        const rect = container.getBoundingClientRect();
+        const y = touch.clientY - rect.top;
         
-        // If showing controls, set auto-hide timer
-        if (newShowControls) {
-          if (controlsTimeout) clearTimeout(controlsTimeout);
-          const timeout = setTimeout(() => {
-            setShowControls(false);
-          }, 3000);
-          setControlsTimeout(timeout as any);
-        } else {
-          // If hiding, clear any pending timeout
-          if (controlsTimeout) clearTimeout(controlsTimeout);
+        // Only toggle if tapping in upper 70% of screen (not on controls)
+        if (y < rect.height * 0.7) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Toggle controls on tap
+          const newShowControls = !showControls;
+          setShowControls(newShowControls);
+          
+          // If showing controls, set auto-hide timer
+          if (newShowControls) {
+            if (controlsTimeout) clearTimeout(controlsTimeout);
+            const timeout = setTimeout(() => {
+              setShowControls(false);
+            }, 3000);
+            setControlsTimeout(timeout as any);
+          } else {
+            // If hiding, clear any pending timeout
+            if (controlsTimeout) clearTimeout(controlsTimeout);
+          }
         }
       }}
     >
@@ -876,27 +887,38 @@ export const PremiumVideoPlayer: React.FC = () => {
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onTouchStart={(e) => {
+                e.preventDefault();
                 setIsDragging(true);
                 const touch = e.touches[0];
-                const event = new MouseEvent('mousedown', {
-                  clientX: touch.clientX,
-                  clientY: touch.clientY
-                }) as any;
-                event.currentTarget = e.currentTarget;
-                handleSeek(event);
+                const bar = e.currentTarget as HTMLElement;
+                const rect = bar.getBoundingClientRect();
+                const percentage = (touch.clientX - rect.left) / rect.width;
+                const newTime = percentage * duration;
+                
+                const video = videoRef.current;
+                if (video) {
+                  video.currentTime = Math.max(0, Math.min(duration, newTime));
+                  setCurrentTime(newTime);
+                }
               }}
               onTouchMove={(e) => {
                 if (!isDragging) return;
                 e.preventDefault();
+                
                 const touch = e.touches[0];
-                const event = new MouseEvent('mousemove', {
-                  clientX: touch.clientX,
-                  clientY: touch.clientY
-                }) as any;
-                event.currentTarget = e.currentTarget;
-                handleSeek(event);
+                const bar = e.currentTarget as HTMLElement;
+                const rect = bar.getBoundingClientRect();
+                const percentage = (touch.clientX - rect.left) / rect.width;
+                const newTime = percentage * duration;
+                
+                const video = videoRef.current;
+                if (video) {
+                  video.currentTime = Math.max(0, Math.min(duration, newTime));
+                  setCurrentTime(newTime);
+                }
               }}
               onTouchEnd={(e) => {
+                e.preventDefault();
                 setIsDragging(false);
                 e.stopPropagation();
               }}
