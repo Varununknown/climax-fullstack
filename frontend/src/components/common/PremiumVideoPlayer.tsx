@@ -69,6 +69,10 @@ export const PremiumVideoPlayer: React.FC = () => {
   // Auto-hide controls
   const [controlsTimeout, setControlsTimeout] = useState<number | null>(null);
   
+  // Center overlay controls
+  const [showCenterOverlay, setShowCenterOverlay] = useState(false);
+  const [centerOverlayTimeout, setCenterOverlayTimeout] = useState<number | null>(null);
+  
   // Fast loading optimization
   const [isVideoReady, setIsVideoReady] = useState(false);
 
@@ -428,6 +432,23 @@ export const PremiumVideoPlayer: React.FC = () => {
     }
   };
 
+  // Seek by seconds (for skip buttons)
+  const seekBy = (seconds: number) => {
+    const video = videoRef.current;
+    if (!video || !content) return;
+
+    const newTime = Math.max(0, Math.min(duration, video.currentTime + seconds));
+    
+    // PRESERVED PAYWALL CHECK - only trigger if seeking FORWARD past climax
+    if (!paymentState.isPaid && newTime > content.climaxTimestamp && seconds > 0) {
+      setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
+      return;
+    }
+
+    video.currentTime = newTime;
+    setPreviousTime(newTime);
+  };
+
   const [isDragging, setIsDragging] = useState(false);
 
   const handleSeek = (e: React.MouseEvent) => {
@@ -713,21 +734,19 @@ export const PremiumVideoPlayer: React.FC = () => {
         const x = touch.clientX - rect.left;
         const width = rect.width;
         
-        console.log('📱 TOUCH DETECTED:', { x, width, zone: x < width * 0.33 ? 'LEFT' : x < width * 0.66 ? 'CENTER' : 'RIGHT' });
-        
         if (x < width * 0.33) {
-          console.log('👈 LEFT ZONE - PLAY/PAUSE');
+          // LEFT ZONE - PLAY/PAUSE
           togglePlayPause();
         } else if (x < width * 0.66) {
-          console.log('👆 CENTER ZONE - SHOW CONTROLS');
-          setShowControls(true);
-          if (controlsTimeout) clearTimeout(controlsTimeout);
+          // CENTER ZONE - SHOW OVERLAY CONTROLS
+          setShowCenterOverlay(true);
+          if (centerOverlayTimeout) clearTimeout(centerOverlayTimeout);
           const timeout = setTimeout(() => {
-            if (isPlaying) setShowControls(false);
-          }, 3000);
-          setControlsTimeout(timeout as any);
+            setShowCenterOverlay(false);
+          }, 4000);
+          setCenterOverlayTimeout(timeout as any);
         } else {
-          console.log('👉 RIGHT ZONE - PLAY/PAUSE');
+          // RIGHT ZONE - PLAY/PAUSE
           togglePlayPause();
         }
       }}
@@ -771,6 +790,64 @@ export const PremiumVideoPlayer: React.FC = () => {
             pointerEvents: 'none'
           }}
         />
+
+        {/* CENTER OVERLAY CONTROLS - Amazon Prime Style */}
+        {showCenterOverlay && isMobile && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-auto">
+            {/* Dark semi-transparent backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+              onClick={() => setShowCenterOverlay(false)}
+            />
+            
+            {/* Control buttons - centered */}
+            <div className="relative flex items-center justify-center gap-8">
+              {/* Skip Backward 10s */}
+              <button
+                onClick={() => seekBy(-10)}
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full p-4 transition-all transform hover:scale-110 active:scale-95"
+                title="Skip 10s backward"
+              >
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M11 5V1l-5 5 5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L4.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v4l5-5-5-5v4z" />
+                  <text x="12" y="16" textAnchor="middle" className="text-xs fill-white font-bold">10</text>
+                </svg>
+                <span className="absolute -bottom-8 text-white text-xs font-medium">-10s</span>
+              </button>
+
+              {/* Play/Pause - Center, Larger */}
+              <button
+                onClick={togglePlayPause}
+                className="bg-white/30 hover:bg-white/40 backdrop-blur-md rounded-full p-6 transition-all transform hover:scale-110 active:scale-95 shadow-lg"
+                title={isPlaying ? "Pause" : "Play"}
+              >
+                {isPlaying ? (
+                  <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="4" width="4" height="16" />
+                    <rect x="14" y="4" width="4" height="16" />
+                  </svg>
+                ) : (
+                  <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Skip Forward 10s */}
+              <button
+                onClick={() => seekBy(10)}
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full p-4 transition-all transform hover:scale-110 active:scale-95"
+                title="Skip 10s forward"
+              >
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M13 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6 0 1.01.25 1.97.7 2.8l-1.46 1.46C4.46 15.03 4 13.57 4 12c0-4.42 3.58-8 8-8zm0 14c3.31 0 6-2.69 6-6 0-1.01-.25-1.97-.7-2.8l1.46-1.46C19.54 8.97 20 10.43 20 12c0 4.42-3.58 8-8 8v4l-5-5 5-5v4z" />
+                  <text x="12" y="16" textAnchor="middle" className="text-xs fill-white font-bold">10</text>
+                </svg>
+                <span className="absolute -bottom-8 text-white text-xs font-medium">+10s</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Buffering Indicator - Less Intrusive */}
         {isBuffering && (
