@@ -975,7 +975,6 @@ export const PremiumVideoPlayer: React.FC = () => {
                 {isPlaying ? <Pause size={isMobile ? 36 : 32} /> : <Play size={isMobile ? 36 : 32} />}
               </button>
 
-              {/* Skip Controls - Responsive sizing */}
               {/* Volume Controls - Hide on mobile portrait */}
               {!isMobile && (
                 <div className="flex items-center space-x-2">
