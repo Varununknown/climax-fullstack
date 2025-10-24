@@ -7,7 +7,7 @@ const Content = require('../models/Content.cjs');
 // 📝 Log helper
 const log = (...args) => console.log('[💰 Payment]', ...args);
 
-// Save a payment
+// Save a payment (auto-approve)
 router.post('/', async (req, res) => {
   try {
     const { userId, contentId, amount, transactionId } = req.body;
@@ -16,23 +16,50 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const existing = await Payment.findOne({ userId, contentId });
+    // Convert to ObjectIds
+    const mongoose = require('mongoose');
+    const userIdObj = new mongoose.Types.ObjectId(userId);
+    const contentIdObj = new mongoose.Types.ObjectId(contentId);
+
+    // If payment exists, ensure it's approved and return success
+    const existing = await Payment.findOne({ userId: userIdObj, contentId: contentIdObj });
     if (existing) {
-      return res.status(409).json({ message: 'Payment already exists' });
+      if (existing.status !== 'approved') {
+        existing.status = 'approved';
+        await existing.save();
+      }
+      return res.status(200).json({ 
+        message: 'Payment already exists, unlocked', 
+        paid: true,
+        alreadyPaid: true,
+        payment: existing
+      });
     }
 
-    const newPayment = new Payment({ userId, contentId, amount, transactionId });
+    // Create auto-approved payment for instant unlock
+    const newPayment = new Payment({ 
+      userId: userIdObj, 
+      contentId: contentIdObj, 
+      amount, 
+      transactionId,
+      status: 'approved'
+    });
     await newPayment.save();
 
-    log('✅ Payment saved:', transactionId);
-    return res.status(201).json({ message: 'Payment saved successfully' });
+    log('✅ Payment saved & approved:', transactionId);
+    return res.status(201).json({ 
+      message: 'Payment approved successfully',
+      paid: true,
+      alreadyPaid: false,
+      payment: newPayment
+    });
   } catch (err) {
     console.error('❌ Error saving payment:', err);
     return res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Check if payment exists
+// Check if approved payment exists
 router.get('/check', async (req, res) => {
   const { userId, contentId } = req.query;
   try {
@@ -40,8 +67,16 @@ router.get('/check', async (req, res) => {
       return res.status(400).json({ message: 'Missing query parameters' });
     }
 
-    const payment = await Payment.findOne({ userId, contentId });
-    return res.status(200).json({ paid: !!payment });
+    const mongoose = require('mongoose');
+    const userIdObj = new mongoose.Types.ObjectId(userId);
+    const contentIdObj = new mongoose.Types.ObjectId(contentId);
+
+    const payment = await Payment.findOne({ 
+      userId: userIdObj, 
+      contentId: contentIdObj,
+      status: 'approved'
+    });
+    return res.status(200).json({ paid: !!payment, payment });
   } catch (err) {
     console.error('❌ Error checking payment:', err);
     return res.status(500).json({ message: 'Server error' });
