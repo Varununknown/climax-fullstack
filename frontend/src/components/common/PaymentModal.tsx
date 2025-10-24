@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, QrCode, CheckCircle, Clock, Copy } from 'lucide-react';
+import { X, QrCode, CheckCircle, Clock, Copy, CreditCard } from 'lucide-react';
 import { Content } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 
@@ -16,6 +16,8 @@ interface PaymentSettings {
   qrCodeUrl: string;
   merchantName: string;
   isActive: boolean;
+  payuMerchantKey?: string;
+  payuEnabled?: boolean;
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({
@@ -24,10 +26,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose
 }) => {
   const { user } = useAuth();
-  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success'>('qr');
+  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'payU'>('qr');
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'payU'>('upi'); // Tab selector
   const [transactionId, setTransactionId] = useState('');
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   console.log('💳 PaymentModal rendered for content:', content.title, 'Price:', content.premiumPrice);
 
@@ -64,6 +68,61 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     const upiRegex2 = /^[A-Z]{4}\d{8,}$/i;
     const upiRegex3 = /^[\w.-]{5,30}@[\w]{3,}$/i;
     return upiRegex1.test(trimmed) || upiRegex2.test(trimmed) || upiRegex3.test(trimmed);
+  };
+
+  // ✅ PayU Integration - Initiate payment gateway redirect
+  const handlePayUPayment = async () => {
+    if (!user?.id || !content._id) {
+      alert('Missing user or content information');
+      return;
+    }
+
+    setIsProcessing(true);
+    console.log('🔄 Initiating PayU payment...');
+
+    try {
+      // Request PayU payment form from backend
+      const response = await fetch(`${BACKEND_URL}/api/payu/initiate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          contentId: content._id,
+          amount: content.premiumPrice,
+          userEmail: user.email || 'user@climax.app',
+          userName: user.name || 'User'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.formHtml) {
+        console.log('✅ PayU form received, redirecting...');
+        // Create a temporary form and submit to PayU
+        const form = document.createElement('form');
+        form.innerHTML = data.formHtml;
+        document.body.appendChild(form);
+        
+        // Auto-submit the form to PayU
+        const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+        if (submitBtn) {
+          setTimeout(() => submitBtn.click(), 100);
+        } else {
+          // Fallback: submit form directly
+          (form as HTMLFormElement).submit();
+        }
+      } else {
+        console.error('❌ PayU form generation failed:', data.message);
+        alert('PayU gateway unavailable. Please try UPI payment instead.');
+        setIsProcessing(false);
+      }
+    } catch (err) {
+      console.error('❌ PayU initiation error:', err);
+      alert('Payment gateway error. Please try UPI payment instead.');
+      setIsProcessing(false);
+    }
   };
 
   const handlePaymentSubmit = async () => {
@@ -221,6 +280,34 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </p>
             </div>
 
+            {/* ✅ Payment Method Tabs */}
+            {paymentSettings?.payuEnabled && (
+              <div className="flex gap-2 mb-4 landscape:mb-3">
+                <button
+                  onClick={() => setPaymentMethod('upi')}
+                  className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all landscape:py-1 landscape:text-sm ${
+                    paymentMethod === 'upi'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  <QrCode className="w-4 h-4 inline mr-2" />
+                  UPI
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('payU')}
+                  className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all landscape:py-1 landscape:text-sm ${
+                    paymentMethod === 'payU'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  <CreditCard className="w-4 h-4 inline mr-2" />
+                  PayU
+                </button>
+              </div>
+            )}
+
             <div className="bg-gray-800 rounded-lg p-4 mb-4 landscape:p-2 landscape:mb-3 landscape:hidden">
               <div className="flex items-center space-x-2">
                 <img
@@ -236,92 +323,146 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
             </div>
 
-            {paymentSettings?.isActive && qrCodeData ? (
-              <div className="bg-white rounded-lg p-4 mb-4 text-center portrait:block landscape:hidden">
-                <div className="mb-4">
-                  <QrCode className="w-6 h-6 text-gray-600 mx-auto mb-2" />
-                  <h3 className="text-gray-800 font-semibold">Scan to Pay</h3>
-                  <p className="text-gray-600 text-sm">{paymentSettings.merchantName}</p>
-                </div>
+            {/* UPI Payment Method */}
+            {paymentMethod === 'upi' && (
+              <>
+                {paymentSettings?.isActive && qrCodeData ? (
+                  <div className="bg-white rounded-lg p-4 mb-4 text-center portrait:block landscape:hidden">
+                    <div className="mb-4">
+                      <QrCode className="w-6 h-6 text-gray-600 mx-auto mb-2" />
+                      <h3 className="text-gray-800 font-semibold">Scan to Pay</h3>
+                      <p className="text-gray-600 text-sm">{paymentSettings.merchantName}</p>
+                    </div>
 
-                <div className="bg-gray-100 p-4 rounded-lg mb-4">
-                  <img
-                    src={qrCodeData.qrImage}
-                    alt="Payment QR Code"
-                    className="w-40 h-40 mx-auto"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1582769923195-c6e60dc1d8d6?w=200&h=200&fit=crop&auto=format';
-                    }}
-                  />
-                </div>
+                    <div className="bg-gray-100 p-4 rounded-lg mb-4">
+                      <img
+                        src={qrCodeData.qrImage}
+                        alt="Payment QR Code"
+                        className="w-40 h-40 mx-auto"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1582769923195-c6e60dc1d8d6?w=200&h=200&fit=crop&auto=format';
+                        }}
+                      />
+                    </div>
 
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex items-center justify-between">
-                    <span>UPI ID:</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-mono">{qrCodeData.upiId}</span>
-                      <button
-                        onClick={() => copyToClipboard(qrCodeData.upiId)}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div className="flex items-center justify-between">
+                        <span>UPI ID:</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-mono">{qrCodeData.upiId}</span>
+                          <button
+                            onClick={() => copyToClipboard(qrCodeData.upiId)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Amount:</span>
+                        <span className="font-semibold">₹{content.premiumPrice}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span>Amount:</span>
-                    <span className="font-semibold">₹{content.premiumPrice}</span>
+                ) : (
+                  <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-4 text-center">
+                    <h3 className="text-red-400 font-semibold mb-2">Payment Setup Pending</h3>
+                    <p className="text-gray-300 text-sm">
+                      UPI Gateway configuration in progress. Please enter transaction ID manually.
+                    </p>
                   </div>
+                )}
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-300 mb-2 landscape:text-xs landscape:mb-1">
+                    Enter Transaction ID *
+                  </label>
+                  <input
+                    type="text"
+                    value={transactionId}
+                    onChange={(e) => {
+                      setTransactionId(e.target.value);
+                      setTxnError('');
+                    }}
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 landscape:py-1 landscape:text-sm"
+                    placeholder="Enter/Paste your transaction ID"
+                    required
+                  />
+                  {txnError && (
+                    <p className="text-red-500 text-xs mt-1 landscape:text-[10px]">{txnError}</p>
+                  )}
+                  <p className="text-gray-500 text-xs mt-1 landscape:text-[10px] landscape:mt-0.5">
+                    Copy the transaction ID from your payment app after completing the payment
+                  </p>
                 </div>
-              </div>
-            ) : (
-              <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-4 text-center">
-                <h3 className="text-red-400 font-semibold mb-2">Payment Setup Pending</h3>
-                <p className="text-gray-300 text-sm">
-                  UPI Gateway configuration in progress. Please enter transaction ID manually.
-                </p>
-              </div>
+
+                <div className="space-y-3 landscape:space-y-1.5">
+                  <button
+                    onClick={handlePaymentSubmit}
+                    disabled={!transactionId.trim()}
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm"
+                  >
+                    Submit Payment
+                  </button>
+
+                  <button
+                    onClick={onClose}
+                    className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
             )}
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2 landscape:text-xs landscape:mb-1">
-                Enter Transaction ID *
-              </label>
-              <input
-                type="text"
-                value={transactionId}
-                onChange={(e) => {
-                  setTransactionId(e.target.value);
-                  setTxnError('');
-                }}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 landscape:py-1 landscape:text-sm"
-                placeholder="Enter/Paste your transaction ID"
-                required
-              />
-              {txnError && (
-                <p className="text-red-500 text-xs mt-1 landscape:text-[10px]">{txnError}</p>
-              )}
-              <p className="text-gray-500 text-xs mt-1 landscape:text-[10px] landscape:mt-0.5">
-                Copy the transaction ID from your payment app after completing the payment
-              </p>
-            </div>
+            {/* PayU Payment Method */}
+            {paymentMethod === 'payU' && (
+              <>
+                <div className="bg-gradient-to-br from-blue-900/40 to-purple-900/40 border border-blue-500/50 rounded-lg p-4 mb-4">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <CreditCard className="w-5 h-5 text-blue-400" />
+                    <h3 className="text-lg font-semibold text-white">PayU Gateway</h3>
+                  </div>
+                  <p className="text-gray-300 text-sm mb-4">
+                    Fast & secure payment processing. Click below to proceed with PayU.
+                  </p>
+                  <p className="text-blue-300 text-xs mb-4">
+                    Amount: <span className="font-bold text-lg">₹{content.premiumPrice}</span>
+                  </p>
+                </div>
 
-            <div className="space-y-3 landscape:space-y-1.5">
-              <button
-                onClick={handlePaymentSubmit}
-                disabled={!transactionId.trim()}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm"
-              >
-                Submit Payment
-              </button>
+                <div className="space-y-3 landscape:space-y-1.5">
+                  <button
+                    onClick={handlePayUPayment}
+                    disabled={isProcessing}
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-600 disabled:to-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-all landscape:py-2 landscape:text-sm flex items-center justify-center gap-2"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-5 h-5" />
+                        Pay with PayU
+                      </>
+                    )}
+                  </button>
 
-              <button
-                onClick={onClose}
-                className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm"
-              >
-                Cancel
-              </button>
-            </div>
+                  <button
+                    onClick={onClose}
+                    className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                <p className="text-gray-500 text-xs text-center mt-3 landscape:mt-2">
+                  You will be redirected to PayU's secure payment gateway
+                </p>
+              </>
+            )}
           </>
         )}
 
