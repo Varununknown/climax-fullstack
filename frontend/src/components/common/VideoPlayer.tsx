@@ -47,7 +47,7 @@ export const VideoPlayer: React.FC = () => {
       .catch(() => navigate('/'));
   }, [id, navigate]);
 
-  // ===== CHECK PAYMENT (INITIAL) =====
+  // ===== CHECK PAYMENT STATUS =====
   useEffect(() => {
     if (!content || !user) {
       setIsPaid(false);
@@ -55,46 +55,32 @@ export const VideoPlayer: React.FC = () => {
       return;
     }
 
-    console.log('💳 Initial payment check...');
+    console.log('💳 Checking payment status in database...');
     
-    // ✅ CRITICAL: Check localStorage first for persisted lock
-    const lockKey = `payment_locked_${user.id}_${content._id}`;
-    const savedLock = localStorage.getItem(lockKey);
-    
-    if (savedLock === 'true') {
-      console.log('✅ PAYMENT LOCK FOUND IN STORAGE - Restoring locked state');
-      setIsPaid(true);
-      setPaymentLocked(true);
-      setShowPaymentModal(false);
-      setCheckingPayment(false);
-      return;
-    }
-    
-    // Otherwise, check backend
+    // Check payment status in backend
     API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`)
       .then(res => {
         const paid = res.data.paid;
-        setIsPaid(paid);
+        console.log('📡 Payment check response:', paid ? '✅ PAID' : '❌ NOT PAID');
         
-        // ✅ CRITICAL: If payment exists, lock the modal permanently
         if (paid) {
-          console.log('✅ PAYMENT FOUND - Locking modal permanently and saving to storage');
+          // Payment verified - unlock content
+          console.log('✅ PAYMENT VERIFIED - Content unlocked');
+          setIsPaid(true);
           setPaymentLocked(true);
           setShowPaymentModal(false);
-          localStorage.setItem(lockKey, 'true'); // ✅ PERSIST THE LOCK
         } else {
-          console.log('🔒 NO PAYMENT - Modal can be triggered');
+          // No payment found - keep locked
+          console.log('🔒 NO PAYMENT FOUND - Content locked');
+          setIsPaid(false);
           setPaymentLocked(false);
-          localStorage.removeItem(lockKey);
         }
-        
-        console.log(paid ? '✅ PAID - Full access' : '🔒 NOT PAID - Locked');
       })
       .catch(err => {
         console.error('❌ Payment check error:', err);
+        // On error, assume not paid
         setIsPaid(false);
         setPaymentLocked(false);
-        localStorage.removeItem(lockKey);
       })
       .finally(() => setCheckingPayment(false));
   }, [content, user]);
@@ -199,16 +185,11 @@ export const VideoPlayer: React.FC = () => {
     console.log('Content:', content.title);
     console.log('User:', user.id);
     
-    // ✅ CRITICAL: Set BOTH states ATOMICALLY - no polling interference
-    console.log('⚡ ATOMIC UPDATE: Locking payment permanently');
+    // ✅ CRITICAL: Immediately update states after successful payment
+    console.log('⚡ Setting payment status after successful payment');
     setShowPaymentModal(false);
     setIsPaid(true);
-    setPaymentLocked(true); // ✅ THIS STOPS THE POLLING!
-    
-    // ✅ PERSIST the lock in localStorage
-    const lockKey = `payment_locked_${user.id}_${content._id}`;
-    localStorage.setItem(lockKey, 'true');
-    console.log('💾 Payment lock saved to localStorage');
+    setPaymentLocked(true);
     
     // ✅ Resume video immediately
     setTimeout(() => {
