@@ -224,10 +224,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-3">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-3 pointer-events-none">
       {/* Compact Modal with Gradient */}
       <div className="bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-2xl w-full max-w-sm sm:max-w-md p-4 sm:p-6 relative
-        max-h-[90vh] overflow-y-auto portrait:max-w-sm shadow-2xl border border-slate-700
+        max-h-[90vh] overflow-y-auto portrait:max-w-sm shadow-2xl border border-slate-700 pointer-events-auto
         landscape:max-w-6xl landscape:max-h-[90vh] landscape:overflow-visible landscape:flex landscape:gap-4 landscape:items-center landscape:p-0">
         
         {/* Left QR section - visible only in landscape */}
