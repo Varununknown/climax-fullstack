@@ -58,14 +58,33 @@ export const VideoPlayer: React.FC = () => {
     const checkPayment = async () => {
       if (!content || !user) return;
 
+      console.log('🔍 Checking payment for:', {
+        userId: user.id,
+        contentId: content._id,
+        contentTitle: content.title
+      });
+
       try {
         const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
         const data = res.data;
+        
+        console.log('📡 Payment API Response:', data);
+        console.log('📊 Payment Status Details:', {
+          paid: data.paid,
+          paymentExists: !!data.payment,
+          responseKeys: Object.keys(data)
+        });
+
         setHasPaid(data.paid);
         if (data.paid) setShowPaymentModal(false);
-        console.log('💳 Payment status:', data.paid ? '✅ PAID' : '❌ NOT PAID');
+        console.log('💳 Final Payment Status:', data.paid ? '✅ PAID' : '❌ NOT PAID');
       } catch (err) {
         console.error('❌ Error checking payment:', err);
+        console.error('❌ Full error details:', {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status
+        });
         setHasPaid(false);
       }
     };
@@ -239,6 +258,13 @@ export const VideoPlayer: React.FC = () => {
   }
 
   const isLocked = !hasPaid && content.premiumPrice > 0;
+  
+  console.log('🏷️ Badge State Debug:', {
+    hasPaid,
+    premiumPrice: content.premiumPrice,
+    isLocked,
+    contentTitle: content.title
+  });
 
   return (
     <div 
