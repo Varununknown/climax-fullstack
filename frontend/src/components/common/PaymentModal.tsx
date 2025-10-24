@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, QrCode, CheckCircle, Clock, Copy, CreditCard } from 'lucide-react';
+import { X, QrCode, CheckCircle, Copy, CreditCard } from 'lucide-react';
 import { Content } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 
@@ -224,11 +224,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-2 sm:p-4">
-      {/* Responsive modal: Portrait=vertical, Landscape=horizontal */}
-      <div className="bg-gray-900 rounded-2xl w-full p-3 sm:p-4 relative
-        max-h-[95vh] overflow-y-auto portrait:max-w-md
-        landscape:max-w-6xl landscape:max-h-[90vh] landscape:overflow-visible landscape:flex landscape:gap-4 landscape:items-center">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-3">
+      {/* Compact Modal with Gradient */}
+      <div className="bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-2xl w-full max-w-sm sm:max-w-md p-4 sm:p-6 relative
+        max-h-[90vh] overflow-y-auto portrait:max-w-sm shadow-2xl border border-slate-700
+        landscape:max-w-6xl landscape:max-h-[90vh] landscape:overflow-visible landscape:flex landscape:gap-4 landscape:items-center landscape:p-0">
         
         {/* Left QR section - visible only in landscape */}
         <div className="hidden landscape:flex landscape:flex-col landscape:w-1/3 landscape:items-center landscape:justify-center landscape:gap-2 landscape:pr-4 landscape:border-r landscape:border-gray-700">
@@ -273,53 +273,47 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
         {(paymentStep === 'qr') && (
           <>
-            <div className="mb-4 landscape:mb-3">
-              <h2 className="text-2xl font-bold text-white mb-2 landscape:text-lg landscape:mb-1">Complete Payment</h2>
-              <p className="text-gray-400 landscape:text-xs">
-                Pay ₹{content.premiumPrice} to continue watching "{content.title}"
+            <div className="mb-3 sm:mb-4 text-center">
+              <h2 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-0.5 landscape:text-lg">
+                Unlock Premium
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-400 landscape:text-xs">
+                Watch "{content.title}"
               </p>
             </div>
 
-            {/* ✅ Payment Method Tabs */}
+            {/* ✅ Payment Method Tabs - Gateway & Manual */}
             {paymentSettings?.payuEnabled && (
-              <div className="flex gap-2 mb-4 landscape:mb-3 relative z-20 pointer-events-auto">
+              <div className="flex gap-2 mb-3 sm:mb-4 relative z-20 pointer-events-auto">
                 <button
                   onClick={() => setPaymentMethod('upi')}
-                  className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all landscape:py-1 landscape:text-sm relative z-20 pointer-events-auto cursor-pointer ${
+                  className={`flex-1 py-2.5 px-3 rounded-lg font-semibold text-sm transition-all landscape:py-1 landscape:text-sm relative z-20 pointer-events-auto cursor-pointer ${
                     paymentMethod === 'upi'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'bg-slate-700/50 text-gray-300 hover:bg-slate-700'
                   }`}
                 >
-                  <QrCode className="w-4 h-4 inline mr-2" />
-                  UPI
+                  <QrCode className="w-4 h-4 inline mr-1.5" />
+                  QR Code
                 </button>
                 <button
                   onClick={() => setPaymentMethod('payU')}
-                  className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all landscape:py-1 landscape:text-sm relative z-20 pointer-events-auto cursor-pointer ${
+                  className={`flex-1 py-2.5 px-3 rounded-lg font-semibold text-sm transition-all landscape:py-1 landscape:text-sm relative z-20 pointer-events-auto cursor-pointer ${
                     paymentMethod === 'payU'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'bg-slate-700/50 text-gray-300 hover:bg-slate-700'
                   }`}
                 >
-                  <CreditCard className="w-4 h-4 inline mr-2" />
-                  PayU
+                  <CreditCard className="w-4 h-4 inline mr-1.5" />
+                  Gateway
                 </button>
               </div>
             )}
 
-            <div className="bg-gray-800 rounded-lg p-4 mb-4 landscape:p-2 landscape:mb-3 landscape:hidden">
-              <div className="flex items-center space-x-2">
-                <img
-                  src={content.thumbnail}
-                  alt={content.title}
-                  className="w-14 h-16 object-cover rounded"
-                />
-                <div>
-                  <h3 className="text-white font-semibold text-xs">{content.title}</h3>
-                  <p className="text-gray-400 text-xs capitalize">{content.type} • {content.category}</p>
-                  <p className="text-blue-400 font-bold text-sm mt-2">₹{content.premiumPrice}</p>
-                </div>
+            <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-2.5 mb-3 sm:mb-4">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300 text-xs sm:text-sm font-medium">Full Access</span>
+                <span className="text-xl sm:text-2xl font-bold text-blue-400">₹{content.premiumPrice}</span>
               </div>
             </div>
 
@@ -327,34 +321,34 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             {paymentMethod === 'upi' && (
               <>
                 {paymentSettings?.isActive && qrCodeData ? (
-                  <div className="bg-white rounded-lg p-4 mb-4 text-center portrait:block landscape:hidden">
-                    <div className="mb-4">
-                      <QrCode className="w-6 h-6 text-gray-600 mx-auto mb-2" />
-                      <h3 className="text-gray-800 font-semibold">Scan to Pay</h3>
-                      <p className="text-gray-600 text-sm">{paymentSettings.merchantName}</p>
+                  <div className="bg-white rounded-lg p-3 mb-3 text-center portrait:block landscape:hidden">
+                    <div className="mb-2">
+                      <QrCode className="w-5 h-5 text-gray-600 mx-auto mb-1.5" />
+                      <h3 className="text-gray-800 font-semibold text-sm">Scan QR Code</h3>
+                      <p className="text-gray-600 text-xs">{paymentSettings.merchantName}</p>
                     </div>
 
-                    <div className="bg-gray-100 p-4 rounded-lg mb-4">
+                    <div className="bg-gray-100 p-2 rounded-lg mb-3">
                       <img
                         src={qrCodeData.qrImage}
                         alt="Payment QR Code"
-                        className="w-40 h-40 mx-auto"
+                        className="w-32 h-32 mx-auto"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1582769923195-c6e60dc1d8d6?w=200&h=200&fit=crop&auto=format';
                         }}
                       />
                     </div>
 
-                    <div className="space-y-2 text-sm text-gray-600">
+                    <div className="space-y-1 text-xs text-gray-600">
                       <div className="flex items-center justify-between">
                         <span>UPI ID:</span>
-                        <div className="flex items-center space-x-2">
-                          <span className="font-mono">{qrCodeData.upiId}</span>
+                        <div className="flex items-center space-x-1">
+                          <span className="font-mono text-xs">{qrCodeData.upiId}</span>
                           <button
                             onClick={() => copyToClipboard(qrCodeData.upiId)}
-                            className="text-blue-600 hover:text-blue-800"
+                            className="text-blue-600 hover:text-blue-800 cursor-pointer z-20 pointer-events-auto"
                           >
-                            <Copy className="w-4 h-4" />
+                            <Copy className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
@@ -365,17 +359,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-4 text-center">
-                    <h3 className="text-red-400 font-semibold mb-2">Payment Setup Pending</h3>
-                    <p className="text-gray-300 text-sm">
-                      UPI Gateway configuration in progress. Please enter transaction ID manually.
+                  <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 mb-3 text-center">
+                    <h3 className="text-red-400 font-semibold text-sm mb-1">Setup In Progress</h3>
+                    <p className="text-gray-300 text-xs">
+                      QR configuration coming soon. Use Gateway payment.
                     </p>
                   </div>
                 )}
 
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-300 mb-2 landscape:text-xs landscape:mb-1">
-                    Enter Transaction ID *
+                <div className="mb-3">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1.5 landscape:text-xs landscape:mb-1">
+                    Transaction ID *
                   </label>
                   <input
                     type="text"
@@ -384,30 +378,30 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                       setTransactionId(e.target.value);
                       setTxnError('');
                     }}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 landscape:py-1 landscape:text-sm"
-                    placeholder="Enter/Paste your transaction ID"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 landscape:py-1 landscape:text-sm"
+                    placeholder="Paste transaction ID"
                     required
                   />
                   {txnError && (
                     <p className="text-red-500 text-xs mt-1 landscape:text-[10px]">{txnError}</p>
                   )}
                   <p className="text-gray-500 text-xs mt-1 landscape:text-[10px] landscape:mt-0.5">
-                    Copy the transaction ID from your payment app after completing the payment
+                    Find in your banking app
                   </p>
                 </div>
 
-                <div className="space-y-3 landscape:space-y-1.5">
+                <div className="space-y-2 sm:space-y-3 landscape:space-y-1.5">
                   <button
                     onClick={handlePaymentSubmit}
                     disabled={!transactionId.trim()}
-                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm"
+                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm text-sm sm:text-base cursor-pointer z-20 pointer-events-auto"
                   >
-                    Submit Payment
+                    Verify & Unlock
                   </button>
 
                   <button
                     onClick={onClose}
-                    className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm"
+                    className="w-full bg-slate-700 hover:bg-slate-600 text-gray-200 font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm text-sm sm:text-base cursor-pointer z-20 pointer-events-auto"
                   >
                     Cancel
                   </button>
@@ -418,48 +412,45 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             {/* PayU Payment Method */}
             {paymentMethod === 'payU' && (
               <>
-                <div className="bg-gradient-to-br from-blue-900/40 to-purple-900/40 border border-blue-500/50 rounded-lg p-4 mb-4">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <CreditCard className="w-5 h-5 text-blue-400" />
-                    <h3 className="text-lg font-semibold text-white">PayU Gateway</h3>
+                <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 border border-blue-500/40 rounded-lg p-3 mb-3">
+                  <div className="flex items-start gap-2">
+                    <CreditCard className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="font-semibold text-white text-sm">Fast Checkout</h3>
+                      <p className="text-xs text-gray-300 mt-0.5">Secure PayU Gateway</p>
+                    </div>
                   </div>
-                  <p className="text-gray-300 text-sm mb-4">
-                    Fast & secure payment processing. Click below to proceed with PayU.
-                  </p>
-                  <p className="text-blue-300 text-xs mb-4">
-                    Amount: <span className="font-bold text-lg">₹{content.premiumPrice}</span>
-                  </p>
                 </div>
 
-                <div className="space-y-3 landscape:space-y-1.5">
+                <div className="space-y-2 sm:space-y-3 landscape:space-y-1.5">
                   <button
                     onClick={handlePayUPayment}
                     disabled={isProcessing}
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-600 disabled:to-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-all landscape:py-2 landscape:text-sm flex items-center justify-center gap-2"
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-bold py-2.5 sm:py-3 px-4 rounded-lg transition-all landscape:py-2 landscape:text-sm flex items-center justify-center gap-2 shadow-lg disabled:shadow-none cursor-pointer z-20 pointer-events-auto text-sm sm:text-base"
                   >
                     {isProcessing ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Processing...
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        <span>Processing...</span>
                       </>
                     ) : (
                       <>
-                        <CreditCard className="w-5 h-5" />
-                        Pay with PayU
+                        <CreditCard className="w-4 h-4" />
+                        Continue to PayU
                       </>
                     )}
                   </button>
 
                   <button
                     onClick={onClose}
-                    className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm"
+                    className="w-full bg-slate-700 hover:bg-slate-600 text-gray-200 font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm text-sm sm:text-base cursor-pointer z-20 pointer-events-auto"
                   >
                     Cancel
                   </button>
                 </div>
 
-                <p className="text-gray-500 text-xs text-center mt-3 landscape:mt-2">
-                  You will be redirected to PayU's secure payment gateway
+                <p className="text-xs text-gray-400 text-center mt-2 landscape:mt-1.5">
+                  ✓ Instant & Secure Payment
                 </p>
               </>
             )}
@@ -481,31 +472,29 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         )}
 
         {paymentStep === 'waiting' && (
-          <div className="text-center py-6">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-xl font-bold text-white mb-2">Verifying Payment</h2>
-            <p className="text-gray-400 mb-4">
-              Please wait while we verify your payment with our admin team
+          <div className="text-center py-6 sm:py-8">
+            <div className="animate-spin rounded-full h-10 w-10 border-3 border-blue-600/30 border-t-blue-600 mx-auto mb-3"></div>
+            <h2 className="text-lg font-bold text-white mb-2">Verifying Payment</h2>
+            <p className="text-sm text-gray-400 mb-3">
+              Please wait while we confirm your transaction
             </p>
-            <div className="bg-gray-800 rounded-lg p-4">
-              <div className="flex items-center space-x-2 text-yellow-400">
-                <Clock className="w-5 h-5" />
-                <span className="text-sm">Transaction ID: {transactionId}</span>
-              </div>
+            <div className="bg-slate-700/50 rounded-lg p-2.5 text-left">
+              <p className="text-xs text-gray-400">Transaction ID:</p>
+              <p className="text-xs font-mono text-blue-400 break-all mt-0.5">{transactionId}</p>
             </div>
           </div>
         )}
 
         {paymentStep === 'success' && (
-          <div className="text-center py-6">
-            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">Payment Successful!</h2>
-            <p className="text-gray-400 mb-4">
-              Your payment has been verified. You can now continue watching the full content.
-            </p>
-            <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
-              <p className="text-green-400 font-medium">
-                Full access unlocked for "{content.title}"
+          <div className="text-center py-6 sm:py-8">
+            <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-3">
+              <CheckCircle className="w-8 h-8 text-green-400" />
+            </div>
+            <h2 className="text-lg font-bold text-white mb-2">Payment Successful!</h2>
+            <p className="text-sm text-gray-400 mb-3">Enjoy your premium content</p>
+            <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 border border-green-500/30 rounded-lg p-2.5">
+              <p className="text-xs sm:text-sm font-semibold text-green-400">
+                ✓ Full access unlocked
               </p>
             </div>
           </div>
