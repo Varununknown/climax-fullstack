@@ -39,6 +39,9 @@ export const PremiumVideoPlayer: React.FC = () => {
   const [paymentPollingInterval, setPaymentPollingInterval] = useState<any>(null);
   const [hasShownPaymentModal, setHasShownPaymentModal] = useState(false);
   
+  // Track when payment check completes for UI rendering
+  const [paymentCheckComplete, setPaymentCheckComplete] = useState(false);
+  
   // ===== PREMIUM VIDEO PLAYER STATE =====
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -210,22 +213,33 @@ export const PremiumVideoPlayer: React.FC = () => {
   useEffect(() => {
     const checkPaymentStatus = async () => {
       if (!content || !user) {
+        console.log('⏳ Waiting for content and user to load...');
         setPaymentState(prev => ({ ...prev, isLoading: false, isPaid: false }));
         return;
       }
 
       try {
+        console.log('═════════════════════════════════════════');
+        console.log('🔍 INITIAL PAYMENT CHECK');
+        console.log(`User: ${user.id}, Content: ${content._id}`);
+        console.log('═════════════════════════════════════════');
+        
         // 🔥 CRITICAL: CHECK DATABASE FIRST - THIS IS THE SOURCE OF TRUTH
         // Don't rely on cache for initial load - always verify with server
-        console.log('🔍 INITIAL CHECK: Querying database for payment status...');
+        console.log('� Querying /payments/check endpoint...');
         
         const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
         const isPaidInDatabase = response.data.paid;
         
-        console.log('📊 DATABASE SAYS: isPaidInDatabase =', isPaidInDatabase);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`📊 DATABASE RESPONSE: paid = ${isPaidInDatabase}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         
         if (isPaidInDatabase) {
-          console.log('✅ PAYMENT FOUND IN DATABASE - Setting isPaid to TRUE');
+          console.log('✅ ✅ ✅ PAYMENT FOUND IN DATABASE');
+          console.log('📌 Setting badge to: CLIMAX PREMIUM 🔓');
+          console.log('═════════════════════════════════════════');
+          
           // Payment exists in database! Set it to true immediately
           setPaymentState(prev => ({ 
             ...prev, 
@@ -239,21 +253,28 @@ export const PremiumVideoPlayer: React.FC = () => {
           const permanentKey = `payment_permanent_${user.id}_${content._id}`;
           localStorage.setItem(cacheKey, 'true');
           localStorage.setItem(permanentKey, 'approved');
+          console.log('💾 Cached payment status locally');
           
+          setPaymentCheckComplete(true);
           return;
         }
         
         // If database says NOT paid, check cache as fallback
-        console.log('❌ NO PAYMENT IN DATABASE - Checking local cache as fallback...');
+        console.log('❌ NO PAYMENT IN DATABASE');
+        console.log('📌 Setting badge to: CLIMAX PREVIEW 🔒');
+        
         const cacheKey = `payment_${user.id}_${content._id}`;
         const permanentKey = `payment_permanent_${user.id}_${content._id}`;
         
         const permanentPayment = localStorage.getItem(permanentKey);
         if (permanentPayment === 'approved') {
-          console.log('⚠️ DB says unpaid but cache says paid - clearing cache to sync with DB');
+          console.log('⚠️⚠️⚠️ CACHE CONFLICT: DB says unpaid but cache says paid');
+          console.log('🧹 Clearing cache to sync with database source of truth');
           localStorage.removeItem(cacheKey);
           localStorage.removeItem(permanentKey);
         }
+        
+        console.log('═════════════════════════════════════════');
         
         // Set to unpaid (database is source of truth)
         setPaymentState(prev => ({ 
@@ -263,8 +284,10 @@ export const PremiumVideoPlayer: React.FC = () => {
           shouldShowModal: false
         }));
         
+        setPaymentCheckComplete(true);
+        
       } catch (err) {
-        console.error('❌ Payment check FAILED:', err);
+        console.error('❌❌❌ PAYMENT CHECK FAILED:', err);
         
         // If server fails, check permanent cache as fallback ONLY
         const permanentKey = `payment_permanent_${user.id}_${content._id}`;
@@ -272,6 +295,7 @@ export const PremiumVideoPlayer: React.FC = () => {
         
         if (permanentPayment === 'approved') {
           console.log('⚠️ Server failed, but using permanent cache: isPaid = true');
+          console.log('📌 Badge will show: CLIMAX PREMIUM 🔓 (from cache)');
           setPaymentState(prev => ({ 
             ...prev, 
             isPaid: true, 
@@ -280,6 +304,7 @@ export const PremiumVideoPlayer: React.FC = () => {
           }));
         } else {
           console.log('❌ Server failed and no permanent cache - assuming unpaid');
+          console.log('📌 Badge will show: CLIMAX PREVIEW 🔒');
           setPaymentState(prev => ({ 
             ...prev, 
             isLoading: false, 
@@ -287,6 +312,8 @@ export const PremiumVideoPlayer: React.FC = () => {
             shouldShowModal: false
           }));
         }
+        
+        setPaymentCheckComplete(true);
       }
     };
 
@@ -996,6 +1023,8 @@ export const PremiumVideoPlayer: React.FC = () => {
             {/* Premium Badge with Icons - Top Right Corner */}
             <div className={`absolute ${isMobile ? 'top-4 right-4' : 'top-8 right-8'}`}>
               <div className="pointer-events-auto">
+                {/* BADGE: Logs the current state */}
+                {console.log(`[BADGE RENDER] isPaid=${paymentState.isPaid}, premiumPrice=${content.premiumPrice}, showingBadge=${paymentState.isPaid && content.premiumPrice > 0 ? '🟢 PREMIUM' : '🔴 PREVIEW'}`)}
                 <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full backdrop-blur-lg shadow-lg ${
                   (paymentState.isPaid && content.premiumPrice > 0) 
                     ? 'bg-gradient-to-r from-slate-900/95 via-violet-900/90 to-slate-900/95 text-white border border-violet-500/30' 
