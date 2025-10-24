@@ -24,6 +24,7 @@ export const VideoPlayer: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [isLoadingPayment, setIsLoadingPayment] = useState(true);
+  const [paymentVerified, setPaymentVerified] = useState(false); // NEW: Prevent re-checks after payment
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -58,7 +59,7 @@ export const VideoPlayer: React.FC = () => {
     fetchContent();
   }, [id, navigate]);
 
-  // ===== PRE-PAYMENT CHECK (Before video plays) =====
+  // ===== PRE-PAYMENT CHECK (Before video plays) - ONLY ONCE =====
   useEffect(() => {
     const checkPaymentBeforePlay = async () => {
       if (!content || !user) {
@@ -75,16 +76,21 @@ export const VideoPlayer: React.FC = () => {
         const isPaid = res.data.paid;
         console.log(isPaid ? '✅ User already paid - full access' : '🔒 Not paid - climax locked');
         setHasPaid(isPaid);
+        setPaymentVerified(true); // MARK: Payment check done, don't check again
       } catch (err) {
         console.error('❌ Payment check failed:', err);
         setHasPaid(false);
+        setPaymentVerified(true); // MARK: Payment check done (even if failed)
       } finally {
         setIsLoadingPayment(false);
       }
     };
 
-    checkPaymentBeforePlay();
-  }, [content, user]);
+    // ONLY CHECK ONCE when component loads, not on every render
+    if (!paymentVerified && content && user && isLoadingPayment) {
+      checkPaymentBeforePlay();
+    }
+  }, [content, user, paymentVerified, isLoadingPayment]);
 
   // ===== PREVENT SEEKING/PLAYING PAST CLIMAX (Locked Zone) =====
   useEffect(() => {
@@ -95,7 +101,7 @@ export const VideoPlayer: React.FC = () => {
     const climax = content.climaxTimestamp;
 
     // ✅ SEEKING PROTECTION: Can't drag past climax
-    const handleSeeking = (e: Event) => {
+    const handleSeeking = () => {
       if (hasPaid) return; // No restrictions if paid
       
       const seekTime = video.currentTime;
@@ -130,7 +136,8 @@ export const VideoPlayer: React.FC = () => {
       setCurrentTime(time);
 
       // If entering locked zone (climax→end) without payment - HARD STOP
-      if (time >= climax) {
+      // BUT ONLY IF MODAL NOT ALREADY SHOWING
+      if (time >= climax && !showPaymentModal) {
         console.log(`🔒 HARD LOCK: Entered locked zone at ${time}s (climax: ${climax}s)`);
         
         // FORCE pause
@@ -141,9 +148,8 @@ export const VideoPlayer: React.FC = () => {
         video.currentTime = lastValidTime.current;
         
         // Show modal
-        if (!showPaymentModal) {
-          setShowPaymentModal(true);
-        }
+        console.log('📱 Showing payment modal...');
+        setShowPaymentModal(true);
         
         return;
       }
@@ -169,7 +175,7 @@ export const VideoPlayer: React.FC = () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
-  }, [content, hasPaid]);
+  }, [content, hasPaid, showPaymentModal]);
 
   // ===== PAYMENT SUCCESS: Immediately unlock + re-verify from DB =====
   const handlePaymentSuccess = async () => {
@@ -196,6 +202,15 @@ export const VideoPlayer: React.FC = () => {
       console.error('❌ Error verifying payment:', err);
     }
   };
+
+  // ===== PAUSE VIDEO WHEN MODAL OPENS =====
+  useEffect(() => {
+    if (showPaymentModal && videoRef.current) {
+      console.log('🔒 Payment modal opened - pausing video');
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, [showPaymentModal]);
 
   // ===== PLAYER CONTROLS =====
   const togglePlayPause = () => {
