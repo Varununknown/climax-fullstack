@@ -56,6 +56,21 @@ export const VideoPlayer: React.FC = () => {
     }
 
     console.log('💳 Initial payment check...');
+    
+    // ✅ CRITICAL: Check localStorage first for persisted lock
+    const lockKey = `payment_locked_${user.id}_${content._id}`;
+    const savedLock = localStorage.getItem(lockKey);
+    
+    if (savedLock === 'true') {
+      console.log('✅ PAYMENT LOCK FOUND IN STORAGE - Restoring locked state');
+      setIsPaid(true);
+      setPaymentLocked(true);
+      setShowPaymentModal(false);
+      setCheckingPayment(false);
+      return;
+    }
+    
+    // Otherwise, check backend
     API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`)
       .then(res => {
         const paid = res.data.paid;
@@ -63,12 +78,14 @@ export const VideoPlayer: React.FC = () => {
         
         // ✅ CRITICAL: If payment exists, lock the modal permanently
         if (paid) {
-          console.log('✅ PAYMENT FOUND - Locking modal permanently');
+          console.log('✅ PAYMENT FOUND - Locking modal permanently and saving to storage');
           setPaymentLocked(true);
           setShowPaymentModal(false);
+          localStorage.setItem(lockKey, 'true'); // ✅ PERSIST THE LOCK
         } else {
           console.log('🔒 NO PAYMENT - Modal can be triggered');
           setPaymentLocked(false);
+          localStorage.removeItem(lockKey);
         }
         
         console.log(paid ? '✅ PAID - Full access' : '🔒 NOT PAID - Locked');
@@ -77,15 +94,22 @@ export const VideoPlayer: React.FC = () => {
         console.error('❌ Payment check error:', err);
         setIsPaid(false);
         setPaymentLocked(false);
+        localStorage.removeItem(lockKey);
       })
       .finally(() => setCheckingPayment(false));
   }, [content, user]);
 
   // ===== REAL-TIME PAYMENT POLLING =====
   // Re-check payment every 2 seconds to catch updates from successful payment
+  // STOP POLLING once paymentLocked = true (payment is permanent)
   useEffect(() => {
-    if (!content || !user) return;
+    if (!content || !user || paymentLocked) {
+      // ✅ CRITICAL: Don't poll if payment is already locked!
+      return;
+    }
 
+    console.log('💳 Starting payment polling (will stop once locked)...');
+    
     const pollInterval = setInterval(async () => {
       try {
         const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
@@ -94,7 +118,7 @@ export const VideoPlayer: React.FC = () => {
         if (paid && !isPaid) {
           console.log('🎉 PAYMENT DETECTED! Locking modal permanently');
           setIsPaid(true);
-          setPaymentLocked(true); // ✅ Lock modal forever
+          setPaymentLocked(true); // ✅ Lock modal forever - STOPS POLLING
           setShowPaymentModal(false);
         }
       } catch (err) {
@@ -103,7 +127,7 @@ export const VideoPlayer: React.FC = () => {
     }, 2000); // Check every 2 seconds
 
     return () => clearInterval(pollInterval);
-  }, [content, user, isPaid]);
+  }, [content, user, paymentLocked]);
 
   // ===== VIDEO PROTECTION (RUNS ONLY ONCE) =====
   useEffect(() => {
@@ -175,15 +199,16 @@ export const VideoPlayer: React.FC = () => {
     console.log('Content:', content.title);
     console.log('User:', user.id);
     
-    // ✅ IMMEDIATELY close modal and hide locked badge
+    // ✅ CRITICAL: Set BOTH states ATOMICALLY - no polling interference
+    console.log('⚡ ATOMIC UPDATE: Locking payment permanently');
     setShowPaymentModal(false);
-    
-    // ✅ LOCK THE MODAL PERMANENTLY - Payment is permanent!
-    setPaymentLocked(true);
-    
-    // ✅ IMMEDIATELY set isPaid to true (optimistic update)
-    console.log('⚡ Optimistic update: Setting isPaid to TRUE and locking payment');
     setIsPaid(true);
+    setPaymentLocked(true); // ✅ THIS STOPS THE POLLING!
+    
+    // ✅ PERSIST the lock in localStorage
+    const lockKey = `payment_locked_${user.id}_${content._id}`;
+    localStorage.setItem(lockKey, 'true');
+    console.log('💾 Payment lock saved to localStorage');
     
     // ✅ Resume video immediately
     setTimeout(() => {
@@ -194,20 +219,20 @@ export const VideoPlayer: React.FC = () => {
       }
     }, 300);
     
-    // ✅ ALSO verify in background (but don't let it override our optimistic update)
+    // ✅ Verify in background (but don't update state)
     try {
       console.log('🔍 Verifying payment in database...');
       const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
       console.log('📡 Verification response:', res.data);
 
       if (res.data.paid) {
-        console.log('✅ PAYMENT CONFIRMED in database! Modal is locked forever.');
+        console.log('✅ PAYMENT CONFIRMED! Locked permanently.');
       } else {
-        console.log('⚠️ Database verification showed paid: false (but keeping optimistic state and lock)');
+        console.log('⚠️ Database verification failed - but payment is locked anyway');
       }
     } catch (err) {
       console.error('❌ Verification error:', err);
-      console.log('⚠️ Verification failed but keeping optimistic state and lock');
+      console.log('⚠️ Verification error - but payment is locked anyway');
     }
     
     console.log('═══════════════════════════════════════════════════════');
