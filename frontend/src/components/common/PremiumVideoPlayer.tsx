@@ -328,7 +328,7 @@ export const PremiumVideoPlayer: React.FC = () => {
     checkPaymentStatus();
   }, [content, user]);
 
-  // ===== REAL-TIME PAYMENT POLLING (Every 1 second for dynamic status) =====
+  // ===== REAL-TIME PAYMENT POLLING (Every 3 seconds - less aggressive) =====
   useEffect(() => {
     if (!content || !user) return;
 
@@ -339,34 +339,39 @@ export const PremiumVideoPlayer: React.FC = () => {
           const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
           const currentPaidStatus = response.data.paid;
 
-          // Update state if status changed
+          // Update state ONLY if status changed to prevent unnecessary re-renders
           setPaymentState(prev => {
             // If payment was revoked (declined by admin), immediately switch to preview
             if (prev.isPaid && !currentPaidStatus) {
               // Clear payment flags
               const cacheKey = `payment_${user.id}_${content._id}`;
+              const permanentKey = `payment_permanent_${user.id}_${content._id}`;
               localStorage.removeItem(cacheKey);
+              localStorage.removeItem(permanentKey);
               console.log('⚠️ Payment revoked by admin - switching to preview mode');
               setHasShownPaymentModal(false); // Unlock trigger so modal can show again
-              return { ...prev, isPaid: false };
+              return { ...prev, isPaid: false, shouldShowModal: false };
             }
 
-            // If payment confirmed newly
+            // If payment confirmed newly (but wasn't paid before)
             if (!prev.isPaid && currentPaidStatus) {
               const permanentKey = `payment_permanent_${user.id}_${content._id}`;
+              const cacheKey = `payment_${user.id}_${content._id}`;
               localStorage.setItem(permanentKey, 'approved');
-              console.log('✅ Payment confirmed dynamically');
+              localStorage.setItem(cacheKey, 'true');
+              console.log('✅ Payment confirmed via polling');
               setHasShownPaymentModal(true); // Lock trigger - user paid
-              return { ...prev, isPaid: true };
+              return { ...prev, isPaid: true, shouldShowModal: false };
             }
 
+            // No change - return same state
             return prev;
           });
         } catch (err) {
           // Silent fail - don't disrupt user experience
           // If offline, trust last known state
         }
-      }, 1000); // Poll every 1 second
+      }, 3000); // Poll every 3 seconds (less aggressive)
 
       return interval;
     };
@@ -433,76 +438,44 @@ export const PremiumVideoPlayer: React.FC = () => {
       const currentTime = video.currentTime;
       setCurrentTime(currentTime);
       
-      // Check if already paid - if so, don't trigger paywall again
-      // This prevents the continuous loop after payment
+      // ✅ CRITICAL FIX 1: If already paid, allow everything - NO CHECKS NEEDED
       if (paymentState.isPaid) {
-        return; // Exit early - user has access, no need to check paywall
+        setPreviousTime(currentTime);
+        return; // Exit early - user has full access
       }
       
-      // PRESERVED PAYWALL LOGIC - Check if user is moving FORWARD past the climax timestamp
-      if (!paymentState.isPaid && currentTime >= content.climaxTimestamp && currentTime > previousTime) {
-        console.log('🚫 Paywall triggered - user moved FORWARD past climax timestamp');
+      // ✅ CRITICAL FIX 2: Check if user is moving FORWARD past the climax timestamp
+      if (currentTime >= content.climaxTimestamp && currentTime > previousTime) {
+        console.log('🚫 Paywall triggered - user reached climax at:', currentTime);
         
-        // Only trigger modal ONCE per session (prevent re-trigger)
-        if (!hasShownPaymentModal) {
-          console.log('⏸️ Pausing video at paywall');
+        // ✅ CRITICAL FIX 3: Only trigger modal ONCE and IMMEDIATELY pause
+        if (!hasShownPaymentModal && !paymentState.shouldShowModal) {
+          console.log('⏸️ PAUSING video at paywall');
           
-          // HARD PAUSE - prevent any autoplay resumption
+          // ✅ CRITICAL FIX 4: PAUSE VIDEO IMMEDIATELY
           video.pause();
-          video.currentTime = Math.max(0, content.climaxTimestamp - 1);
           setIsPlaying(false);
           
-          // 🔥 CRITICAL FIX: ALWAYS verify database BEFORE showing modal
-          // This is the STRONGEST check - prevents re-triggering after successful payment
-          const verifyNotPaid = async () => {
-            try {
-              console.log('🔍 Checking database before showing modal...');
-              const response = await API.get(`/payments/check?userId=${user?.id}&contentId=${content._id}`);
-              const isPaidInDB = response.data.paid;
-              
-              console.log('📊 Database says: isPaidInDB =', isPaidInDB);
-              
-              if (isPaidInDB) {
-                // User IS paid in DB! DON'T show modal, resume video
-                console.log('✅ USER IS PAID IN DATABASE - Not showing modal, resuming video');
-                setPaymentState(prev => ({ 
-                  ...prev, 
-                  isPaid: true,
-                  shouldShowModal: false,
-                  isLoading: false
-                }));
-                setHasShownPaymentModal(true);
-                
-                // Resume video since they're paid
-                video.play().catch(() => {});
-                setIsPlaying(true);
-                return;
-              }
-              
-              // User is NOT paid in DB - safe to show modal
-              console.log('❌ USER NOT PAID IN DB - Showing payment modal');
-              setHasShownPaymentModal(true); // Lock - prevent re-trigger
-              setPaymentState(prev => ({ 
-                ...prev, 
-                shouldShowModal: true,
-                isLoading: false
-              }));
-            } catch (err) {
-              console.error('❌ DB check failed:', err);
-              // If DB check fails, show modal as fallback
-              setHasShownPaymentModal(true);
-              setPaymentState(prev => ({ 
-                ...prev, 
-                shouldShowModal: true,
-                isLoading: false
-              }));
-            }
-          };
+          // Rewind slightly before climax
+          const safePosition = Math.max(0, content.climaxTimestamp - 0.5);
+          video.currentTime = safePosition;
+          setPreviousTime(safePosition);
           
-          // Run the verification
-          verifyNotPaid();
+          console.log('🔒 Locking modal trigger to prevent re-trigger');
+          setHasShownPaymentModal(true); // Lock immediately
+          
+          // ✅ CRITICAL FIX 5: Show modal WITHOUT re-checking DB 
+          // (we already checked on page load, trust that)
+          console.log('💳 Showing payment modal');
+          setPaymentState(prev => ({ 
+            ...prev, 
+            shouldShowModal: true
+          }));
         } else {
-          console.log('🔒 Modal already shown this session - blocking re-trigger');
+          // Modal already shown or being shown - just pause
+          console.log('🔒 Modal already triggered - just pausing');
+          video.pause();
+          setIsPlaying(false);
         }
       }
       
@@ -580,13 +553,22 @@ export const PremiumVideoPlayer: React.FC = () => {
     }
 
     console.log('🎬 Toggle play/pause called, current state:', isPlaying);
-    console.log('🎬 Video URL:', video.src);
-    console.log('🎬 Video ready state:', video.readyState);
 
-    // PRESERVED PAYWALL CHECK
-    if (!paymentState.isPaid && video.currentTime >= (content?.climaxTimestamp || 0) - 1) {
-      console.log('🚫 Paywall triggered');
-      setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
+    // ✅ CRITICAL FIX 12: Check paywall BEFORE allowing play
+    if (!paymentState.isPaid && video.currentTime >= (content?.climaxTimestamp || 0)) {
+      console.log('🚫 Cannot play - at or past climax without payment');
+      
+      // Pause if playing
+      if (!video.paused) {
+        video.pause();
+        setIsPlaying(false);
+      }
+      
+      // Show modal if not already shown
+      if (!paymentState.shouldShowModal) {
+        setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
+        setHasShownPaymentModal(true);
+      }
       return;
     }
 
@@ -622,13 +604,35 @@ export const PremiumVideoPlayer: React.FC = () => {
     const percentage = (e.clientX - rect.left) / rect.width;
     const newTime = percentage * duration;
     
-    // PRESERVED PAYWALL CHECK - only trigger if seeking FORWARD past climax
-    if (!paymentState.isPaid && newTime > content.climaxTimestamp && newTime > video.currentTime) {
-      setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
+    // ✅ If paid, allow all seeking freely
+    if (paymentState.isPaid) {
+      video.currentTime = newTime;
+      setPreviousTime(newTime);
+      return;
+    }
+    
+    // ✅ CRITICAL FIX 11: Block seeking forward past climax if not paid
+    if (newTime > content.climaxTimestamp && newTime > video.currentTime) {
+      console.log('🚫 Seek blocked - trying to seek past climax while not paid');
+      
+      // Pause video
+      video.pause();
+      setIsPlaying(false);
+      
+      // Show payment modal (if not already shown)
+      if (!paymentState.shouldShowModal) {
+        setPaymentState(prev => ({ ...prev, shouldShowModal: true }));
+        setHasShownPaymentModal(true);
+      }
+      
+      // Rewind to safe position
+      const safePosition = Math.max(0, content.climaxTimestamp - 0.5);
+      video.currentTime = safePosition;
+      setPreviousTime(safePosition);
       return;
     }
 
-    // Allow seeking backward freely, even past climax
+    // Allow seeking backward freely, even past climax (so they can replay)
     video.currentTime = newTime;
     setPreviousTime(newTime);
   };
@@ -792,47 +796,68 @@ export const PremiumVideoPlayer: React.FC = () => {
   };
 
   // PRESERVED PAYMENT SUCCESS HANDLER
-  const handlePaymentSuccess = () => {
-    console.log('💚 Payment successful! Switching to Climax Premium...');
+  const handlePaymentSuccess = async () => {
+    console.log('💚 Payment successful! Verifying and unlocking...');
     
-    // SAVE PAYMENT STATUS PERMANENTLY
-    if (content && user) {
+    if (!content || !user) {
+      console.error('❌ Cannot process payment - missing content or user');
+      return;
+    }
+
+    try {
+      // ✅ CRITICAL FIX 6: Verify payment in database before unlocking
+      console.log('🔍 Verifying payment in database...');
+      const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+      const isPaidInDB = response.data.paid;
+      
+      if (!isPaidInDB) {
+        console.error('❌ Payment verification failed - not found in database');
+        alert('Payment verification failed. Please contact support.');
+        return;
+      }
+      
+      console.log('✅ Payment verified in database!');
+      
+      // ✅ SAVE PAYMENT STATUS PERMANENTLY
       const cacheKey = `payment_${user.id}_${content._id}`;
       const permanentKey = `payment_permanent_${user.id}_${content._id}`;
       
       localStorage.setItem(cacheKey, 'true');
       localStorage.setItem(permanentKey, 'approved');
-      console.log('✅ Payment saved to localStorage:', { cacheKey, permanentKey });
-    }
+      console.log('💾 Payment saved to localStorage');
 
-    // CRITICAL: Close modal first
-    setPaymentState(prev => ({
-      ...prev,
-      shouldShowModal: false,
-      isPaid: true,
-      isLoading: false
-    }));
+      // ✅ CRITICAL FIX 7: Update state ATOMICALLY to prevent badge flicker
+      setPaymentState({
+        isPaid: true,
+        isLoading: false,
+        shouldShowModal: false
+      });
+      
+      // ✅ Lock the modal trigger permanently for this session
+      setHasShownPaymentModal(true);
+      
+      console.log('✅ State updated - badge should now show CLIMAX PREMIUM');
 
-    // RESUME VIDEO after a small delay to ensure state updates
-    const video = videoRef.current;
-    if (video) {
-      setTimeout(() => {
-        console.log('▶️ Resuming video from position:', video.currentTime);
-        
-        // Make sure we're at the right position (just before climax)
-        if (video.currentTime < content.climaxTimestamp) {
-          video.currentTime = Math.max(0, content.climaxTimestamp - 0.5);
-        }
-        
-        // Play the video
-        video.play().catch(err => {
-          console.log('Play prevented:', err);
-          setIsPlaying(false);
-        });
-        
-        setIsPlaying(true);
-        console.log('✅ Video resumed successfully');
-      }, 100); // Very small delay
+      // ✅ CRITICAL FIX 8: Resume video after state updates
+      const video = videoRef.current;
+      if (video) {
+        // Small delay to ensure state propagates
+        setTimeout(() => {
+          console.log('▶️ Resuming video from position:', video.currentTime);
+          
+          // Resume from where we paused (should be near climax)
+          video.play().catch(err => {
+            console.log('Play prevented:', err);
+          });
+          
+          setIsPlaying(true);
+          console.log('✅ Video resumed successfully - full access granted');
+        }, 150);
+      }
+      
+    } catch (error) {
+      console.error('❌ Payment verification error:', error);
+      alert('Payment verification failed. Please try again or contact support.');
     }
   };
 
@@ -1232,18 +1257,30 @@ export const PremiumVideoPlayer: React.FC = () => {
           content={content}
           onSuccess={handlePaymentSuccess}
           onClose={() => {
-            console.log('📴 Payment modal cancelled - FORCE PAUSING video');
+            console.log('📴 Payment modal cancelled by user');
+            
+            // ✅ CRITICAL FIX 9: Close modal
             setPaymentState(prev => ({ ...prev, shouldShowModal: false }));
             
-            // PRESERVED CANCEL LOGIC
+            // ✅ CRITICAL FIX 10: FORCE PAUSE and rewind if not paid
             const video = videoRef.current;
             if (video && !paymentState.isPaid) {
+              console.log('⏸️ User cancelled payment - pausing and rewinding video');
+              
+              // Hard pause
               video.pause();
+              setIsPlaying(false);
+              
+              // Rewind to safe position (well before climax)
               const safePosition = Math.max(0, content.climaxTimestamp - 2);
               video.currentTime = safePosition;
-              setIsPlaying(false);
               setPreviousTime(safePosition);
+              
+              console.log('✅ Video paused at safe position:', safePosition);
             }
+            
+            // Reset modal trigger lock to allow re-trigger if they seek again
+            setHasShownPaymentModal(false);
           }}
         />
       )}
