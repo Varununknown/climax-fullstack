@@ -165,8 +165,37 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 rounded-2xl max-w-md w-full p-4 relative max-h-[95vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-2 sm:p-4">
+      {/* Responsive modal: Portrait=vertical, Landscape=horizontal */}
+      <div className="bg-gray-900 rounded-2xl w-full p-3 sm:p-4 relative
+        max-h-[95vh] overflow-y-auto portrait:max-w-md
+        landscape:max-w-6xl landscape:max-h-[90vh] landscape:overflow-visible landscape:flex landscape:gap-4 landscape:items-center">
+        
+        {/* Left QR section - visible only in landscape */}
+        <div className="hidden landscape:flex landscape:flex-col landscape:w-1/3 landscape:items-center landscape:justify-center landscape:gap-2 landscape:pr-4 landscape:border-r landscape:border-gray-700">
+          {paymentStep === 'qr' && paymentSettings?.isActive && qrCodeData && (
+            <>
+              <h3 className="text-base font-semibold text-white text-center">Scan to Pay</h3>
+              <div className="bg-white rounded-lg p-3">
+                <img
+                  src={qrCodeData.qrImage}
+                  alt="Payment QR Code"
+                  className="w-28 h-28"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1582769923195-c6e60dc1d8d6?w=200&h=200&fit=crop&auto=format';
+                  }}
+                />
+              </div>
+              <div className="text-xs text-gray-400 text-center">
+                <div>UPI: {qrCodeData.upiId}</div>
+                <div className="font-bold text-blue-400 mt-1">₹{content.premiumPrice}</div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Right form section - always visible */}
+        <div className="landscape:w-2/3 landscape:flex-1">
         {/* Close button - only available if not in waiting step */}
         {paymentStep !== 'waiting' && (
           <button 
@@ -177,7 +206,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 onClose();
               }
             }} 
-            className="absolute right-4 top-4 text-gray-400 hover:text-white"
+            className="absolute right-4 top-4 text-gray-400 hover:text-white z-10 landscape:right-6 landscape:top-6"
           >
             <X className="w-6 h-6" />
           </button>
@@ -185,14 +214,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
         {(paymentStep === 'qr') && (
           <>
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold text-white mb-2">Complete Payment</h2>
-              <p className="text-gray-400">
+            <div className="mb-4 landscape:mb-3">
+              <h2 className="text-2xl font-bold text-white mb-2 landscape:text-lg landscape:mb-1">Complete Payment</h2>
+              <p className="text-gray-400 landscape:text-xs">
                 Pay ₹{content.premiumPrice} to continue watching "{content.title}"
               </p>
             </div>
 
-            <div className="bg-gray-800 rounded-lg p-4 mb-4">
+            <div className="bg-gray-800 rounded-lg p-4 mb-4 landscape:p-2 landscape:mb-3 landscape:hidden">
               <div className="flex items-center space-x-2">
                 <img
                   src={content.thumbnail}
@@ -208,7 +237,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
 
             {paymentSettings?.isActive && qrCodeData ? (
-              <div className="bg-white rounded-lg p-4 mb-4 text-center">
+              <div className="bg-white rounded-lg p-4 mb-4 text-center portrait:block landscape:hidden">
                 <div className="mb-4">
                   <QrCode className="w-6 h-6 text-gray-600 mx-auto mb-2" />
                   <h3 className="text-gray-800 font-semibold">Scan to Pay</h3>
@@ -255,7 +284,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             )}
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2 landscape:text-xs landscape:mb-1">
                 Enter Transaction ID *
               </label>
               <input
@@ -265,30 +294,30 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   setTransactionId(e.target.value);
                   setTxnError('');
                 }}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 landscape:py-1 landscape:text-sm"
                 placeholder="Enter/Paste your transaction ID"
                 required
               />
               {txnError && (
-                <p className="text-red-500 text-xs mt-1">{txnError}</p>
+                <p className="text-red-500 text-xs mt-1 landscape:text-[10px]">{txnError}</p>
               )}
-              <p className="text-gray-500 text-xs mt-1">
+              <p className="text-gray-500 text-xs mt-1 landscape:text-[10px] landscape:mt-0.5">
                 Copy the transaction ID from your payment app after completing the payment
               </p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 landscape:space-y-1.5">
               <button
                 onClick={handlePaymentSubmit}
                 disabled={!transactionId.trim()}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm"
               >
                 Submit Payment
               </button>
 
               <button
                 onClick={onClose}
-                className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm"
               >
                 Cancel
               </button>
@@ -341,9 +370,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </div>
         )}
 
-        <p className="text-gray-500 text-xs text-center mt-4">
+        <p className="text-gray-500 text-xs text-center mt-4 landscape:mt-2 landscape:text-[10px]">
           Secure payment verification by StreamFlix admin team. Your transaction is safe and encrypted.
         </p>
+        </div>
       </div>
     </div>
   );
