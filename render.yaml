@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: climax-fullstack
+    runtime: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+    buildFilter:
+      paths:
+        - /backend/**/*
+        - /src/**/*
+        - package.json
