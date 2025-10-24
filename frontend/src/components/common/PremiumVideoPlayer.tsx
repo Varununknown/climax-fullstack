@@ -386,14 +386,58 @@ export const PremiumVideoPlayer: React.FC = () => {
           video.pause();
           video.currentTime = Math.max(0, content.climaxTimestamp - 1);
           setIsPlaying(false);
-          setHasShownPaymentModal(true); // Lock - prevent re-trigger
           
-          // CRITICAL: Show modal AFTER setting pause state
-          setPaymentState(prev => ({ 
-            ...prev, 
-            shouldShowModal: true,
-            isLoading: false
-          }));
+          // 🔥 CRITICAL FIX: ALWAYS verify database BEFORE showing modal
+          // This is the STRONGEST check - prevents re-triggering after successful payment
+          const verifyNotPaid = async () => {
+            try {
+              console.log('🔍 Checking database before showing modal...');
+              const response = await API.get(`/payments/check?userId=${user?.id}&contentId=${content._id}`);
+              const isPaidInDB = response.data.paid;
+              
+              console.log('📊 Database says: isPaidInDB =', isPaidInDB);
+              
+              if (isPaidInDB) {
+                // User IS paid in DB! DON'T show modal, resume video
+                console.log('✅ USER IS PAID IN DATABASE - Not showing modal, resuming video');
+                setPaymentState(prev => ({ 
+                  ...prev, 
+                  isPaid: true,
+                  shouldShowModal: false,
+                  isLoading: false
+                }));
+                setHasShownPaymentModal(true);
+                
+                // Resume video since they're paid
+                video.play().catch(() => {});
+                setIsPlaying(true);
+                return;
+              }
+              
+              // User is NOT paid in DB - safe to show modal
+              console.log('❌ USER NOT PAID IN DB - Showing payment modal');
+              setHasShownPaymentModal(true); // Lock - prevent re-trigger
+              setPaymentState(prev => ({ 
+                ...prev, 
+                shouldShowModal: true,
+                isLoading: false
+              }));
+            } catch (err) {
+              console.error('❌ DB check failed:', err);
+              // If DB check fails, show modal as fallback
+              setHasShownPaymentModal(true);
+              setPaymentState(prev => ({ 
+                ...prev, 
+                shouldShowModal: true,
+                isLoading: false
+              }));
+            }
+          };
+          
+          // Run the verification
+          verifyNotPaid();
+        } else {
+          console.log('🔒 Modal already shown this session - blocking re-trigger');
         }
       }
       
