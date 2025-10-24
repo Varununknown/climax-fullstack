@@ -206,7 +206,7 @@ export const PremiumVideoPlayer: React.FC = () => {
     fetchContent();
   }, [id]);
 
-  // ===== PAYMENT STATUS CHECKING (PRESERVED EXACTLY) =====
+  // ===== PAYMENT STATUS CHECKING - STRONGEST VERIFICATION FIRST =====
   useEffect(() => {
     const checkPaymentStatus = async () => {
       if (!content || !user) {
@@ -215,47 +215,77 @@ export const PremiumVideoPlayer: React.FC = () => {
       }
 
       try {
-        // Multi-layer payment verification for persistence
+        // 🔥 CRITICAL: CHECK DATABASE FIRST - THIS IS THE SOURCE OF TRUTH
+        // Don't rely on cache for initial load - always verify with server
+        console.log('🔍 INITIAL CHECK: Querying database for payment status...');
+        
+        const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+        const isPaidInDatabase = response.data.paid;
+        
+        console.log('📊 DATABASE SAYS: isPaidInDatabase =', isPaidInDatabase);
+        
+        if (isPaidInDatabase) {
+          console.log('✅ PAYMENT FOUND IN DATABASE - Setting isPaid to TRUE');
+          // Payment exists in database! Set it to true immediately
+          setPaymentState(prev => ({ 
+            ...prev, 
+            isPaid: true, 
+            isLoading: false,
+            shouldShowModal: false  // Never show modal if already paid
+          }));
+          
+          // Cache the result for offline support
+          const cacheKey = `payment_${user.id}_${content._id}`;
+          const permanentKey = `payment_permanent_${user.id}_${content._id}`;
+          localStorage.setItem(cacheKey, 'true');
+          localStorage.setItem(permanentKey, 'approved');
+          
+          return;
+        }
+        
+        // If database says NOT paid, check cache as fallback
+        console.log('❌ NO PAYMENT IN DATABASE - Checking local cache as fallback...');
         const cacheKey = `payment_${user.id}_${content._id}`;
         const permanentKey = `payment_permanent_${user.id}_${content._id}`;
         
-        // Check permanent storage first (never cleared)
         const permanentPayment = localStorage.getItem(permanentKey);
         if (permanentPayment === 'approved') {
-          setPaymentState(prev => ({ ...prev, isPaid: true, isLoading: false }));
-          return;
+          console.log('⚠️ DB says unpaid but cache says paid - clearing cache to sync with DB');
+          localStorage.removeItem(cacheKey);
+          localStorage.removeItem(permanentKey);
         }
         
-        // Check regular cache
-        const cachedPayment = localStorage.getItem(cacheKey);
-        if (cachedPayment === 'true') {
-          setPaymentState(prev => ({ ...prev, isPaid: true, isLoading: false }));
-          return;
-        }
-
-        // Check server for payment (final authority)
-        const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
-        const isPaid = response.data.paid;
-        
-        setPaymentState(prev => ({ ...prev, isPaid, isLoading: false }));
-        
-        // Cache the result and make permanent if paid
-        if (isPaid) {
-          localStorage.setItem(cacheKey, 'true');
-          localStorage.setItem(permanentKey, 'approved');
-        }
+        // Set to unpaid (database is source of truth)
+        setPaymentState(prev => ({ 
+          ...prev, 
+          isPaid: false, 
+          isLoading: false,
+          shouldShowModal: false
+        }));
         
       } catch (err) {
-        console.error('Payment check failed:', err);
+        console.error('❌ Payment check FAILED:', err);
         
-        // If server fails but we have permanent payment, trust permanent status
+        // If server fails, check permanent cache as fallback ONLY
         const permanentKey = `payment_permanent_${user.id}_${content._id}`;
         const permanentPayment = localStorage.getItem(permanentKey);
         
         if (permanentPayment === 'approved') {
-          setPaymentState(prev => ({ ...prev, isPaid: true, isLoading: false }));
+          console.log('⚠️ Server failed, but using permanent cache: isPaid = true');
+          setPaymentState(prev => ({ 
+            ...prev, 
+            isPaid: true, 
+            isLoading: false,
+            shouldShowModal: false
+          }));
         } else {
-          setPaymentState(prev => ({ ...prev, isLoading: false, isPaid: false }));
+          console.log('❌ Server failed and no permanent cache - assuming unpaid');
+          setPaymentState(prev => ({ 
+            ...prev, 
+            isLoading: false, 
+            isPaid: false,
+            shouldShowModal: false
+          }));
         }
       }
     };
