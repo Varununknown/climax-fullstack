@@ -14,6 +14,7 @@ export const VideoPlayer: React.FC = () => {
   // ===== SIMPLIFIED STATES (matching your working example) =====
   const [content, setContent] = useState<Content | null>(null);
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
+  const [paymentChecked, setPaymentChecked] = useState(false); // Prevent multiple checks
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   
   // Video states
@@ -53,16 +54,18 @@ export const VideoPlayer: React.FC = () => {
     fetchContent();
   }, [id, navigate]);
 
-  // ===== CHECK PAYMENT STATUS =====
+  // ===== CHECK PAYMENT STATUS (ONLY ONCE) =====
   useEffect(() => {
     const checkPayment = async () => {
-      if (!content || !user) return;
+      if (!content || !user || paymentChecked) return;
 
       console.log('🔍 Checking payment for:', {
         userId: user.id,
         contentId: content._id,
         contentTitle: content.title
       });
+
+      setPaymentChecked(true); // Mark as checked to prevent re-runs
 
       try {
         const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
@@ -76,9 +79,12 @@ export const VideoPlayer: React.FC = () => {
         });
 
         setHasPaid(data.paid);
-        if (data.paid) setShowPaymentModal(false);
+        if (data.paid) {
+          setShowPaymentModal(false);
+          console.log('✅ PAYMENT FOUND - Content permanently unlocked');
+        }
         console.log('💳 Final Payment Status:', data.paid ? '✅ PAID' : '❌ NOT PAID');
-      } catch (err) {
+      } catch (err: any) {
         console.error('❌ Error checking payment:', err);
         console.error('❌ Full error details:', {
           message: err.message,
@@ -90,7 +96,7 @@ export const VideoPlayer: React.FC = () => {
     };
 
     checkPayment();
-  }, [content, user]);
+  }, [content, user, paymentChecked]);
 
   // ===== VIDEO PROTECTION (matching your working logic) =====
   useEffect(() => {
@@ -146,15 +152,41 @@ export const VideoPlayer: React.FC = () => {
   const handlePaymentSuccess = async () => {
     if (!content || !user) return;
 
+    console.log('🎉 Payment success handler triggered');
+
     try {
+      // Wait a moment for payment to be processed
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
       const data = res.data;
+      
+      console.log('🔍 Post-payment verification:', data);
+      
       if (data.paid) {
+        console.log('✅ Payment confirmed - setting permanent premium status');
         setHasPaid(true);
         setShowPaymentModal(false);
+        setPaymentChecked(true); // Mark as permanently checked
         videoRef.current?.play();
         setIsPlaying(true);
-        console.log('✅ Payment verified, content unlocked');
+        console.log('🏷️ Badge should now show: CLIMAX PREMIUM');
+      } else {
+        console.log('⚠️ Payment not yet reflected in database, retrying...');
+        // Retry after another second
+        setTimeout(async () => {
+          try {
+            const retryRes = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+            if (retryRes.data.paid) {
+              setHasPaid(true);
+              setShowPaymentModal(false);
+              setPaymentChecked(true);
+              console.log('✅ Payment confirmed on retry');
+            }
+          } catch (retryErr) {
+            console.error('❌ Retry verification failed:', retryErr);
+          }
+        }, 2000);
       }
     } catch (err) {
       console.error('❌ Error verifying payment after success:', err);
@@ -249,10 +281,18 @@ export const VideoPlayer: React.FC = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  if (!content || hasPaid === null) {
+  if (!content) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white text-xl bg-black">
         Loading video...
+      </div>
+    );
+  }
+
+  if (hasPaid === null && !paymentChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white text-xl bg-black">
+        Checking payment status...
       </div>
     );
   }
