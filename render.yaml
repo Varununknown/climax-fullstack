@@ -3,7 +3,7 @@ services:
     name: climax-fullstack
     runtime: node
     buildCommand: bash .render/build.sh
-    startCommand: npm start
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -12,7 +12,5 @@ services:
     buildFilter:
       paths:
         - /backend/**/*
-        - /src/**/*
         - /.render/**/*
-        - server.js
         - package.json
