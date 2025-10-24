@@ -39,7 +39,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     
     const fetchSettings = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/payment-settings`);
+        const response = await fetch(`${BACKEND_URL}/api/payment-settings`);
         const data = await response.json();
         console.log('💳 Payment settings loaded:', data);
         setPaymentSettings(data);
