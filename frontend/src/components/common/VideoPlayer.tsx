@@ -29,6 +29,7 @@ export const VideoPlayer: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastValidTime = useRef<number>(0);
+  const modalTriggeredAtTime = useRef<number>(-1); // Track when modal was last triggered
 
   // ===== UI STATES =====
   const [volume, setVolume] = useState(1);
@@ -142,16 +143,17 @@ export const VideoPlayer: React.FC = () => {
       if (time >= climax) {
         console.log(`🔒 LOCK ENFORCED at ${time}s (climax: ${climax}s)`);
         
-        // HARD STOP
+        // HARD STOP EVERY TIME
         video.pause();
         setIsPlaying(false);
         
         // Rewind to safe zone
         video.currentTime = Math.max(0, lastValidTime.current);
         
-        // Show payment modal
-        if (!showPaymentModal) {
-          console.log('📱 Showing payment modal');
+        // Show payment modal (only if not already triggered at this exact time)
+        if (modalTriggeredAtTime.current !== time) {
+          console.log('📱 Triggering payment modal');
+          modalTriggeredAtTime.current = time;
           setShowPaymentModal(true);
         }
         
@@ -161,6 +163,10 @@ export const VideoPlayer: React.FC = () => {
       // Track last valid time (safe zone before climax)
       if (time < climax) {
         lastValidTime.current = time;
+        // Reset modal trigger when back in safe zone
+        if (modalTriggeredAtTime.current >= 0) {
+          modalTriggeredAtTime.current = -1;
+        }
       }
     };
 
@@ -531,8 +537,9 @@ export const VideoPlayer: React.FC = () => {
           onSuccess={handlePaymentSuccess}
           onClose={() => {
             console.log('🔒 Payment modal closed - keeping video paused');
-            // Keep modal closed but video stays paused (user cannot continue without payment)
             setShowPaymentModal(false);
+            // Reset modal trigger so it can re-trigger if needed
+            modalTriggeredAtTime.current = -1;
             // Force video to stay paused
             if (videoRef.current) {
               videoRef.current.pause();

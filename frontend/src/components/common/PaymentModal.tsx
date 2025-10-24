@@ -110,6 +110,23 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       console.log('📡 Response status:', response.status);
 
+      // Handle different response codes
+      if (response.status === 409) {
+        // Payment already exists - this is actually SUCCESS
+        console.log('✅ Payment already exists (409) - treating as success');
+        const result = await response.json();
+        console.log('📦 Existing payment:', result);
+        
+        // Immediately unlock
+        setTimeout(() => {
+          setPaymentStep('success');
+          setTimeout(() => {
+            onSuccess();
+          }, 1000);
+        }, 1000);
+        return;
+      }
+
       if (!response.ok) {
         const text = await response.text();
         console.error('❌ Response not OK:', response.status, text);
@@ -125,16 +142,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           setPaymentStep('success');
           setTimeout(() => {
             onSuccess();
-          }, 2000);
-        }, 2000);
+          }, 1000);
+        }, 1000);
       } else {
         // New payment succeeded
         setTimeout(() => {
           setPaymentStep('success');
           setTimeout(() => {
             onSuccess();
-          }, 2000);
-        }, 2000);
+          }, 1000);
+        }, 1000);
       }
     } catch (err) {
       console.error('❌ Payment submission error:', err);
