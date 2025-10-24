@@ -30,6 +30,7 @@ export const VideoPlayer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastValidTime = useRef<number>(0);
   const modalTriggeredAtTime = useRef<number>(-1); // Track when modal was last triggered
+  const hasPaidRef = useRef<boolean>(false); // REF to track payment status in event handlers
 
   // ===== UI STATES =====
   const [volume, setVolume] = useState(1);
@@ -65,6 +66,7 @@ export const VideoPlayer: React.FC = () => {
     const checkPaymentBeforePlay = async () => {
       if (!content || !user) {
         setHasPaid(false);
+        hasPaidRef.current = false;
         setIsLoadingPayment(false);
         return;
       }
@@ -83,10 +85,12 @@ export const VideoPlayer: React.FC = () => {
         console.log('═══════════════════════════════════════════════════════');
         
         setHasPaid(isPaid);
+        hasPaidRef.current = isPaid; // UPDATE REF
         setPaymentVerified(true);
       } catch (err) {
         console.error('❌ Payment check failed:', err);
         setHasPaid(false);
+        hasPaidRef.current = false;
         setPaymentVerified(true);
       } finally {
         setIsLoadingPayment(false);
@@ -109,7 +113,7 @@ export const VideoPlayer: React.FC = () => {
 
     // ✅ SEEKING PROTECTION: Can't drag past climax
     const handleSeeking = () => {
-      if (hasPaid) return; // Full access if paid
+      if (hasPaidRef.current) return; // Full access if paid - USE REF
       
       const seekTime = video.currentTime;
       
@@ -133,15 +137,15 @@ export const VideoPlayer: React.FC = () => {
       const time = video.currentTime;
       setCurrentTime(time);
 
-      // If paid, no restrictions - full access
-      if (hasPaid) {
+      // If paid, no restrictions - full access - USE REF
+      if (hasPaidRef.current) {
         lastValidTime.current = time;
         return;
       }
 
       // NOT PAID: Enforce climax lock
       if (time >= climax) {
-        console.log(`🔒 LOCK ENFORCED at ${time}s (climax: ${climax}s)`);
+        console.log(`🔒 LOCK ENFORCED at ${time}s (climax: ${climax}s) - hasPaid: ${hasPaidRef.current}`);
         
         // HARD STOP EVERY TIME
         video.pause();
@@ -185,7 +189,7 @@ export const VideoPlayer: React.FC = () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
-  }, [content, hasPaid]);
+  }, [content]); // REMOVED hasPaid - using ref instead
 
   // ===== PAYMENT SUCCESS: Immediately unlock + re-verify from DB =====
   const handlePaymentSuccess = async () => {
@@ -204,8 +208,10 @@ export const VideoPlayer: React.FC = () => {
         console.log('✅✅✅ PAYMENT VERIFIED - UNLOCKING FULL ACCESS');
         console.log('═══════════════════════════════════════════════════════');
         
-        setHasPaid(true); // UNLOCK
+        setHasPaid(true); // UNLOCK STATE
+        hasPaidRef.current = true; // UNLOCK REF (for event handlers)
         setShowPaymentModal(false); // Close modal
+        modalTriggeredAtTime.current = -1; // Reset modal trigger
         
         // Resume video from safe zone
         setTimeout(() => {
