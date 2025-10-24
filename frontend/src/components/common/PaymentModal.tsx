@@ -282,10 +282,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
             {/* ✅ Payment Method Tabs */}
             {paymentSettings?.payuEnabled && (
-              <div className="flex gap-2 mb-4 landscape:mb-3">
+              <div className="flex gap-2 mb-4 landscape:mb-3 relative z-20 pointer-events-auto">
                 <button
                   onClick={() => setPaymentMethod('upi')}
-                  className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all landscape:py-1 landscape:text-sm ${
+                  className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all landscape:py-1 landscape:text-sm relative z-20 pointer-events-auto cursor-pointer ${
                     paymentMethod === 'upi'
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
@@ -296,7 +296,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 </button>
                 <button
                   onClick={() => setPaymentMethod('payU')}
-                  className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all landscape:py-1 landscape:text-sm ${
+                  className={`flex-1 py-2 px-3 rounded-lg font-semibold transition-all landscape:py-1 landscape:text-sm relative z-20 pointer-events-auto cursor-pointer ${
                     paymentMethod === 'payU'
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
