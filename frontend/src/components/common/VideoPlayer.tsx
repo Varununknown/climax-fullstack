@@ -16,6 +16,7 @@ export const VideoPlayer: React.FC = () => {
   const [isPaid, setIsPaid] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentLocked, setPaymentLocked] = useState(false); // ✅ Lock modal once payment verified
   
   // Video states
   const [isPlaying, setIsPlaying] = useState(false);
@@ -59,11 +60,23 @@ export const VideoPlayer: React.FC = () => {
       .then(res => {
         const paid = res.data.paid;
         setIsPaid(paid);
+        
+        // ✅ CRITICAL: If payment exists, lock the modal permanently
+        if (paid) {
+          console.log('✅ PAYMENT FOUND - Locking modal permanently');
+          setPaymentLocked(true);
+          setShowPaymentModal(false);
+        } else {
+          console.log('🔒 NO PAYMENT - Modal can be triggered');
+          setPaymentLocked(false);
+        }
+        
         console.log(paid ? '✅ PAID - Full access' : '🔒 NOT PAID - Locked');
       })
       .catch(err => {
         console.error('❌ Payment check error:', err);
         setIsPaid(false);
+        setPaymentLocked(false);
       })
       .finally(() => setCheckingPayment(false));
   }, [content, user]);
@@ -79,8 +92,9 @@ export const VideoPlayer: React.FC = () => {
         const paid = res.data.paid;
         
         if (paid && !isPaid) {
-          console.log('🎉 PAYMENT DETECTED! Updating state...');
+          console.log('🎉 PAYMENT DETECTED! Locking modal permanently');
           setIsPaid(true);
+          setPaymentLocked(true); // ✅ Lock modal forever
           setShowPaymentModal(false);
         }
       } catch (err) {
@@ -103,8 +117,8 @@ export const VideoPlayer: React.FC = () => {
       const time = video.currentTime;
       setCurrentTime(time);
 
-      // If paid, allow everything
-      if (isPaid) return;
+      // If paid, allow everything (modal locked forever)
+      if (isPaid || paymentLocked) return;
 
       // NOT PAID: Block at climax
       if (time >= climax) {
@@ -117,7 +131,7 @@ export const VideoPlayer: React.FC = () => {
     };
 
     const onSeeking = () => {
-      if (isPaid) return;
+      if (isPaid || paymentLocked) return;
       
       if (video.currentTime >= climax) {
         console.log('🚫 Seek blocked');
@@ -139,7 +153,7 @@ export const VideoPlayer: React.FC = () => {
       video.removeEventListener('seeking', onSeeking);
       video.removeEventListener('loadedmetadata', onLoadedMetadata);
     };
-  }, [content, isPaid]); // Re-attach when isPaid changes
+  }, [content, isPaid, paymentLocked]); // Re-attach when payment status changes
 
   // ===== PAUSE VIDEO WHEN MODAL OPENS =====
   useEffect(() => {
@@ -164,8 +178,11 @@ export const VideoPlayer: React.FC = () => {
     // ✅ IMMEDIATELY close modal and hide locked badge
     setShowPaymentModal(false);
     
+    // ✅ LOCK THE MODAL PERMANENTLY - Payment is permanent!
+    setPaymentLocked(true);
+    
     // ✅ IMMEDIATELY set isPaid to true (optimistic update)
-    console.log('⚡ Optimistic update: Setting isPaid to TRUE');
+    console.log('⚡ Optimistic update: Setting isPaid to TRUE and locking payment');
     setIsPaid(true);
     
     // ✅ Resume video immediately
@@ -184,13 +201,13 @@ export const VideoPlayer: React.FC = () => {
       console.log('📡 Verification response:', res.data);
 
       if (res.data.paid) {
-        console.log('✅ PAYMENT CONFIRMED in database!');
+        console.log('✅ PAYMENT CONFIRMED in database! Modal is locked forever.');
       } else {
-        console.log('⚠️ Database verification showed paid: false (but keeping optimistic state)');
+        console.log('⚠️ Database verification showed paid: false (but keeping optimistic state and lock)');
       }
     } catch (err) {
       console.error('❌ Verification error:', err);
-      console.log('⚠️ Verification failed but keeping optimistic state');
+      console.log('⚠️ Verification failed but keeping optimistic state and lock');
     }
     
     console.log('═══════════════════════════════════════════════════════');
@@ -285,7 +302,8 @@ export const VideoPlayer: React.FC = () => {
     );
   }
 
-  const isLocked = !isPaid && content.premiumPrice > 0;
+  // ✅ CRITICAL: If payment is locked, content is NEVER locked (full access)
+  const isLocked = paymentLocked ? false : (!isPaid && content.premiumPrice > 0);
   const climaxPercentage = (content.climaxTimestamp / duration) * 100;
 
   return (
@@ -388,14 +406,14 @@ export const VideoPlayer: React.FC = () => {
           </div>
 
           {/* CENTER */}
-          {isLocked && (
+          {isLocked && !paymentLocked && (
             <button onClick={() => setShowPaymentModal(true)} className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded animate-pulse">
               <Lock className="w-4 h-4" />
               <span>💳 Unlock (₹{content.premiumPrice})</span>
             </button>
           )}
-          {isPaid && (
-            <div className="text-green-400 font-bold text-sm">✅ Full Access</div>
+          {(isPaid || paymentLocked) && (
+            <div className="text-green-400 font-bold text-sm">✅ Full Access Unlocked</div>
           )}
 
           {/* RIGHT */}
