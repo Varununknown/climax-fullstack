@@ -219,9 +219,12 @@ export const PremiumVideoPlayer: React.FC = () => {
       }
 
       try {
+        console.log('🔴🔴🔴 PAYMENT CHECK EFFECT RUNNING 🔴🔴🔴');
         console.log('═════════════════════════════════════════');
         console.log('🔍 INITIAL PAYMENT CHECK');
-        console.log(`User: ${user.id}, Content: ${content._id}`);
+        console.log(`User ID: ${user.id}`);
+        console.log(`Content ID: ${content._id}`);
+        console.log(`Premium Price: ${content.premiumPrice}`);
         console.log('═════════════════════════════════════════');
         
         // 🔥 CRITICAL: CHECK DATABASE FIRST - THIS IS THE SOURCE OF TRUTH
@@ -287,7 +290,12 @@ export const PremiumVideoPlayer: React.FC = () => {
         setPaymentCheckComplete(true);
         
       } catch (err) {
-        console.error('❌❌❌ PAYMENT CHECK FAILED:', err);
+        console.error('❌❌❌ PAYMENT CHECK FAILED');
+        console.error('Error details:', err);
+        if (err instanceof Error) {
+          console.error('  Message:', err.message);
+          console.error('  Stack:', err.stack);
+        }
         
         // If server fails, check permanent cache as fallback ONLY
         const permanentKey = `payment_permanent_${user.id}_${content._id}`;
@@ -1023,8 +1031,6 @@ export const PremiumVideoPlayer: React.FC = () => {
             {/* Premium Badge with Icons - Top Right Corner */}
             <div className={`absolute ${isMobile ? 'top-4 right-4' : 'top-8 right-8'}`}>
               <div className="pointer-events-auto">
-                {/* BADGE: Logs the current state */}
-                {console.log(`[BADGE RENDER] isPaid=${paymentState.isPaid}, premiumPrice=${content.premiumPrice}, showingBadge=${paymentState.isPaid && content.premiumPrice > 0 ? '🟢 PREMIUM' : '🔴 PREVIEW'}`)}
                 <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-full backdrop-blur-lg shadow-lg ${
                   (paymentState.isPaid && content.premiumPrice > 0) 
                     ? 'bg-gradient-to-r from-slate-900/95 via-violet-900/90 to-slate-900/95 text-white border border-violet-500/30' 
