@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { X, QrCode, CheckCircle, Clock, Copy } from 'lucide-react';
 import { Content } from '../../types';
 import { useAuth } from '../../context/AuthContext';
-import API from '../../services/api';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || API.defaults.baseURL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface PaymentModalProps {
   content: Content;
@@ -32,79 +31,21 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   console.log('💳 PaymentModal rendered for content:', content.title, 'Price:', content.premiumPrice);
 
-  // CRITICAL: Check if payment already exists and close modal immediately
-  useEffect(() => {
-    const checkExistingPayment = async () => {
-      if (!user?.id || !content._id) return;
-      
-      try {
-        // Check localStorage first
-        const paymentKey = `payment_${user.id}_${content._id}`;
-        const cachedPayment = localStorage.getItem(paymentKey);
-        
-        if (cachedPayment === 'true') {
-          // Optimistic: if cache says paid, close modal quickly but verify in background.
-          console.log('🚫 PAYMENT EXISTS IN CACHE - optimistic close, verifying...');
-          onSuccess(); // Close modal and unlock content
-
-          try {
-            const verify = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
-            if (!verify.data.paid) {
-              // Cache was stale — clear and surface the correct state on next load
-              console.log('⚠️ Cached payment was revoked on server; clearing cache');
-              localStorage.removeItem(paymentKey);
-            }
-          } catch (err) {
-            console.warn('Payment verification failed after optimistic close:', err);
-          }
-
-          return;
-        }
-        
-        // Check server
-        const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
-        if (res.data.paid) {
-          console.log('🚫 PAYMENT EXISTS ON SERVER - CLOSING MODAL!');
-          localStorage.setItem(paymentKey, 'true');
-          onSuccess(); // Close modal and unlock content
-          return;
-        }
-        
-        // Double check with any payment endpoint
-        const anyRes = await API.get(`/payments/check-any?userId=${user.id}&contentId=${content._id}`);
-        if (anyRes.data.exists && anyRes.data.status === 'approved') {
-          console.log('🚫 APPROVED PAYMENT FOUND - CLOSING MODAL!');
-          localStorage.setItem(paymentKey, 'true');
-          onSuccess(); // Close modal and unlock content
-          return;
-        }
-        
-        console.log('✅ No existing payment - modal can proceed');
-      } catch (err) {
-        console.error('❌ Error checking existing payment:', err);
-      }
-    };
-    
-    checkExistingPayment();
-  }, [user, content, onSuccess]);
+  // Note: Payment checking is handled by VideoPlayer.tsx for efficiency
+  // This modal is only shown when payment is needed
 
   useEffect(() => {
     console.log('💳 Fetching payment settings...');
     
     const fetchSettings = async () => {
       try {
-        const response = await API.get('/payment-settings');
-        console.log('💳 Payment settings loaded:', response.data);
-        setPaymentSettings(response.data);
+        const response = await fetch(`${BACKEND_URL}/payment-settings`);
+        const data = await response.json();
+        console.log('💳 Payment settings loaded:', data);
+        setPaymentSettings(data);
       } catch (err) {
         console.error('❌ Failed to load payment settings:', err);
-        // Set a default fallback for testing
-        setPaymentSettings({
-          upiId: 'test@upi',
-          qrCodeUrl: '',
-          merchantName: 'Climax OTT',
-          isActive: false
-        });
+        setPaymentSettings(null);
       }
     };
 
@@ -140,58 +81,47 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setPaymentStep('waiting');
 
     try {
-      console.log('💳 Submitting payment:', {
-        userId: user.id,
-        contentId: content._id,
-        amount: content.premiumPrice,
-        transactionId
+      console.log('═══════════════════════════════════════════════════════');
+      console.log('💳💳💳 PAYMENT SUBMISSION STARTING');
+      console.log('═══════════════════════════════════════════════════════');
+      console.log('Submitting payment with:');
+      console.log('  userId:', user.id);
+      console.log('  contentId:', content._id);
+      console.log('  amount:', content.premiumPrice);
+      console.log('  transactionId:', transactionId);
+      console.log('═══════════════════════════════════════════════════════');
+
+      const response = await fetch(`${BACKEND_URL}/payments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          contentId: content._id,
+          amount: content.premiumPrice,
+          transactionId
+        })
       });
 
-      const response = await API.post('/payments', {
-        userId: user.id,
-        contentId: content._id,
-        amount: content.premiumPrice,
-        transactionId
-      });
+      const result = await response.json();
+      console.log('📦 Payment submission result:', result);
 
-      console.log('✅ Payment submission successful:', response.data);
-
-      // Handle different payment scenarios clearly
-      if (response.data.alreadyPaid) {
-        console.log('🔓 Content already unlocked - you have access!');
-        setPaymentStep('success');
+      if (response.ok) {
         setTimeout(() => {
-          onSuccess(); // Close modal and unlock content
-        }, 1000);
+          setPaymentStep('success');
+          setTimeout(() => {
+            onSuccess();
+          }, 2000);
+        }, 2000);
       } else {
-        console.log('🚀 New payment auto-approved - unlocking content!');
-        setPaymentStep('success');
-        setTimeout(() => {
-          onSuccess(); // Close modal and unlock content
-        }, 1500);
+        alert(result.message || 'Payment failed to save. Try again.');
+        setPaymentStep('qr');
       }
-
-    } catch (err: any) {
-      console.error('❌ Payment submission failed:', err);
-      
-      // Handle payment errors with clear user feedback
-      let errorMessage = 'Payment failed. Please try again.';
-      
-      if (err.response?.data?.message) {
-        const serverMessage = err.response.data.message;
-        
-        if (serverMessage.includes('already unlocked') || serverMessage.includes('already paid')) {
-          // Content is already unlocked - close modal and succeed
-          console.log('🔓 Content already unlocked - closing payment modal');
-          onSuccess();
-          return;
-        } else {
-          errorMessage = serverMessage;
-        }
-      }
-      
-      alert(errorMessage);
-      setPaymentStep('qr'); // Go back to payment form
+    } catch (err) {
+      console.error('❌ Payment submission error:', err);
+      alert('Server error. Try again.');
+      setPaymentStep('qr');
     }
   };
 
