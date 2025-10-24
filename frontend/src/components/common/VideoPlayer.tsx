@@ -59,7 +59,7 @@ export const VideoPlayer: React.FC = () => {
     fetchContent();
   }, [id, navigate]);
 
-  // ===== PRE-PAYMENT CHECK (Before video plays) - ONLY ONCE =====
+  // ===== PRE-PAYMENT CHECK (Before video plays) - CHECK PAYMENT STATUS =====
   useEffect(() => {
     const checkPaymentBeforePlay = async () => {
       if (!content || !user) {
@@ -69,28 +69,42 @@ export const VideoPlayer: React.FC = () => {
       }
 
       try {
-        console.log('💳 Pre-play payment check...');
+        console.log('💳 PRE-PAYMENT CHECK for:', content.title);
+        console.log('   userId:', user.id);
+        console.log('   contentId:', content._id);
         const res = await API.get(
           `/payments/check?userId=${user.id}&contentId=${content._id}`
         );
         const isPaid = res.data.paid;
-        console.log(isPaid ? '✅ User already paid - full access' : '🔒 Not paid - climax locked');
+        console.log(isPaid ? '✅✅✅ USER ALREADY PAID - FULL ACCESS' : '🔒🔒🔒 NOT PAID - CLIMAX LOCKED');
+        
         setHasPaid(isPaid);
-        setPaymentVerified(true); // MARK: Payment check done, don't check again
+        
+        // IF NOT PAID, IMMEDIATELY SHOW MODAL + PAUSE VIDEO
+        if (!isPaid) {
+          console.log('📱 Content not paid - showing payment modal immediately');
+          setShowPaymentModal(true);
+          if (videoRef.current) {
+            videoRef.current.pause();
+            setIsPlaying(false);
+          }
+        }
+        
+        setPaymentVerified(true);
       } catch (err) {
         console.error('❌ Payment check failed:', err);
         setHasPaid(false);
-        setPaymentVerified(true); // MARK: Payment check done (even if failed)
+        setPaymentVerified(true);
       } finally {
         setIsLoadingPayment(false);
       }
     };
 
-    // ONLY CHECK ONCE when component loads, not on every render
-    if (!paymentVerified && content && user && isLoadingPayment) {
+    // Check payment when content loads
+    if (content && user && isLoadingPayment) {
       checkPaymentBeforePlay();
     }
-  }, [content, user, paymentVerified, isLoadingPayment]);
+  }, [content, user]);
 
   // ===== PREVENT SEEKING/PLAYING PAST CLIMAX (Locked Zone) =====
   useEffect(() => {
@@ -107,10 +121,10 @@ export const VideoPlayer: React.FC = () => {
       const seekTime = video.currentTime;
       
       if (seekTime >= climax) {
-        console.log(`🚫 Seek blocked - attempting to enter locked zone at ${seekTime}s (climax: ${climax}s)`);
+        console.log(`🚫 Seek blocked - attempting to enter locked zone at ${seekTime}s`);
         // FORCE rewind to safe zone
         video.currentTime = lastValidTime.current;
-        // FORCE pause immediately
+        // FORCE pause
         video.pause();
         setIsPlaying(false);
         // Show modal
@@ -121,38 +135,25 @@ export const VideoPlayer: React.FC = () => {
 
     // ✅ PLAYING PROTECTION: Can't play past climax
     const handleTimeUpdate = () => {
+      // FIRST CHECK: If not paid, always pause at/before climax
+      if (!hasPaid && video.currentTime >= climax) {
+        console.log(`🔒 HARD LOCK: Attempting to play locked zone at ${video.currentTime}s`);
+        video.pause();
+        setIsPlaying(false);
+        video.currentTime = lastValidTime.current;
+        setShowPaymentModal(true);
+        return;
+      }
+
       if (hasPaid) {
-        // No restrictions if paid, just update time
+        // Full access - just track time
         setCurrentTime(video.currentTime);
-        if (video.currentTime < climax) {
-          lastValidTime.current = video.currentTime;
-        }
+        lastValidTime.current = video.currentTime;
         return;
       }
 
       const time = video.currentTime;
-      
-      // Update current time for display
       setCurrentTime(time);
-
-      // If entering locked zone (climax→end) without payment - HARD STOP
-      // BUT ONLY IF MODAL NOT ALREADY SHOWING
-      if (time >= climax && !showPaymentModal) {
-        console.log(`🔒 HARD LOCK: Entered locked zone at ${time}s (climax: ${climax}s)`);
-        
-        // FORCE pause
-        video.pause();
-        setIsPlaying(false);
-        
-        // FORCE rewind
-        video.currentTime = lastValidTime.current;
-        
-        // Show modal
-        console.log('📱 Showing payment modal...');
-        setShowPaymentModal(true);
-        
-        return;
-      }
 
       // Track safe zone (before climax)
       if (time < climax) {
@@ -175,7 +176,7 @@ export const VideoPlayer: React.FC = () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
-  }, [content, hasPaid, showPaymentModal]);
+  }, [content, hasPaid]);
 
   // ===== PAYMENT SUCCESS: Immediately unlock + re-verify from DB =====
   const handlePaymentSuccess = async () => {
@@ -216,6 +217,13 @@ export const VideoPlayer: React.FC = () => {
   const togglePlayPause = () => {
     const video = videoRef.current;
     if (!video || !content) return;
+    
+    // If not paid and trying to play, show payment modal
+    if (!hasPaid && !isPlaying) {
+      console.log('🔒 Attempted to play locked content - showing payment modal');
+      setShowPaymentModal(true);
+      return;
+    }
     
     if (video.paused) {
       video.play();
