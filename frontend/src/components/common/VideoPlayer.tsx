@@ -54,10 +54,10 @@ export const VideoPlayer: React.FC = () => {
     fetchContent();
   }, [id, navigate]);
 
-  // ===== CHECK PAYMENT STATUS (ONLY ONCE) =====
+  // ===== CHECK PAYMENT STATUS (ONLY ONCE; don't override once true) =====
   useEffect(() => {
     const checkPayment = async () => {
-      if (!content || !user || paymentChecked) return;
+      if (!content || !user || paymentChecked || hasPaid === true) return;
 
       console.log('🔍 Checking payment for:', {
         userId: user.id,
@@ -78,10 +78,14 @@ export const VideoPlayer: React.FC = () => {
           responseKeys: Object.keys(data)
         });
 
-        setHasPaid(data.paid);
+        // Only set to true; avoid flipping to false once premium is granted in-session
         if (data.paid) {
+          setHasPaid(true);
           setShowPaymentModal(false);
           console.log('✅ PAYMENT FOUND - Content permanently unlocked');
+        } else if (!hasPaid) {
+          // Only set false if we haven't already set true in this session
+          setHasPaid(false);
         }
         console.log('💳 Final Payment Status:', data.paid ? '✅ PAID' : '❌ NOT PAID');
       } catch (err: any) {
@@ -91,12 +95,12 @@ export const VideoPlayer: React.FC = () => {
           response: err.response?.data,
           status: err.response?.status
         });
-        setHasPaid(false);
+  if (!hasPaid) setHasPaid(false);
       }
     };
 
     checkPayment();
-  }, [content, user, paymentChecked]);
+  }, [content, user, paymentChecked, hasPaid]);
 
   // ===== VIDEO PROTECTION (matching your working logic) =====
   useEffect(() => {
@@ -148,46 +152,30 @@ export const VideoPlayer: React.FC = () => {
     };
   }, [content, hasPaid]);
 
-  // ===== PAYMENT SUCCESS (matching your working logic) =====
+  // ===== PAYMENT SUCCESS (set premium immediately; verify in background, never revoke this session) =====
   const handlePaymentSuccess = async () => {
     if (!content || !user) return;
 
     console.log('🎉 Payment success handler triggered');
 
     try {
-      // Wait a moment for payment to be processed
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
-      const data = res.data;
-      
-      console.log('🔍 Post-payment verification:', data);
-      
-      if (data.paid) {
-        console.log('✅ Payment confirmed - setting permanent premium status');
-        setHasPaid(true);
-        setShowPaymentModal(false);
-        setPaymentChecked(true); // Mark as permanently checked
-        videoRef.current?.play();
-        setIsPlaying(true);
-        console.log('🏷️ Badge should now show: CLIMAX PREMIUM');
-      } else {
-        console.log('⚠️ Payment not yet reflected in database, retrying...');
-        // Retry after another second
-        setTimeout(async () => {
-          try {
-            const retryRes = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
-            if (retryRes.data.paid) {
-              setHasPaid(true);
-              setShowPaymentModal(false);
-              setPaymentChecked(true);
-              console.log('✅ Payment confirmed on retry');
-            }
-          } catch (retryErr) {
-            console.error('❌ Retry verification failed:', retryErr);
-          }
-        }, 2000);
-      }
+      // Immediately grant premium for this session
+      setHasPaid(true);
+      setShowPaymentModal(false);
+      setPaymentChecked(true);
+      videoRef.current?.play();
+      setIsPlaying(true);
+      console.log('🏷️ Badge set to CLIMAX PREMIUM (session). Will verify in background.');
+
+      // Background verification; do NOT revoke UI this session
+      setTimeout(async () => {
+        try {
+          const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+          console.log('🔍 Background verification result:', res.data);
+        } catch (bgErr) {
+          console.warn('⚠️ Background verification failed (ignored):', bgErr);
+        }
+      }, 1200);
     } catch (err) {
       console.error('❌ Error verifying payment after success:', err);
     }
