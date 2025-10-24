@@ -2,7 +2,7 @@ services:
   - type: web
     name: climax-fullstack
     runtime: node
-    buildCommand: cd backend && npm install
+    buildCommand: bash .render/build.sh
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
@@ -13,4 +13,5 @@ services:
       paths:
         - /backend/**/*
         - /src/**/*
+        - /.render/**/*
         - package.json
