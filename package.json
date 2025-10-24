@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Climax OTT Platform - Full Stack Monorepo",
   "private": true,
-  "main": "backend/server.cjs",
+  "main": "server.js",
   "scripts": {
-    "start": "node backend/server.cjs",
+    "start": "node server.js",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev",
