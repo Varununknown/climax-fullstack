@@ -89,9 +89,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       console.log('  contentId:', content._id);
       console.log('  amount:', content.premiumPrice);
       console.log('  transactionId:', transactionId);
+      console.log('  Backend URL:', BACKEND_URL);
       console.log('═══════════════════════════════════════════════════════');
 
-      const response = await fetch(`${BACKEND_URL}/payments`, {
+      const paymentUrl = `${BACKEND_URL}/api/payments`;
+      console.log('📍 Sending to:', paymentUrl);
+
+      const response = await fetch(paymentUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -104,10 +108,19 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         })
       });
 
+      console.log('📡 Response status:', response.status);
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('❌ Response not OK:', response.status, text);
+        throw new Error(`Payment API error: ${response.status} ${text.substring(0, 100)}`);
+      }
+
       const result = await response.json();
       console.log('📦 Payment submission result:', result);
 
-      if (response.ok) {
+      if (result.alreadyPaid || result.message?.includes('already')) {
+        // Already paid
         setTimeout(() => {
           setPaymentStep('success');
           setTimeout(() => {
@@ -115,12 +128,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           }, 2000);
         }, 2000);
       } else {
-        alert(result.message || 'Payment failed to save. Try again.');
-        setPaymentStep('qr');
+        // New payment succeeded
+        setTimeout(() => {
+          setPaymentStep('success');
+          setTimeout(() => {
+            onSuccess();
+          }, 2000);
+        }, 2000);
       }
     } catch (err) {
       console.error('❌ Payment submission error:', err);
-      alert('Server error. Try again.');
+      setTxnError(err instanceof Error ? err.message : 'Payment failed. Please try again.');
+      alert(err instanceof Error ? err.message : 'Server error. Try again.');
       setPaymentStep('qr');
     }
   };
@@ -133,9 +152,21 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-900 rounded-2xl max-w-md w-full p-4 relative max-h-[95vh] overflow-y-auto">
-        <button onClick={onClose} className="absolute right-4 top-4 text-gray-400 hover:text-white">
-          <X className="w-6 h-6" />
-        </button>
+        {/* Close button - only available if not in waiting step */}
+        {paymentStep !== 'waiting' && (
+          <button 
+            onClick={() => {
+              // Warn user that video will stop playing
+              const confirmed = window.confirm('Are you sure? You cannot continue watching without payment.');
+              if (confirmed) {
+                onClose();
+              }
+            }} 
+            className="absolute right-4 top-4 text-gray-400 hover:text-white"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        )}
 
         {(paymentStep === 'qr') && (
           <>
