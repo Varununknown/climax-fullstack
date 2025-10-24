@@ -136,22 +136,20 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const result = await response.json();
       console.log('📦 Payment submission result:', result);
 
-      if (result.alreadyPaid || result.message?.includes('already')) {
-        // Already paid
+      // Check if payment is paid (either already paid or newly approved)
+      if (result.paid || result.alreadyPaid || result.message?.includes('already')) {
+        console.log('✅ Payment is PAID - showing success');
+        // Show success state immediately
+        setPaymentStep('success');
+        // Notify parent after a brief delay
         setTimeout(() => {
-          setPaymentStep('success');
-          setTimeout(() => {
-            onSuccess();
-          }, 1000);
-        }, 1000);
+          onSuccess();
+        }, 1500);
       } else {
-        // New payment succeeded
-        setTimeout(() => {
-          setPaymentStep('success');
-          setTimeout(() => {
-            onSuccess();
-          }, 1000);
-        }, 1000);
+        // Payment exists but not verified
+        console.log('⚠️ Payment submitted but not verified yet:', result);
+        // Still show success UI since payment was submitted
+        setPaymentStep('success');
       }
     } catch (err) {
       console.error('❌ Payment submission error:', err);

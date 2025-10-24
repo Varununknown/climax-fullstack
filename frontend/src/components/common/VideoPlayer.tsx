@@ -125,20 +125,42 @@ export const VideoPlayer: React.FC = () => {
 
   // ===== PAYMENT SUCCESS =====
   const handlePaymentSuccess = async () => {
-    if (!content || !user) return;
+    if (!content || !user) {
+      console.log('❌ Missing content or user in handlePaymentSuccess');
+      return;
+    }
 
-    console.log('✅ Payment success - verifying...');
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('💳 VERIFYING PAYMENT SUCCESS...');
+    console.log('Content:', content.title);
+    console.log('User:', user.id);
+    
     try {
       const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+      console.log('📡 Payment check response:', res.data);
+
       if (res.data.paid) {
-        console.log('✅ VERIFIED - Unlocking');
+        console.log('✅ PAYMENT VERIFIED - Unlocking content');
         setIsPaid(true);
         setShowPaymentModal(false);
-        setTimeout(() => videoRef.current?.play(), 200);
+        // Add a slight delay before playing
+        setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.play()
+              .then(() => console.log('▶️ Video playback resumed'))
+              .catch(err => console.error('❌ Error resuming playback:', err));
+          }
+        }, 500);
+      } else {
+        console.log('⚠️ Payment check returned paid: false');
+        alert('Payment verification failed. Please contact support if this persists.');
       }
     } catch (err) {
-      console.error('Verification failed:', err);
+      console.error('❌ Payment verification error:', err);
+      alert('Error verifying payment. Please refresh the page or contact support.');
     }
+    
+    console.log('═══════════════════════════════════════════════════════');
   };
 
   // ===== CONTROLS =====
