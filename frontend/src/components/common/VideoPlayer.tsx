@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, Pause, ArrowLeft, Volume2, Settings, Maximize, Minimize, VolumeX, RotateCcw } from 'lucide-react';
+import { Play, Pause, ArrowLeft, Volume2, Maximize, Minimize, VolumeX, RotateCcw, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PaymentModal } from './PaymentModal';
 import { Content } from '../../types';
 import API from '../../services/api';
 
 // =====================================================
-// 🎬 PREMIUM HIGH-CLASS OTT PLATFORM VIDEO PLAYER
+// 🎬 CLIMAX PREMIUM VIDEO PLAYER
+// LOGIC: Lock climax→end until payment. Check payment before play.
 // =====================================================
 
 export const VideoPlayer: React.FC = () => {
@@ -22,19 +23,19 @@ export const VideoPlayer: React.FC = () => {
   const [duration, setDuration] = useState(0);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
+  const [isLoadingPayment, setIsLoadingPayment] = useState(true);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastValidTime = useRef<number>(0);
 
-  // ===== UI CONTROLS STATES =====
+  // ===== UI STATES =====
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [quality, setQuality] = useState('Auto');
   const [showQualityMenu, setShowQualityMenu] = useState(false);
-  const [isBuffering, setIsBuffering] = useState(false);
   const [controlsTimeout, setControlsTimeout] = useState<number | null>(null);
   
   const qualities = ['Auto', '1080p', '720p', '480p', '360p'];
@@ -48,6 +49,7 @@ export const VideoPlayer: React.FC = () => {
         const res = await API.get(`/contents/${id}`);
         setContent(res.data);
         console.log('✅ Content loaded:', res.data.title);
+        console.log(`📍 Climax point: ${res.data.climaxTimestamp}s`);
       } catch (err) {
         console.error('❌ Error fetching content:', err);
         navigate('/');
@@ -56,33 +58,35 @@ export const VideoPlayer: React.FC = () => {
     fetchContent();
   }, [id, navigate]);
 
-  // ===== CHECK PAYMENT STATUS =====
+  // ===== PRE-PAYMENT CHECK (Before video plays) =====
   useEffect(() => {
-    const checkPayment = async () => {
+    const checkPaymentBeforePlay = async () => {
       if (!content || !user) {
         setHasPaid(false);
+        setIsLoadingPayment(false);
         return;
       }
 
       try {
-        console.log('💳 Checking payment status...');
+        console.log('💳 Pre-play payment check...');
         const res = await API.get(
           `/payments/check?userId=${user.id}&contentId=${content._id}`
         );
         const isPaid = res.data.paid;
-        console.log(isPaid ? '✅ Payment verified' : '❌ No payment');
+        console.log(isPaid ? '✅ User already paid - full access' : '🔒 Not paid - climax locked');
         setHasPaid(isPaid);
-        if (isPaid) setShowPaymentModal(false);
       } catch (err) {
         console.error('❌ Payment check failed:', err);
         setHasPaid(false);
+      } finally {
+        setIsLoadingPayment(false);
       }
     };
 
-    checkPayment();
+    checkPaymentBeforePlay();
   }, [content, user]);
 
-  // ===== CLIMAX LOCK & SEEK PROTECTION =====
+  // ===== PREVENT SEEKING/PLAYING PAST CLIMAX (Locked Zone) =====
   useEffect(() => {
     if (!content || hasPaid === null) return;
     const video = videoRef.current;
@@ -90,66 +94,78 @@ export const VideoPlayer: React.FC = () => {
 
     const climax = content.climaxTimestamp;
 
-    const onTimeUpdate = () => {
-      const time = video.currentTime;
+    // ✅ SEEKING PROTECTION: Can't drag past climax
+    const handleSeeking = (e: Event) => {
+      const seekTime = video.currentTime;
+      
+      if (!hasPaid && seekTime >= climax) {
+        console.log(`🚫 Seek blocked - locked zone from ${climax}s to end`);
+        video.currentTime = lastValidTime.current; // Rewind to safe zone
+        setShowPaymentModal(true); // Trigger payment immediately
+        return;
+      }
+    };
 
-      // Pause if reached climax without payment
+    // ✅ PLAYING PROTECTION: Can't play past climax
+    const handleTimeUpdate = () => {
+      const time = video.currentTime;
+      
+      // Update current time for display
+      setCurrentTime(time);
+
+      // If entering locked zone (climax→end) without payment
       if (!hasPaid && time >= climax) {
-        video.pause();
-        video.currentTime = lastValidTime.current;
+        console.log(`🔒 Entering locked zone at ${time}s`);
+        video.pause(); // Stop playback
+        video.currentTime = lastValidTime.current; // Rewind to safe zone
         setIsPlaying(false);
-        setShowPaymentModal(true);
+        setShowPaymentModal(true); // Show payment modal
         return;
       }
 
-      // Track last valid time before climax
+      // Track safe zone (before climax)
       if (time < climax) {
         lastValidTime.current = time;
       }
-
-      setCurrentTime(time);
     };
 
-    const onSeeked = () => {
-      // Prevent seeking past climax without payment
-      if (!hasPaid && video.currentTime >= climax) {
-        video.currentTime = lastValidTime.current;
-        video.pause();
-        setIsPlaying(false);
-        setShowPaymentModal(true);
-      }
-    };
-
-    const onLoadedMetadata = () => {
+    // ✅ METADATA: Get duration
+    const handleLoadedMetadata = () => {
       setDuration(video.duration);
+      console.log(`⏱️  Duration: ${video.duration}s, Climax: ${climax}s`);
     };
 
-    video.addEventListener('timeupdate', onTimeUpdate);
-    video.addEventListener('seeked', onSeeked);
-    video.addEventListener('loadedmetadata', onLoadedMetadata);
+    video.addEventListener('seeking', handleSeeking);
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
 
     return () => {
-      video.removeEventListener('timeupdate', onTimeUpdate);
-      video.removeEventListener('seeked', onSeeked);
-      video.removeEventListener('loadedmetadata', onLoadedMetadata);
+      video.removeEventListener('seeking', handleSeeking);
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
     };
   }, [content, hasPaid]);
 
-  // ===== PAYMENT SUCCESS HANDLER =====
+  // ===== PAYMENT SUCCESS: Immediately unlock + re-verify from DB =====
   const handlePaymentSuccess = async () => {
     if (!content || !user) return;
 
     try {
-      console.log('✅ Payment completed - verifying...');
+      console.log('✅ Payment completed - verifying from database...');
       const res = await API.get(
         `/payments/check?userId=${user.id}&contentId=${content._id}`
       );
+      
       if (res.data.paid) {
-        console.log('✅ Payment verified - resuming');
-        setHasPaid(true);
-        setShowPaymentModal(false);
-        videoRef.current?.play();
-        setIsPlaying(true);
+        console.log('✅ Payment verified - full access unlocked!');
+        setHasPaid(true); // Dynamically unlock
+        setShowPaymentModal(false); // Close modal
+        
+        // Resume video from where it paused
+        setTimeout(() => {
+          videoRef.current?.play();
+          setIsPlaying(true);
+        }, 100);
       }
     } catch (err) {
       console.error('❌ Error verifying payment:', err);
@@ -176,9 +192,9 @@ export const VideoPlayer: React.FC = () => {
 
     const newTime = (percentage / 100) * duration;
     
-    // Prevent seeking past climax without payment
-    if (!hasPaid && newTime > content.climaxTimestamp && newTime > video.currentTime) {
-      console.log('🚫 Seek blocked - payment required');
+    // ✅ PREVENT SEEKING INTO LOCKED ZONE
+    if (!hasPaid && newTime >= content.climaxTimestamp) {
+      console.log('🚫 Can\'t seek into locked zone - payment required');
       setShowPaymentModal(true);
       return;
     }
@@ -245,13 +261,17 @@ export const VideoPlayer: React.FC = () => {
   };
 
   // ===== LOADING STATE =====
-  if (!content || hasPaid === null) {
+  if (!content || isLoadingPayment) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white text-xl bg-black">
-        <div className="animate-spin">Loading...</div>
+        <div className="animate-spin">🎬 Loading...</div>
       </div>
     );
   }
+
+  // ===== CLIMAX BADGE: Show if NOT paid =====
+  const isClimaxLocked = !hasPaid && content.premiumPrice > 0;
+  const climaxPercentage = (content.climaxTimestamp / duration) * 100;
 
   return (
     <div 
@@ -287,16 +307,7 @@ export const VideoPlayer: React.FC = () => {
         <div className="w-20" />
       </div>
 
-      {/* BUFFERING INDICATOR */}
-      {isBuffering && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          <div className="animate-spin text-white">
-            <RotateCcw className="w-12 h-12" />
-          </div>
-        </div>
-      )}
-
-      {/* PLAY BUTTON OVERLAY */}
+      {/* PLAY BUTTON OVERLAY (Center) */}
       {!isPlaying && (
         <div className="absolute inset-0 flex items-center justify-center">
           <button
@@ -308,6 +319,28 @@ export const VideoPlayer: React.FC = () => {
         </div>
       )}
 
+      {/* CLIMAX PREVIEW BADGE - Shows if NOT paid */}
+      {isClimaxLocked && (
+        <div className="absolute top-24 right-8 bg-red-600/90 text-white px-4 py-2 rounded-lg flex items-center space-x-2 animate-pulse">
+          <Lock className="w-4 h-4" />
+          <span className="font-bold">🔒 CLIMAX PREMIUM</span>
+        </div>
+      )}
+
+      {/* LOCKED ZONE INDICATOR on progress bar */}
+      {isClimaxLocked && duration > 0 && (
+        <div 
+          className="absolute bottom-32 left-4 right-4 h-1 bg-red-500/30 rounded"
+          style={{
+            width: `calc(100% - 2rem)`,
+            left: '1rem',
+            marginLeft: `${climaxPercentage}%`
+          }}
+        >
+          <div className="text-xs text-red-400 -mt-5">🔒 Locked</div>
+        </div>
+      )}
+
       {/* BOTTOM CONTROLS */}
       <div 
         className={`absolute bottom-0 left-0 right-0 transition-opacity ${showControls ? 'opacity-100' : 'opacity-0'}`}
@@ -315,19 +348,30 @@ export const VideoPlayer: React.FC = () => {
           background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)'
         }}
       >
-        {/* PROGRESS BAR */}
+        {/* PROGRESS BAR with LOCKED ZONE INDICATOR */}
         <div className="w-full px-4 pt-8 pb-2">
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={duration ? (currentTime / duration) * 100 : 0}
-            onChange={(e) => seekTo(Number(e.target.value))}
-            className="w-full h-1 bg-gray-600 rounded cursor-pointer appearance-none"
-            style={{
-              background: `linear-gradient(to right, #ef4444 0%, #ef4444 ${duration ? (currentTime / duration) * 100 : 0}%, #4b5563 ${duration ? (currentTime / duration) * 100 : 0}%, #4b5563 100%)`
-            }}
-          />
+          <div className="relative">
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={duration ? (currentTime / duration) * 100 : 0}
+              onChange={(e) => seekTo(Number(e.target.value))}
+              className="w-full h-1 bg-gray-600 rounded cursor-pointer appearance-none"
+              style={{
+                background: `linear-gradient(to right, #ef4444 0%, #ef4444 ${duration ? (currentTime / duration) * 100 : 0}%, #4b5563 ${duration ? (currentTime / duration) * 100 : 0}%, #4b5563 ${climaxPercentage}%, #991b1b ${climaxPercentage}%, #991b1b 100%)`
+              }}
+            />
+            {/* Locked Zone Label */}
+            {isClimaxLocked && (
+              <div 
+                className="absolute text-xs text-red-400 -mt-5 font-bold"
+                style={{ left: `${Math.max(climaxPercentage, 10)}%` }}
+              >
+                🔒 Locked
+              </div>
+            )}
+          </div>
           <div className="flex justify-between text-white text-xs mt-1">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
@@ -366,14 +410,21 @@ export const VideoPlayer: React.FC = () => {
             <span className="text-sm">{formatTime(currentTime)} / {formatTime(duration)}</span>
           </div>
 
-          {/* CENTER - UNLOCK BUTTON */}
-          {!hasPaid && content.premiumPrice > 0 && (
+          {/* CENTER - UNLOCK BUTTON or STATUS */}
+          {isClimaxLocked && content.premiumPrice > 0 && (
             <button
               onClick={() => setShowPaymentModal(true)}
-              className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition-colors"
+              className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition-colors animate-pulse"
             >
+              <Lock className="w-4 h-4" />
               <span>💳 Unlock (₹{content.premiumPrice})</span>
             </button>
+          )}
+
+          {hasPaid && (
+            <div className="text-green-400 font-bold text-sm flex items-center space-x-1">
+              <span>✅ Full Access Unlocked</span>
+            </div>
           )}
 
           {/* RIGHT CONTROLS */}
