@@ -13,6 +13,7 @@ const googleAuthRoutes = require('./routes/googleAuth.cjs'); // Added Google Aut
 const contentRoutes = require('./routes/contentRoutes.cjs');
 const paymentRoutes = require('./routes/paymentRoutes.cjs');
 const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs'); // ✅ NEW
+const payuRoutes = require('./routes/payuRoutes.cjs'); // ✅ PayU Gateway
 
 const app = express();
 
@@ -309,6 +310,7 @@ app.use('/api/auth', googleAuthRoutes);  // <-- Add Google auth routes here
 // Skip content routes since we have direct endpoint above
 app.use('/api/payments', paymentRoutes); // ✅ This now handles /api/payments/check properly
 app.use('/api/payment-settings', paymentSettingsRoutes); // ✅ NEW
+app.use('/api/payu', payuRoutes); // ✅ PayU Gateway
 
 // Video proxy endpoint for better loading performance
 app.get('/api/video/:id', async (req, res) => {
