@@ -303,24 +303,11 @@ app.post('/api/contents/seed', async (req, res) => {
   }
 });
 
-// Payment check endpoint - BEFORE route middleware
-app.get('/api/payments/check', async (req, res) => {
-  try {
-    const { userId, contentId } = req.query;
-    
-    // For demo: always return false so payment modal shows for premium content
-    res.json({
-      paid: false
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Payment check failed' });
-  }
-});
-
+// ✅ REMOVED DEMO PAYMENT ENDPOINT - Use real payment routes
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', googleAuthRoutes);  // <-- Add Google auth routes here
 // Skip content routes since we have direct endpoint above
-app.use('/api/payments', paymentRoutes);
+app.use('/api/payments', paymentRoutes); // ✅ This now handles /api/payments/check properly
 app.use('/api/payment-settings', paymentSettingsRoutes); // ✅ NEW
 
 // Video proxy endpoint for better loading performance
