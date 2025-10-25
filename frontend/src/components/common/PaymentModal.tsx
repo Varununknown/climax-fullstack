@@ -245,36 +245,42 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     alert('Copied to clipboard!');
   };
 
-  // Inject CSS to ensure modal captures all touch events (fixes mobile touch freezing)
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      [data-payment-modal-root] {
-        touch-action: auto;
-        -webkit-touch-callout: default;
-        -webkit-user-select: text;
-      }
-      [data-payment-modal-root] * {
-        touch-action: auto;
-      }
-      [data-payment-modal-root] button,
-      [data-payment-modal-root] input {
-        touch-action: manipulation;
-      }
-    `;
-    document.head.appendChild(style);
-    return () => style.remove();
-  }, []);
+  // Inline styles for modal to bypass any CSS conflicts
+  const backdropStyle: React.CSSProperties = {
+    position: 'fixed',
+    inset: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+    padding: '12px',
+    touchAction: 'none',  // Prevent default touch behaviors
+    WebkitTouchCallout: 'none',
+  };
+
+  const modalStyle: React.CSSProperties = {
+    backgroundColor: '#0f172a',  // slate-900
+    borderRadius: '1rem',
+    width: '100%',
+    maxWidth: window.innerWidth < 768 ? 'calc(100vw - 24px)' : '448px',
+    padding: '1rem',
+    position: 'relative',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    WebkitOverflowScrolling: 'touch',  // Smooth scrolling on iOS
+    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+    border: '1px solid rgb(51, 65, 85)',
+    touchAction: 'auto',
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-3 pointer-events-none" data-payment-modal-root="true">
+    <div style={backdropStyle} onTouchMove={(e) => e.preventDefault()} data-payment-modal-root="true">
       {/* Compact Modal with Gradient */}
-      <div className="bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-2xl w-full max-w-sm sm:max-w-md p-4 sm:p-6 relative
-        max-h-[90vh] overflow-y-auto portrait:max-w-sm shadow-2xl border border-slate-700 pointer-events-auto touch-auto
-        landscape:max-w-6xl landscape:max-h-[90vh] landscape:overflow-y-auto landscape:flex landscape:gap-4 landscape:items-center landscape:p-0">
+      <div style={modalStyle}>
         
         {/* Left QR section - visible only in landscape */}
-        <div className="hidden landscape:flex landscape:flex-col landscape:w-1/3 landscape:items-center landscape:justify-center landscape:gap-2 landscape:pr-4 landscape:border-r landscape:border-gray-700 pointer-events-auto touch-auto">
+        <div style={{ display: 'none' }}>
           {paymentStep === 'qr' && paymentSettings?.isActive && qrCodeData && (
             <>
               <h3 className="text-base font-semibold text-white text-center">Scan to Pay</h3>
@@ -297,7 +303,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         </div>
 
         {/* Right form section - always visible */}
-        <div className="landscape:w-2/3 landscape:flex-1 pointer-events-auto touch-auto">
+        <div style={{ touchAction: 'auto', flex: 1 }}>
         {/* Close button - only available if not in waiting step */}
         {paymentStep !== 'waiting' && (
           <button 
