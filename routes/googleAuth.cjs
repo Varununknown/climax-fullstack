@@ -8,12 +8,17 @@ const router = express.Router();
 
 router.post('/google/signin', async (req, res) => {
   try {
+    console.log('[Google Auth] 📍 Starting Google signin...');
     const { code } = req.body;
+    console.log('[Google Auth] Code received:', code ? '✅ YES' : '❌ NO');
+    
     if (!code) {
+      console.error('[Google Auth] ❌ No code provided');
       return res.status(400).json({ error: 'Authorization code required' });
     }
 
     // ✅ Validate required env vars
+    console.log('[Google Auth] Checking env vars...');
     if (!process.env.GOOGLE_CLIENT_ID) {
       console.error('[Google Auth] ❌ Missing GOOGLE_CLIENT_ID');
       return res.status(500).json({ error: 'Missing GOOGLE_CLIENT_ID env var' });
@@ -54,9 +59,16 @@ router.post('/google/signin', async (req, res) => {
     const googleUser = ticket.getPayload();
     const { email, name, picture, sub: googleId } = googleUser;
 
+    console.log('[Google Auth] 📧 Got user data from Google:');
+    console.log('  - Email:', email);
+    console.log('  - Name:', name);
+    console.log('  - Picture:', picture ? '✅ YES' : '❌ NO');
+    console.log('  - Google ID:', googleId);
+
     let user = await User.findOne({ email });
 
     if (!user) {
+      console.log('[Google Auth] 👤 User NOT found in DB - Creating new user...');
       user = new User({
         name: name || email.split('@')[0],
         email,
@@ -66,11 +78,14 @@ router.post('/google/signin', async (req, res) => {
         role: 'user',
       });
       await user.save();
+      console.log('[Google Auth] ✅ New user created:', user.email);
     } else {
+      console.log('[Google Auth] 👤 User found in DB - Logging in...');
       if (!user.googleId) {
         user.googleId = googleId;
         user.profileImage = picture || user.profileImage;
         await user.save();
+        console.log('[Google Auth] ✅ Updated Google ID for existing user');
       }
     }
 
@@ -79,6 +94,9 @@ router.post('/google/signin', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
+
+    console.log('[Google Auth] ✅ JWT token created successfully');
+    console.log('[Google Auth] 🎉 Google signin COMPLETE - sending response to frontend');
 
     return res.json({
       token,
