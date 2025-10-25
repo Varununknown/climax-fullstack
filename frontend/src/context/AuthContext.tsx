@@ -33,7 +33,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser);
+        // ✅ NORMALIZE: Ensure id field exists (handle both email and Google login formats)
+        const normalizedUser: User = {
+          id: parsedUser.id || parsedUser._id,
+          email: parsedUser.email,
+          name: parsedUser.name,
+          role: parsedUser.role,
+          subscription: parsedUser.subscription || 'free',
+        };
+        setUser(normalizedUser);
       } catch (error) {
         console.error('Failed to parse user from localStorage:', error);
         localStorage.removeItem('streamflix_user');
