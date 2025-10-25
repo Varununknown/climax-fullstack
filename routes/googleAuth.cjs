@@ -105,6 +105,20 @@ router.post('/google/callback', async (req, res) => {
     return res.status(400).json({ error: 'Authorization code not provided' });
   }
 
+  // 🔧 DEBUG: Check env vars
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    console.error('❌ GOOGLE_CLIENT_ID not set!');
+    return res.status(500).json({ error: 'Server config error: GOOGLE_CLIENT_ID not set' });
+  }
+  if (!process.env.JWT_SECRET) {
+    console.error('❌ JWT_SECRET not set!');
+    return res.status(500).json({ error: 'Server config error: JWT_SECRET not set' });
+  }
+  if (!process.env.MONGO_URI) {
+    console.error('❌ MONGO_URI not set!');
+    return res.status(500).json({ error: 'Server config error: MONGO_URI not set' });
+  }
+
   try {
     console.log('🔍 Google OAuth attempt with code:', code.substring(0, 20) + '...');
     const { token, user } = await handleGoogleAuth(code);
