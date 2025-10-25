@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { GoogleLoginButton } from './GoogleLoginButton';
 
 interface RegisterFormProps {
   onToggleMode: () => void;
@@ -46,6 +47,21 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
         onSubmit={handleSubmit}
         className="space-y-6 bg-gradient-to-br from-black/40 to-gray-900/30 backdrop-blur-lg rounded-xl p-8 border border-white/20 shadow-lg"
       >
+        {/* Google Sign Up */}
+        <GoogleLoginButton />
+
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/20"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-gradient-to-br from-black/40 to-gray-900/30 text-gray-400">
+              Or create with email
+            </span>
+          </div>
+        </div>
+
         {/* Full Name */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
