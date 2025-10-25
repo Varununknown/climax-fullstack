@@ -333,27 +333,47 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
             {/* ✅ Payment Method Tabs - Gateway & Manual */}
             {paymentSettings?.payuEnabled && (
-              <div className="flex gap-2 mb-3 sm:mb-4 relative z-20 pointer-events-auto">
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                 <button
-                  onClick={() => setPaymentMethod('upi')}
-                  className={`flex-1 py-2.5 px-3 rounded-lg font-semibold text-sm transition-all landscape:py-1 landscape:text-sm relative z-20 pointer-events-auto cursor-pointer ${
-                    paymentMethod === 'upi'
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                      : 'bg-slate-700/50 text-gray-300 hover:bg-slate-700'
-                  }`}
+                  onClick={() => {
+                    console.log('🔄 Switching to UPI tab');
+                    setPaymentMethod('upi');
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    transition: 'all 0.2s',
+                    border: 'none',
+                    cursor: 'pointer',
+                    backgroundColor: paymentMethod === 'upi' ? '#2563eb' : 'rgba(71, 85, 105, 0.5)',
+                    color: paymentMethod === 'upi' ? 'white' : 'rgb(209, 213, 219)',
+                  }}
                 >
-                  <QrCode className="w-4 h-4 inline mr-1.5" />
+                  <QrCode style={{ display: 'inline', marginRight: '6px', width: '16px', height: '16px' }} />
                   QR Code
                 </button>
                 <button
-                  onClick={() => setPaymentMethod('payU')}
-                  className={`flex-1 py-2.5 px-3 rounded-lg font-semibold text-sm transition-all landscape:py-1 landscape:text-sm relative z-20 pointer-events-auto cursor-pointer ${
-                    paymentMethod === 'payU'
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
-                      : 'bg-slate-700/50 text-gray-300 hover:bg-slate-700'
-                  }`}
+                  onClick={() => {
+                    console.log('🔄 Switching to PayU tab');
+                    setPaymentMethod('payU');
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    transition: 'all 0.2s',
+                    border: 'none',
+                    cursor: 'pointer',
+                    backgroundColor: paymentMethod === 'payU' ? '#2563eb' : 'rgba(71, 85, 105, 0.5)',
+                    color: paymentMethod === 'payU' ? 'white' : 'rgb(209, 213, 219)',
+                  }}
                 >
-                  <CreditCard className="w-4 h-4 inline mr-1.5" />
+                  <CreditCard style={{ display: 'inline', marginRight: '6px', width: '16px', height: '16px' }} />
                   Gateway
                 </button>
               </div>
