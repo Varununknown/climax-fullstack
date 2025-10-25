@@ -1,0 +1,32 @@
+## QUICK DIAGNOSTIC - Tell me which ONE is broken:
+
+### 1. Google Login
+- Click "Sign in with Google" button
+- Does it show Google popup? (Y/N)
+- If N: What error in console (F12)?
+
+### 2. Email/Password Login
+- Click "Sign In"
+- Enter email & password
+- Click login
+- Does it login? (Y/N)
+- If N: What error in console?
+
+### 3. Register
+- Click "Sign Up"
+- Fill name, email, password
+- Click register
+- Does it work? (Y/N)
+- If N: What error?
+
+### 4. Contents Display
+- After logging in, do you see videos? (Y/N)
+- If N: Does page show anything or blank screen?
+
+---
+
+**PLEASE ANSWER ONLY:**
+- What is broken? (Google / Email Login / Register / Contents)
+- What error do you see? (Copy from console F12)
+
+Then I'll fix ONLY that specific thing.
