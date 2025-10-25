@@ -28,7 +28,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 }) => {
   const { user } = useAuth();
   const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'payU'>('qr');
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'payU'>('upi');
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'payU'>('payU'); // Default to Gateway
   const [transactionId, setTransactionId] = useState('');
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
@@ -257,6 +257,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     display: 'flex',
     gap: '8px',
     marginBottom: '12px',
+    position: 'sticky',
+    top: '0',
+    backgroundColor: '#0f172a',
+    zIndex: 100,
+    paddingTop: '8px',
+    paddingBottom: '4px',
   };
 
   const tabButtonActiveStyle: React.CSSProperties = {
@@ -312,6 +318,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     color: 'white',
     boxSizing: 'border-box',
     marginBottom: '12px',
+    pointerEvents: 'auto',
+    touchAction: 'manipulation',
   };
 
   const submitButtonStyle: React.CSSProperties = {
