@@ -20,6 +20,7 @@ interface PaymentSettings {
   payuEnabled?: boolean;
 }
 
+// All-inline-styles Modal - NO Tailwind classes to eliminate conflicts
 export const PaymentModal: React.FC<PaymentModalProps> = ({
   content,
   onSuccess,
@@ -27,44 +28,33 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 }) => {
   const { user } = useAuth();
   const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'payU'>('qr');
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'payU'>('upi'); // Tab selector
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'payU'>('upi');
   const [transactionId, setTransactionId] = useState('');
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  console.log('💳 PaymentModal rendered for content:', content.title, 'Price:', content.premiumPrice);
+  console.log('💳 PaymentModal rendered:', content.title);
 
-  // Note: Payment checking is handled by VideoPlayer.tsx for efficiency
-  // This modal is only shown when payment is needed
-
-  // Debug: Log payment method changes
   useEffect(() => {
-    console.log('🔄 Payment method changed to:', paymentMethod);
-    // Scroll to top of modal when method changes (fixes mobile scroll issue)
-    const modalContent = document.querySelector('[data-modal-content]');
-    if (modalContent) {
-      setTimeout(() => {
-        modalContent.scrollTop = 0;
-      }, 0);
+    console.log('🔄 Payment method:', paymentMethod);
+    const modal = document.querySelector('[data-modal-content]') as HTMLElement;
+    if (modal) {
+      modal.scrollTop = 0;
     }
   }, [paymentMethod]);
 
   useEffect(() => {
-    console.log('💳 Fetching payment settings...');
-    
     const fetchSettings = async () => {
       try {
         const response = await fetch(`${BACKEND_URL}/api/payment-settings`);
         const data = await response.json();
-        console.log('💳 Payment settings loaded:', data);
+        console.log('💳 Settings:', data);
         setPaymentSettings(data);
       } catch (err) {
-        console.error('❌ Failed to load payment settings:', err);
-        setPaymentSettings(null);
+        console.error('❌ Failed to load settings:', err);
       }
     };
-
     fetchSettings();
   }, []);
 
@@ -82,27 +72,20 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     return upiRegex1.test(trimmed) || upiRegex2.test(trimmed) || upiRegex3.test(trimmed);
   };
 
-  // ✅ PayU Integration - Initiate payment gateway redirect
   const handlePayUPayment = async () => {
     if (!user?.id || !content._id) {
       alert('Missing user or content information');
       return;
     }
 
-    // Open a blank window immediately to preserve the user gesture on mobile (avoids popup blockers).
-    // We'll set the form's target to this window and then submit into it after the async fetch.
     const paymentWindow = window.open('', '_blank');
-
     setIsProcessing(true);
-    console.log('🔄 Initiating PayU payment...');
+    console.log('🔄 PayU initiated');
 
     try {
-      // Request PayU payment form from backend
       const response = await fetch(`${BACKEND_URL}/api/payu/initiate`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user.id,
           contentId: content._id,
@@ -115,45 +98,29 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const data = await response.json();
 
       if (data.success && data.formHtml) {
-        console.log('✅ PayU form received, redirecting...');
-        // Create a temporary form and submit to PayU
         const form = document.createElement('form');
         form.innerHTML = data.formHtml;
-
-        // If we opened a window, target the form to that window to ensure mobile browsers allow the navigation
         try {
           if (paymentWindow && paymentWindow.name) {
             form.target = paymentWindow.name;
-          } else if (paymentWindow) {
-            // Some browsers set name after open; use a unique name fallback
-            form.target = '_blank';
           }
         } catch (e) {
-          // Ignore any cross-window errors and fallback to submitting in the same tab
-          console.warn('Could not set form target for payment window, falling back to same tab.', e);
+          console.warn('Window target error:', e);
         }
-
         document.body.appendChild(form);
-
-        // Submit the form directly (avoid setTimeout click which may not be considered a user gesture on mobile)
         try {
           (form as HTMLFormElement).submit();
         } catch (submitErr) {
-          // Last resort: try to find and click a submit button
           const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-          if (submitBtn) {
-            submitBtn.click();
-          }
+          if (submitBtn) submitBtn.click();
         }
       } else {
-        console.error('❌ PayU form generation failed:', data.message);
-        alert('PayU gateway unavailable. Please try UPI payment instead.');
+        alert('PayU unavailable. Try UPI payment.');
         setIsProcessing(false);
         if (paymentWindow) paymentWindow.close();
       }
     } catch (err) {
-      console.error('❌ PayU initiation error:', err);
-      alert('Payment gateway error. Please try UPI payment instead.');
+      alert('Payment error. Try again.');
       setIsProcessing(false);
       if (paymentWindow) paymentWindow.close();
     }
@@ -161,12 +128,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   const handlePaymentSubmit = async () => {
     if (!transactionId.trim() || !user?.id || !content._id) {
-      alert('Missing required fields');
+      alert('Missing fields');
       return;
     }
 
     if (!validateTransactionId(transactionId)) {
-      setTxnError('Invalid Transaction ID format');
+      setTxnError('Invalid Transaction ID');
       return;
     }
 
@@ -174,25 +141,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setPaymentStep('waiting');
 
     try {
-      console.log('═══════════════════════════════════════════════════════');
-      console.log('💳💳💳 PAYMENT SUBMISSION STARTING');
-      console.log('═══════════════════════════════════════════════════════');
-      console.log('Submitting payment with:');
-      console.log('  userId:', user.id);
-      console.log('  contentId:', content._id);
-      console.log('  amount:', content.premiumPrice);
-      console.log('  transactionId:', transactionId);
-      console.log('  Backend URL:', BACKEND_URL);
-      console.log('═══════════════════════════════════════════════════════');
-
-      const paymentUrl = `${BACKEND_URL}/api/payments`;
-      console.log('📍 Sending to:', paymentUrl);
-
-      const response = await fetch(paymentUrl, {
+      const response = await fetch(`${BACKEND_URL}/api/payments`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user.id,
           contentId: content._id,
@@ -201,63 +152,35 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         })
       });
 
-      console.log('📡 Response status:', response.status);
-
-      // Handle different response codes
       if (response.status === 409) {
-        // Payment already exists - this is actually SUCCESS
-        console.log('✅ Payment already exists (409) - treating as success');
-        const result = await response.json();
-        console.log('📦 Existing payment:', result);
-        
-        // Immediately unlock
         setTimeout(() => {
           setPaymentStep('success');
-          setTimeout(() => {
-            onSuccess();
-          }, 1000);
+          setTimeout(onSuccess, 1000);
         }, 1000);
         return;
       }
 
-      if (!response.ok) {
-        const text = await response.text();
-        console.error('❌ Response not OK:', response.status, text);
-        throw new Error(`Payment API error: ${response.status} ${text.substring(0, 100)}`);
-      }
+      if (!response.ok) throw new Error('Payment failed');
 
       const result = await response.json();
-      console.log('📦 Payment submission result:', result);
-
-      // Check if payment is paid (either already paid or newly approved)
-      if (result.paid || result.alreadyPaid || result.message?.includes('already')) {
-        console.log('✅ Payment is PAID - showing success');
-        // Show success state immediately
+      if (result.paid || result.alreadyPaid) {
         setPaymentStep('success');
-        // Notify parent after a brief delay
-        setTimeout(() => {
-          onSuccess();
-        }, 1500);
+        setTimeout(onSuccess, 1500);
       } else {
-        // Payment exists but not verified
-        console.log('⚠️ Payment submitted but not verified yet:', result);
-        // Still show success UI since payment was submitted
         setPaymentStep('success');
       }
     } catch (err) {
-      console.error('❌ Payment submission error:', err);
-      setTxnError(err instanceof Error ? err.message : 'Payment failed. Please try again.');
-      alert(err instanceof Error ? err.message : 'Server error. Try again.');
+      setTxnError('Payment error');
       setPaymentStep('qr');
     }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+    alert('Copied!');
   };
 
-  // Inline styles for modal to bypass any CSS conflicts
+  // ==================== INLINE STYLES ====================
   const backdropStyle: React.CSSProperties = {
     position: 'fixed',
     inset: 0,
@@ -267,331 +190,364 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     justifyContent: 'center',
     zIndex: 9999,
     padding: '12px',
-    touchAction: 'none',  // Prevent default touch behaviors
+    touchAction: 'none',
     WebkitTouchCallout: 'none',
   };
 
   const modalStyle: React.CSSProperties = {
-    backgroundColor: '#0f172a',  // slate-900
-    borderRadius: '1rem',
+    backgroundColor: '#0f172a',
+    borderRadius: '16px',
     width: '100%',
-    maxWidth: window.innerWidth < 768 ? 'calc(100vw - 24px)' : '448px',
-    padding: '1rem',
+    maxWidth: '448px',
+    padding: '16px',
     position: 'relative',
     maxHeight: '90vh',
     overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch',  // Smooth scrolling on iOS
+    WebkitOverflowScrolling: 'touch',
     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
     border: '1px solid rgb(51, 65, 85)',
     touchAction: 'auto',
+    scrollBehavior: 'smooth',
   };
 
-  return (
-    <div style={backdropStyle} onTouchMove={(e) => e.preventDefault()} data-payment-modal-root="true">
-      {/* Compact Modal with Gradient */}
-      <div style={modalStyle} data-modal-content="true">
-        
-        {/* Left QR section - visible only in landscape */}
-        <div style={{ display: 'none' }}>
-          {paymentStep === 'qr' && paymentSettings?.isActive && qrCodeData && (
-            <>
-              <h3 className="text-base font-semibold text-white text-center">Scan to Pay</h3>
-              <div className="bg-white rounded-lg p-3">
-                <img
-                  src={qrCodeData.qrImage}
-                  alt="Payment QR Code"
-                  className="w-28 h-28"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1582769923195-c6e60dc1d8d6?w=200&h=200&fit=crop&auto=format';
-                  }}
-                />
-              </div>
-              <div className="text-xs text-gray-400 text-center">
-                <div>UPI: {qrCodeData.upiId}</div>
-                <div className="font-bold text-blue-400 mt-1">₹{content.premiumPrice}</div>
-              </div>
-            </>
-          )}
-        </div>
+  const buttonStyle: React.CSSProperties = {
+    flex: 1,
+    padding: '10px 12px',
+    borderRadius: '8px',
+    fontWeight: '600',
+    fontSize: '14px',
+    transition: 'all 0.2s',
+    border: 'none',
+    cursor: 'pointer',
+    WebkitUserSelect: 'none',
+    WebkitTouchCallout: 'none',
+  };
 
-        {/* Right form section - always visible */}
-        <div style={{ touchAction: 'auto', flex: 1 }}>
-        {/* Close button - only available if not in waiting step */}
+  const closeButtonStyle: React.CSSProperties = {
+    position: 'absolute',
+    right: '16px',
+    top: '16px',
+    color: 'rgb(156, 163, 175)',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '0',
+    zIndex: 100,
+    WebkitTouchCallout: 'none',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: '18px',
+    fontWeight: 'bold',
+    background: 'linear-gradient(to right, #60a5fa, #a78bfa)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    marginBottom: '4px',
+    textAlign: 'center',
+  };
+
+  const subtitleStyle: React.CSSProperties = {
+    fontSize: '12px',
+    color: 'rgb(156, 163, 175)',
+    textAlign: 'center',
+    marginBottom: '12px',
+  };
+
+  const tabsContainerStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '12px',
+  };
+
+  const tabButtonActiveStyle: React.CSSProperties = {
+    ...buttonStyle,
+    backgroundColor: '#2563eb',
+    color: 'white',
+  };
+
+  const tabButtonInactiveStyle: React.CSSProperties = {
+    ...buttonStyle,
+    backgroundColor: 'rgba(71, 85, 105, 0.5)',
+    color: 'rgb(209, 213, 219)',
+  };
+
+  const priceCardStyle: React.CSSProperties = {
+    background: 'linear-gradient(to right, rgba(37, 99, 235, 0.2), rgba(168, 85, 247, 0.2))',
+    border: '1px solid rgba(59, 130, 246, 0.3)',
+    borderRadius: '8px',
+    padding: '10px',
+    marginBottom: '12px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  };
+
+  const priceTextStyle: React.CSSProperties = {
+    fontSize: '12px',
+    color: 'rgb(209, 213, 219)',
+    fontWeight: '500',
+  };
+
+  const priceAmountStyle: React.CSSProperties = {
+    fontSize: '18px',
+    fontWeight: 'bold',
+    color: '#60a5fa',
+  };
+
+  const qrContainerStyle: React.CSSProperties = {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    padding: '12px',
+    marginBottom: '12px',
+    textAlign: 'center',
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    backgroundColor: '#1e293b',
+    border: '1px solid #475569',
+    borderRadius: '8px',
+    padding: '8px 12px',
+    fontSize: '14px',
+    color: 'white',
+    boxSizing: 'border-box',
+    marginBottom: '12px',
+  };
+
+  const submitButtonStyle: React.CSSProperties = {
+    width: '100%',
+    background: 'linear-gradient(to right, #2563eb, #7c3aed)',
+    color: 'white',
+    fontWeight: 'bold',
+    padding: '10px 16px',
+    borderRadius: '8px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '14px',
+    transition: 'all 0.2s',
+    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+    WebkitTouchCallout: 'none',
+    WebkitUserSelect: 'none',
+  };
+
+  const disabledButtonStyle: React.CSSProperties = {
+    ...submitButtonStyle,
+    background: '#6b7280',
+    cursor: 'not-allowed',
+    opacity: 0.6,
+  };
+
+  const cancelButtonStyle: React.CSSProperties = {
+    width: '100%',
+    backgroundColor: '#475569',
+    color: '#e2e8f0',
+    fontWeight: '600',
+    padding: '10px 16px',
+    borderRadius: '8px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '14px',
+    transition: 'all 0.2s',
+    marginTop: '8px',
+    WebkitTouchCallout: 'none',
+    WebkitUserSelect: 'none',
+  };
+
+  // ==================== RENDER ====================
+  return (
+    <div style={backdropStyle} data-payment-modal-root="true">
+      <div style={modalStyle} data-modal-content="true">
+        {/* Close Button */}
         {paymentStep !== 'waiting' && (
-          <button 
+          <button
             onClick={() => {
-              // Warn user that video will stop playing
-              const confirmed = window.confirm('Are you sure? You cannot continue watching without payment.');
-              if (confirmed) {
-                onClose();
-              }
-            }} 
-            className="absolute right-4 top-4 text-gray-400 hover:text-white z-10 landscape:right-6 landscape:top-6"
+              const confirmed = window.confirm('Cancel payment?');
+              if (confirmed) onClose();
+            }}
+            style={closeButtonStyle}
           >
-            <X className="w-6 h-6" />
+            <X size={24} />
           </button>
         )}
 
-        {(paymentStep === 'qr') && (
+        {/* QR Step */}
+        {paymentStep === 'qr' && (
           <>
-            <div className="mb-3 sm:mb-4 text-center">
-              <h2 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-0.5 landscape:text-lg">
-                Unlock Premium
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-400 landscape:text-xs">
-                Watch "{content.title}"
-              </p>
+            <div style={{ marginBottom: '12px' }}>
+              <h2 style={titleStyle}>Unlock Premium</h2>
+              <p style={subtitleStyle}>Watch "{content.title}"</p>
             </div>
 
-            {/* ✅ Payment Method Tabs - Gateway & Manual */}
+            {/* Tabs */}
             {paymentSettings?.payuEnabled && (
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <div style={tabsContainerStyle}>
                 <button
-                  onClick={() => {
-                    console.log('🔄 Switching to UPI tab');
-                    setPaymentMethod('upi');
-                    // Force scroll to top on mobile
-                    const modal = document.querySelector('[data-modal-content]');
-                    if (modal) modal.scrollTop = 0;
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    transition: 'all 0.2s',
-                    border: 'none',
-                    cursor: 'pointer',
-                    backgroundColor: paymentMethod === 'upi' ? '#2563eb' : 'rgba(71, 85, 105, 0.5)',
-                    color: paymentMethod === 'upi' ? 'white' : 'rgb(209, 213, 219)',
-                  }}
+                  onClick={() => setPaymentMethod('upi')}
+                  style={paymentMethod === 'upi' ? tabButtonActiveStyle : tabButtonInactiveStyle}
                 >
-                  <QrCode style={{ display: 'inline', marginRight: '6px', width: '16px', height: '16px' }} />
+                  <QrCode size={16} style={{ display: 'inline', marginRight: '6px' }} />
                   QR Code
                 </button>
                 <button
-                  onClick={() => {
-                    console.log('🔄 Switching to PayU tab');
-                    setPaymentMethod('payU');
-                    // Force scroll to top on mobile
-                    const modal = document.querySelector('[data-modal-content]');
-                    if (modal) modal.scrollTop = 0;
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    fontWeight: '600',
-                    fontSize: '14px',
-                    transition: 'all 0.2s',
-                    border: 'none',
-                    cursor: 'pointer',
-                    backgroundColor: paymentMethod === 'payU' ? '#2563eb' : 'rgba(71, 85, 105, 0.5)',
-                    color: paymentMethod === 'payU' ? 'white' : 'rgb(209, 213, 219)',
-                  }}
+                  onClick={() => setPaymentMethod('payU')}
+                  style={paymentMethod === 'payU' ? tabButtonActiveStyle : tabButtonInactiveStyle}
                 >
-                  <CreditCard style={{ display: 'inline', marginRight: '6px', width: '16px', height: '16px' }} />
+                  <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
                   Gateway
                 </button>
               </div>
             )}
 
-            <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-2.5 mb-3 sm:mb-4">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-300 text-xs sm:text-sm font-medium">Full Access</span>
-                <span className="text-xl sm:text-2xl font-bold text-blue-400">₹{content.premiumPrice}</span>
-              </div>
+            {/* Price Card */}
+            <div style={priceCardStyle}>
+              <span style={priceTextStyle}>Full Access</span>
+              <span style={priceAmountStyle}>₹{content.premiumPrice}</span>
             </div>
 
-            {/* UPI Payment Method */}
+            {/* UPI Section */}
             {paymentMethod === 'upi' && (
               <>
                 {paymentSettings?.isActive && qrCodeData ? (
-                  <div className="bg-white rounded-lg p-3 mb-3 text-center portrait:block landscape:hidden">
-                    <div className="mb-2">
-                      <QrCode className="w-5 h-5 text-gray-600 mx-auto mb-1.5" />
-                      <h3 className="text-gray-800 font-semibold text-sm">Scan QR Code</h3>
-                      <p className="text-gray-600 text-xs">{paymentSettings.merchantName}</p>
-                    </div>
-
-                    <div className="bg-gray-100 p-2 rounded-lg mb-3">
-                      <img
-                        src={qrCodeData.qrImage}
-                        alt="Payment QR Code"
-                        className="w-32 h-32 mx-auto"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1582769923195-c6e60dc1d8d6?w=200&h=200&fit=crop&auto=format';
-                        }}
-                      />
-                    </div>
-
-                    <div className="space-y-1 text-xs text-gray-600">
-                      <div className="flex items-center justify-between">
-                        <span>UPI ID:</span>
-                        <div className="flex items-center space-x-1">
-                          <span className="font-mono text-xs">{qrCodeData.upiId}</span>
-                          <button
-                            onClick={() => copyToClipboard(qrCodeData.upiId)}
-                            className="text-blue-600 hover:text-blue-800 cursor-pointer z-20 pointer-events-auto"
-                          >
-                            <Copy className="w-3.5 h-3.5" />
-                          </button>
+                  <>
+                    <div style={qrContainerStyle}>
+                      <QrCode size={20} style={{ color: '#6b7280', marginBottom: '8px', textAlign: 'center' }} />
+                      <h3 style={{ color: '#1f2937', fontWeight: '600', fontSize: '14px' }}>Scan QR Code</h3>
+                      <p style={{ color: '#6b7280', fontSize: '12px' }}>{paymentSettings.merchantName}</p>
+                      <div style={{ backgroundColor: '#f3f4f6', padding: '8px', borderRadius: '6px', marginTop: '8px' }}>
+                        <img
+                          src={qrCodeData.qrImage}
+                          alt="QR"
+                          style={{ width: '128px', height: '128px', margin: '0 auto', display: 'block' }}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1582769923195-c6e60dc1d8d6?w=200&h=200&fit=crop&auto=format';
+                          }}
+                        />
+                      </div>
+                      <div style={{ marginTop: '8px', fontSize: '12px', color: '#4b5563' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                          <span>UPI ID:</span>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <span>{qrCodeData.upiId}</span>
+                            <button
+                              onClick={() => copyToClipboard(qrCodeData.upiId)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb' }}
+                            >
+                              <Copy size={14} />
+                            </button>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>Amount:</span>
+                          <span style={{ fontWeight: '600' }}>₹{content.premiumPrice}</span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span>Amount:</span>
-                        <span className="font-semibold">₹{content.premiumPrice}</span>
-                      </div>
                     </div>
-                  </div>
+
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ fontSize: '12px', color: 'rgb(209, 213, 219)', fontWeight: '500', display: 'block', marginBottom: '6px' }}>
+                        Transaction ID *
+                      </label>
+                      <input
+                        type="text"
+                        value={transactionId}
+                        onChange={(e) => {
+                          setTransactionId(e.target.value);
+                          setTxnError('');
+                        }}
+                        placeholder="Enter transaction ID"
+                        style={inputStyle}
+                      />
+                      {txnError && <p style={{ color: '#ef4444', fontSize: '12px', marginTop: '-8px', marginBottom: '8px' }}>{txnError}</p>}
+                    </div>
+
+                    <button
+                      onClick={handlePaymentSubmit}
+                      disabled={!transactionId.trim()}
+                      style={transactionId.trim() ? submitButtonStyle : disabledButtonStyle}
+                    >
+                      Verify & Unlock
+                    </button>
+                  </>
                 ) : (
-                  <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 mb-3 text-center">
-                    <h3 className="text-red-400 font-semibold text-sm mb-1">Setup In Progress</h3>
-                    <p className="text-gray-300 text-xs">
-                      QR configuration coming soon. Use Gateway payment.
-                    </p>
+                  <div style={{ background: 'rgba(127, 29, 29, 0.2)', border: '1px solid rgba(248, 113, 113, 0.3)', borderRadius: '8px', padding: '12px', textAlign: 'center', marginBottom: '12px' }}>
+                    <h3 style={{ color: '#fca5a5', fontWeight: '600', fontSize: '14px', marginBottom: '4px' }}>Setup In Progress</h3>
+                    <p style={{ color: 'rgb(209, 213, 219)', fontSize: '12px' }}>Use Gateway payment instead.</p>
                   </div>
                 )}
 
-                <div className="mb-3">
-                  <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1.5 landscape:text-xs landscape:mb-1">
-                    Transaction ID *
-                  </label>
-                  <input
-                    type="text"
-                    value={transactionId}
-                    onChange={(e) => {
-                      setTransactionId(e.target.value);
-                      setTxnError('');
-                    }}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 landscape:py-1 landscape:text-sm"
-                    placeholder="Paste transaction ID"
-                    required
-                  />
-                  {txnError && (
-                    <p className="text-red-500 text-xs mt-1 landscape:text-[10px]">{txnError}</p>
-                  )}
-                  <p className="text-gray-500 text-xs mt-1 landscape:text-[10px] landscape:mt-0.5">
-                    Find in your banking app
-                  </p>
-                </div>
-
-                <div className="space-y-2 sm:space-y-3 landscape:space-y-1.5">
-                  <button
-                    onClick={handlePaymentSubmit}
-                    disabled={!transactionId.trim()}
-                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm text-sm sm:text-base cursor-pointer z-20 pointer-events-auto"
-                  >
-                    Verify & Unlock
-                  </button>
-
-                  <button
-                    onClick={onClose}
-                    className="w-full bg-slate-700 hover:bg-slate-600 text-gray-200 font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm text-sm sm:text-base cursor-pointer z-20 pointer-events-auto"
-                  >
-                    Cancel
-                  </button>
-                </div>
+                <button onClick={onClose} style={cancelButtonStyle}>
+                  Cancel
+                </button>
               </>
             )}
 
-            {/* PayU Payment Method */}
+            {/* PayU Section */}
             {paymentMethod === 'payU' && (
               <>
-                <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 border border-blue-500/40 rounded-lg p-3 mb-3">
-                  <div className="flex items-start gap-2">
-                    <CreditCard className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                <div style={{ background: 'linear-gradient(to bottom right, rgba(30, 58, 138, 0.3), rgba(88, 28, 135, 0.3))', border: '1px solid rgba(59, 130, 246, 0.4)', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <CreditCard size={20} style={{ color: '#60a5fa', marginTop: '2px' }} />
                     <div>
-                      <h3 className="font-semibold text-white text-sm">Fast Checkout</h3>
-                      <p className="text-xs text-gray-300 mt-0.5">Secure PayU Gateway</p>
+                      <h3 style={{ fontWeight: '600', color: 'white', fontSize: '14px' }}>Fast Checkout</h3>
+                      <p style={{ fontSize: '12px', color: 'rgb(209, 213, 219)', marginTop: '2px' }}>Secure PayU Gateway</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-2 sm:space-y-3 landscape:space-y-1.5">
-                  <button
-                    onClick={handlePayUPayment}
-                    disabled={isProcessing}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-bold py-2.5 sm:py-3 px-4 rounded-lg transition-all landscape:py-2 landscape:text-sm flex items-center justify-center gap-2 shadow-lg disabled:shadow-none cursor-pointer z-20 pointer-events-auto text-sm sm:text-base"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                        <span>Processing...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="w-4 h-4" />
-                        Continue to PayU
-                      </>
-                    )}
-                  </button>
+                <button
+                  onClick={handlePayUPayment}
+                  disabled={isProcessing}
+                  style={isProcessing ? disabledButtonStyle : submitButtonStyle}
+                >
+                  {isProcessing ? (
+                    <>
+                      <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
+                      Continue to PayU
+                    </>
+                  )}
+                </button>
 
-                  <button
-                    onClick={onClose}
-                    className="w-full bg-slate-700 hover:bg-slate-600 text-gray-200 font-semibold py-2.5 sm:py-3 px-4 rounded-lg transition-colors landscape:py-2 landscape:text-sm text-sm sm:text-base cursor-pointer z-20 pointer-events-auto"
-                  >
-                    Cancel
-                  </button>
-                </div>
-
-                <p className="text-xs text-gray-400 text-center mt-2 landscape:mt-1.5">
+                <p style={{ fontSize: '12px', color: 'rgb(107, 114, 128)', textAlign: 'center', marginTop: '8px' }}>
                   ✓ Instant & Secure Payment
                 </p>
+
+                <button onClick={onClose} style={cancelButtonStyle}>
+                  Cancel
+                </button>
               </>
             )}
           </>
         )}
 
-        {paymentStep === 'qr' && paymentSettings && !paymentSettings.isActive && (
-          <div className="text-center text-white py-10">
-            <QrCode className="w-8 h-8 mx-auto mb-2 text-gray-500" />
-            <p className="text-lg font-semibold mb-2">Payments are temporarily disabled.</p>
-            <p className="text-gray-400 text-sm mb-6">Please try again later.</p>
-            <button
-              onClick={onClose}
-              className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg"
-            >
-              Close
-            </button>
-          </div>
-        )}
-
+        {/* Waiting Step */}
         {paymentStep === 'waiting' && (
-          <div className="text-center py-6 sm:py-8">
-            <div className="animate-spin rounded-full h-10 w-10 border-3 border-blue-600/30 border-t-blue-600 mx-auto mb-3"></div>
-            <h2 className="text-lg font-bold text-white mb-2">Verifying Payment</h2>
-            <p className="text-sm text-gray-400 mb-3">
-              Please wait while we confirm your transaction
-            </p>
-            <div className="bg-slate-700/50 rounded-lg p-2.5 text-left">
-              <p className="text-xs text-gray-400">Transaction ID:</p>
-              <p className="text-xs font-mono text-blue-400 break-all mt-0.5">{transactionId}</p>
-            </div>
+          <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <div style={{ display: 'inline-block', width: '48px', height: '48px', border: '4px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginBottom: '16px' }} />
+            <h2 style={{ color: 'white', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Verifying Payment</h2>
+            <p style={{ color: 'rgb(209, 213, 219)', fontSize: '14px' }}>Please wait...</p>
           </div>
         )}
 
+        {/* Success Step */}
         {paymentStep === 'success' && (
-          <div className="text-center py-6 sm:py-8">
-            <div className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 rounded-full w-14 h-14 flex items-center justify-center mx-auto mb-3">
-              <CheckCircle className="w-8 h-8 text-green-400" />
-            </div>
-            <h2 className="text-lg font-bold text-white mb-2">Payment Successful!</h2>
-            <p className="text-sm text-gray-400 mb-3">Enjoy your premium content</p>
-            <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 border border-green-500/30 rounded-lg p-2.5">
-              <p className="text-xs sm:text-sm font-semibold text-green-400">
-                ✓ Full access unlocked
-              </p>
-            </div>
+          <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <CheckCircle size={48} style={{ color: '#10b981', margin: '0 auto 16px' }} />
+            <h2 style={{ color: 'white', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Payment Successful!</h2>
+            <p style={{ color: 'rgb(209, 213, 219)', fontSize: '14px' }}>Enjoy your premium content.</p>
           </div>
         )}
-
-        <p className="text-gray-500 text-xs text-center mt-4 landscape:mt-2 landscape:text-[10px]">
-          Secure payment verification by StreamFlix admin team. Your transaction is safe and encrypted.
-        </p>
-        </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
