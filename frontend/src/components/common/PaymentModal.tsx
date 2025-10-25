@@ -191,6 +191,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     zIndex: 9999,
     padding: '12px',
     touchAction: 'none',
+    pointerEvents: 'none',
     WebkitTouchCallout: 'none',
   };
 
@@ -208,6 +209,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     border: '1px solid rgb(51, 65, 85)',
     touchAction: 'auto',
     scrollBehavior: 'smooth',
+    pointerEvents: 'auto',
   };
 
   const buttonStyle: React.CSSProperties = {
@@ -269,12 +271,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     ...buttonStyle,
     backgroundColor: '#2563eb',
     color: 'white',
+    zIndex: 101,
+    pointerEvents: 'auto',
+    position: 'relative',
   };
 
   const tabButtonInactiveStyle: React.CSSProperties = {
     ...buttonStyle,
     backgroundColor: 'rgba(71, 85, 105, 0.5)',
     color: 'rgb(209, 213, 219)',
+    zIndex: 101,
+    pointerEvents: 'auto',
+    position: 'relative',
   };
 
   const priceCardStyle: React.CSSProperties = {
@@ -391,6 +399,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               <div style={tabsContainerStyle}>
                 <button
                   onClick={() => setPaymentMethod('upi')}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setPaymentMethod('upi');
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
                   style={paymentMethod === 'upi' ? tabButtonActiveStyle : tabButtonInactiveStyle}
                 >
                   <QrCode size={16} style={{ display: 'inline', marginRight: '6px' }} />
@@ -398,6 +411,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 </button>
                 <button
                   onClick={() => setPaymentMethod('payU')}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setPaymentMethod('payU');
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
                   style={paymentMethod === 'payU' ? tabButtonActiveStyle : tabButtonInactiveStyle}
                 >
                   <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
