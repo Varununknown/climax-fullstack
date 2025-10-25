@@ -18,29 +18,39 @@ const payuRoutes = require('./routes/payuRoutes.cjs'); // ✅ PayU Gateway
 const app = express();
 
 // =======================
-// ✅ CORS Middleware Setup
+// ✅ CORS Middleware Setup (AGGRESSIVE - Allow all)
 // =======================
 const allowedOrigins = [
   'http://localhost:5173',
   'https://climax-frontend.vercel.app',
-  'https://watchclimax.vercel.app', // ✅ new domain
-  'https://climaxott.vercel.app', // ✅ CURRENT FRONTEND URL
+  'https://watchclimax.vercel.app',
+  'https://climaxott.vercel.app',
 ];
 
+// 🔥 CORS MUST come BEFORE routes
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('CORS Not Allowed'));
-      }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: '*', // Allow all origins
+    credentials: false,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    maxAge: 3600,
   })
 );
+
+// 🔧 Additional explicit CORS headers for ALL responses
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.header('Access-Control-Max-Age', '3600');
+  
+  // Handle preflight OPTIONS requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 app.use(express.json());
 

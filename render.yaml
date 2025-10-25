@@ -2,12 +2,10 @@ services:
   - type: web
     name: climax-fullstack
     runtime: node
-    buildCommand: bash .render/build.sh
-    startCommand: bash .render/start.sh
+    buildCommand: npm install
+    startCommand: node server.cjs
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 5000
-    # REMOVED buildFilter to force rebuild on ANY change
-    # buildFilter was preventing submodule updates from triggering builds
