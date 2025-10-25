@@ -38,6 +38,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   // Note: Payment checking is handled by VideoPlayer.tsx for efficiency
   // This modal is only shown when payment is needed
 
+  // Debug: Log payment method changes
+  useEffect(() => {
+    console.log('🔄 Payment method changed to:', paymentMethod);
+    // Scroll to top of modal when method changes (fixes mobile scroll issue)
+    const modalContent = document.querySelector('[data-modal-content]');
+    if (modalContent) {
+      setTimeout(() => {
+        modalContent.scrollTop = 0;
+      }, 0);
+    }
+  }, [paymentMethod]);
+
   useEffect(() => {
     console.log('💳 Fetching payment settings...');
     
@@ -277,7 +289,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   return (
     <div style={backdropStyle} onTouchMove={(e) => e.preventDefault()} data-payment-modal-root="true">
       {/* Compact Modal with Gradient */}
-      <div style={modalStyle}>
+      <div style={modalStyle} data-modal-content="true">
         
         {/* Left QR section - visible only in landscape */}
         <div style={{ display: 'none' }}>
@@ -338,6 +350,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   onClick={() => {
                     console.log('🔄 Switching to UPI tab');
                     setPaymentMethod('upi');
+                    // Force scroll to top on mobile
+                    const modal = document.querySelector('[data-modal-content]');
+                    if (modal) modal.scrollTop = 0;
                   }}
                   style={{
                     flex: 1,
@@ -359,6 +374,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   onClick={() => {
                     console.log('🔄 Switching to PayU tab');
                     setPaymentMethod('payU');
+                    // Force scroll to top on mobile
+                    const modal = document.querySelector('[data-modal-content]');
+                    if (modal) modal.scrollTop = 0;
                   }}
                   style={{
                     flex: 1,
