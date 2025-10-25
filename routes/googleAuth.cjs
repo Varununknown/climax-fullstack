@@ -13,6 +13,30 @@ router.post('/google/signin', async (req, res) => {
       return res.status(400).json({ error: 'Authorization code required' });
     }
 
+    // ✅ Validate required env vars
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      console.error('[Google Auth] ❌ Missing GOOGLE_CLIENT_ID');
+      return res.status(500).json({ error: 'Missing GOOGLE_CLIENT_ID env var' });
+    }
+    if (!process.env.GOOGLE_CLIENT_SECRET) {
+      console.error('[Google Auth] ❌ Missing GOOGLE_CLIENT_SECRET');
+      return res.status(500).json({ error: 'Missing GOOGLE_CLIENT_SECRET env var' });
+    }
+    if (!process.env.GOOGLE_REDIRECT_URI) {
+      console.error('[Google Auth] ❌ Missing GOOGLE_REDIRECT_URI');
+      return res.status(500).json({ error: 'Missing GOOGLE_REDIRECT_URI env var' });
+    }
+    if (!process.env.JWT_SECRET) {
+      console.error('[Google Auth] ❌ Missing JWT_SECRET');
+      return res.status(500).json({ error: 'Missing JWT_SECRET env var' });
+    }
+    if (!process.env.MONGO_URI) {
+      console.error('[Google Auth] ❌ Missing MONGO_URI');
+      return res.status(500).json({ error: 'Missing MONGO_URI env var' });
+    }
+
+    console.log('[Google Auth] ✅ All env vars present');
+
     const client = new OAuth2Client(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -68,9 +92,14 @@ router.post('/google/signin', async (req, res) => {
     });
   } catch (error) {
     console.error('[Google Auth Error]', error.message);
+    console.error('[Google Auth Error - Full Stack]', error.stack);
+    
+    // Return specific error message
+    const errorMessage = error.message || 'Google authentication failed';
     return res.status(500).json({
       error: 'Google authentication failed',
-      message: error.message,
+      message: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
     });
   }
 });
