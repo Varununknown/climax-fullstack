@@ -77,6 +77,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       return;
     }
 
+    // Open a blank window immediately to preserve the user gesture on mobile (avoids popup blockers).
+    // We'll set the form's target to this window and then submit into it after the async fetch.
+    const paymentWindow = window.open('', '_blank');
+
     setIsProcessing(true);
     console.log('🔄 Initiating PayU payment...');
 
@@ -103,25 +107,43 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         // Create a temporary form and submit to PayU
         const form = document.createElement('form');
         form.innerHTML = data.formHtml;
+
+        // If we opened a window, target the form to that window to ensure mobile browsers allow the navigation
+        try {
+          if (paymentWindow && paymentWindow.name) {
+            form.target = paymentWindow.name;
+          } else if (paymentWindow) {
+            // Some browsers set name after open; use a unique name fallback
+            form.target = '_blank';
+          }
+        } catch (e) {
+          // Ignore any cross-window errors and fallback to submitting in the same tab
+          console.warn('Could not set form target for payment window, falling back to same tab.', e);
+        }
+
         document.body.appendChild(form);
-        
-        // Auto-submit the form to PayU
-        const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-        if (submitBtn) {
-          setTimeout(() => submitBtn.click(), 100);
-        } else {
-          // Fallback: submit form directly
+
+        // Submit the form directly (avoid setTimeout click which may not be considered a user gesture on mobile)
+        try {
           (form as HTMLFormElement).submit();
+        } catch (submitErr) {
+          // Last resort: try to find and click a submit button
+          const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+          if (submitBtn) {
+            submitBtn.click();
+          }
         }
       } else {
         console.error('❌ PayU form generation failed:', data.message);
         alert('PayU gateway unavailable. Please try UPI payment instead.');
         setIsProcessing(false);
+        if (paymentWindow) paymentWindow.close();
       }
     } catch (err) {
       console.error('❌ PayU initiation error:', err);
       alert('Payment gateway error. Please try UPI payment instead.');
       setIsProcessing(false);
+      if (paymentWindow) paymentWindow.close();
     }
   };
 
