@@ -1,135 +1,76 @@
 const express = require('express');
 const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User.cjs'); // adjust path as needed
+const User = require('../models/User.cjs');
+const crypto = require('crypto');
 
 const router = express.Router();
 
-// Helper function to handle Google authentication
-const handleGoogleAuth = async (code) => {
-  console.log('🔐 handleGoogleAuth - Starting token exchange...');
-  console.log('📋 Using GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? '✅ Set' : '❌ NOT SET');
-  console.log('📋 Using GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? '✅ Set' : '❌ NOT SET');
-  console.log('📋 Using GOOGLE_REDIRECT_URI:', process.env.GOOGLE_REDIRECT_URI);
-  
-  // Create client fresh each time to ensure env vars are loaded
-  const client = new OAuth2Client(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI
-  );
-  
-  // Exchange code for tokens
-  const { tokens } = await client.getToken(code);
-  console.log('✅ Got tokens from Google');
-  
-  client.setCredentials(tokens);
+router.post('/google/signin', async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      return res.status(400).json({ error: 'Authorization code required' });
+    }
 
-  // Get user info from Google
-  const ticket = await client.verifyIdToken({
-    idToken: tokens.id_token,
-    audience: process.env.GOOGLE_CLIENT_ID,
-  });
-  console.log('✅ Verified ID token');
+    const client = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    );
 
-  const payload = ticket.getPayload();
-  const { sub: googleId, email, name, picture } = payload;
-  console.log('👤 Google user:', email);
+    const { tokens } = await client.getToken(code);
+    client.setCredentials(tokens);
 
-  // Extract username from email (part before @)
-  const username = email.split('@')[0];
-
-  // Find or create user in your DB
-  let user = await User.findOne({ email });
-  console.log('📦 User from DB:', user ? 'Found' : 'Not found');
-
-  if (!user) {
-    console.log('➕ Creating new user:', email);
-    user = new User({
-      name: name || username,
-      email,
-      password: '', // OAuth users have no password here
-      role: 'user',
-      googleId,
-      profileImage: picture || '',
+    const ticket = await client.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
-    await user.save();
-    console.log('✅ New user saved:', email);
-  } else if (!user.googleId) {
-    // If user exists but doesn't have googleId, add it
-    console.log('🔗 Linking Google ID to existing user:', email);
-    user.googleId = googleId;
-    await user.save();
-  }
 
-  // Create JWT token for your app
-  const token = jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: '1d' }
-  );
-  console.log('🎟️ JWT token created');
+    const googleUser = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = googleUser;
 
-  return { token, user: { _id: user._id, name: user.name, email: user.email, role: user.role, premium: user.premium } };
-};
+    let user = await User.findOne({ email });
 
-// GET endpoint for OAuth redirect (original flow)
-router.get('/google/callback', async (req, res) => {
-  const code = req.query.code;
+    if (!user) {
+      user = new User({
+        name: name || email.split('@')[0],
+        email,
+        password: crypto.randomBytes(32).toString('hex'),
+        profileImage: picture || '',
+        googleId,
+        role: 'user',
+      });
+      await user.save();
+    } else {
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.profileImage = picture || user.profileImage;
+        await user.save();
+      }
+    }
 
-  if (!code) {
-    return res.status(400).json({ error: 'Authorization code not provided' });
-  }
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
 
-  try {
-    const { token } = await handleGoogleAuth(code);
-    // Redirect to frontend with token
-    return res.redirect(`${process.env.FRONTEND_URL}/auth/success?token=${token}`);
-  } catch (err) {
-    console.error('Google auth error:', err);
-    return res.status(500).json({ error: 'Failed to authenticate with Google' });
-  }
-});
-
-// POST endpoint for frontend AJAX calls (new flow)
-router.post('/google/callback', async (req, res) => {
-  // 🔧 Explicit CORS headers for this endpoint
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
-  const { code } = req.body;
-
-  if (!code) {
-    console.error('❌ No authorization code provided');
-    return res.status(400).json({ error: 'Authorization code not provided' });
-  }
-
-  // 🔧 DEBUG: Check env vars
-  if (!process.env.GOOGLE_CLIENT_ID) {
-    console.error('❌ GOOGLE_CLIENT_ID not set!');
-    return res.status(500).json({ error: 'Server config error: GOOGLE_CLIENT_ID not set' });
-  }
-  if (!process.env.JWT_SECRET) {
-    console.error('❌ JWT_SECRET not set!');
-    return res.status(500).json({ error: 'Server config error: JWT_SECRET not set' });
-  }
-  if (!process.env.MONGO_URI) {
-    console.error('❌ MONGO_URI not set!');
-    return res.status(500).json({ error: 'Server config error: MONGO_URI not set' });
-  }
-
-  try {
-    console.log('🔍 Google OAuth attempt with code:', code.substring(0, 20) + '...');
-    const { token, user } = await handleGoogleAuth(code);
-    console.log('✅ Google auth success for:', user.email);
-    return res.json({ token, user });
-  } catch (err) {
-    console.error('❌ Google auth error:', err.message);
-    console.error('Full error:', err);
-    return res.status(500).json({ 
-      error: 'Failed to authenticate with Google',
-      details: err.message 
+    return res.json({
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profileImage: user.profileImage,
+      },
+    });
+  } catch (error) {
+    console.error('[Google Auth Error]', error.message);
+    return res.status(500).json({
+      error: 'Google authentication failed',
+      message: error.message,
     });
   }
 });

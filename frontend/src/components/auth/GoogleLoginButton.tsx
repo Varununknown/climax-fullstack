@@ -14,7 +14,7 @@ export const GoogleLoginButton: React.FC = () => {
       try {
         // Send the authorization code to backend
         const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/api/auth/google/callback`,
+          `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/api/auth/google/signin`,
           {
             code: codeResponse.code,
           }
