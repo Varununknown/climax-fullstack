@@ -68,7 +68,13 @@ export const VideoPlayer: React.FC = () => {
       setPaymentChecked(true); // Mark as checked to prevent re-runs
 
       try {
-        const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+        const userId = user.id || (user as any)._id;
+        if (!userId) {
+          console.log('⚠️ User ID not found, skipping payment check');
+          return;
+        }
+
+        const res = await API.get(`/payments/check?userId=${userId}&contentId=${content._id}`);
         const data = res.data;
         
         console.log('📡 Payment API Response:', data);
@@ -170,7 +176,9 @@ export const VideoPlayer: React.FC = () => {
       // Background verification; do NOT revoke UI this session
       setTimeout(async () => {
         try {
-          const res = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+          const userId = user.id || (user as any)._id;
+          if (!userId) return;
+          const res = await API.get(`/payments/check?userId=${userId}&contentId=${content._id}`);
           console.log('🔍 Background verification result:', res.data);
         } catch (bgErr) {
           console.warn('⚠️ Background verification failed (ignored):', bgErr);

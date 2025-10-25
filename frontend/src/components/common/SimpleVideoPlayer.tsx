@@ -77,7 +77,11 @@ export const SimpleVideoPlayer: React.FC = () => {
 
       try {
         // Check permanent storage first
-        const permanentKey = `payment_permanent_${user.id}_${content._id}`;
+        const userId = user.id || (user as any)._id;
+        if (!userId) return;
+
+        const cacheKey = `payment_${userId}_${content._id}`;
+        const permanentKey = `payment_permanent_${userId}_${content._id}`;
         const permanentPayment = localStorage.getItem(permanentKey);
         
         if (permanentPayment === 'approved') {
@@ -86,13 +90,13 @@ export const SimpleVideoPlayer: React.FC = () => {
         }
 
         // Check server
-        const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+        const response = await API.get(`/payments/check?userId=${userId}&contentId=${content._id}`);
         const isPaid = response.data.paid;
         
         setPaymentState(prev => ({ ...prev, isPaid, isLoading: false }));
         
         if (isPaid) {
-          localStorage.setItem(`payment_${user.id}_${content._id}`, 'true');
+          localStorage.setItem(cacheKey, 'true');
           localStorage.setItem(permanentKey, 'approved');
         }
         

@@ -219,10 +219,17 @@ export const PremiumVideoPlayer: React.FC = () => {
       }
 
       try {
+        // ✅ Ensure user.id exists (handle both email and Google login formats)
+        const userId = user.id || (user as any)._id;
+        if (!userId) {
+          console.log('⚠️ User ID not found, skipping payment check');
+          return;
+        }
+
         console.log('🔴🔴🔴 PAYMENT CHECK EFFECT RUNNING 🔴🔴🔴');
         console.log('═════════════════════════════════════════');
         console.log('🔍 INITIAL PAYMENT CHECK');
-        console.log(`User ID: ${user.id}`);
+        console.log(`User ID: ${userId}`);
         console.log(`Content ID: ${content._id}`);
         console.log(`Premium Price: ${content.premiumPrice}`);
         console.log('═════════════════════════════════════════');
@@ -231,7 +238,7 @@ export const PremiumVideoPlayer: React.FC = () => {
         // Don't rely on cache for initial load - always verify with server
         console.log('� Querying /payments/check endpoint...');
         
-        const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+        const response = await API.get(`/payments/check?userId=${userId}&contentId=${content._id}`);
         const isPaidInDatabase = response.data.paid;
         
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -252,8 +259,8 @@ export const PremiumVideoPlayer: React.FC = () => {
           }));
           
           // Cache the result for offline support
-          const cacheKey = `payment_${user.id}_${content._id}`;
-          const permanentKey = `payment_permanent_${user.id}_${content._id}`;
+          const cacheKey = `payment_${userId}_${content._id}`;
+          const permanentKey = `payment_permanent_${userId}_${content._id}`;
           localStorage.setItem(cacheKey, 'true');
           localStorage.setItem(permanentKey, 'approved');
           console.log('💾 Cached payment status locally');
@@ -266,8 +273,8 @@ export const PremiumVideoPlayer: React.FC = () => {
         console.log('❌ NO PAYMENT IN DATABASE');
         console.log('📌 Setting badge to: CLIMAX PREVIEW 🔒');
         
-        const cacheKey = `payment_${user.id}_${content._id}`;
-        const permanentKey = `payment_permanent_${user.id}_${content._id}`;
+        const cacheKey = `payment_${userId}_${content._id}`;
+        const permanentKey = `payment_permanent_${userId}_${content._id}`;
         
         const permanentPayment = localStorage.getItem(permanentKey);
         if (permanentPayment === 'approved') {
@@ -332,11 +339,14 @@ export const PremiumVideoPlayer: React.FC = () => {
   useEffect(() => {
     if (!content || !user) return;
 
+    const userId = user.id || (user as any)._id;
+    if (!userId) return;
+
     const startPolling = () => {
       const interval = setInterval(async () => {
         try {
           // Quick check from server for real-time payment status
-          const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+          const response = await API.get(`/payments/check?userId=${userId}&contentId=${content._id}`);
           const currentPaidStatus = response.data.paid;
 
           // Update state ONLY if status changed to prevent unnecessary re-renders
@@ -804,12 +814,18 @@ export const PremiumVideoPlayer: React.FC = () => {
       return;
     }
 
+    const userId = user.id || (user as any)._id;
+    if (!userId) {
+      console.error('❌ Cannot process payment - user ID not found');
+      return;
+    }
+
     try {
       // ✅ CRITICAL FIX 6: Verify payment in database before unlocking
       console.log('🔍 Verifying payment in database...');
-      console.log('  Checking userId:', user.id, 'contentId:', content._id);
+      console.log('  Checking userId:', userId, 'contentId:', content._id);
       
-      const response = await API.get(`/payments/check?userId=${user.id}&contentId=${content._id}`);
+      const response = await API.get(`/payments/check?userId=${userId}&contentId=${content._id}`);
       const isPaidInDB = response.data?.paid;
       
       console.log('📊 Verification response:', response.data);
