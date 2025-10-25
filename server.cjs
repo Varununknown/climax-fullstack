@@ -88,6 +88,31 @@ app.get('/', (req, res) => {
   });
 });
 
+// Health check endpoint for debugging
+app.get('/api/health', (req, res) => {
+  const googleConfigured = !!(
+    process.env.GOOGLE_CLIENT_ID &&
+    process.env.GOOGLE_CLIENT_SECRET &&
+    process.env.GOOGLE_REDIRECT_URI &&
+    process.env.JWT_SECRET &&
+    process.env.MONGO_URI
+  );
+  
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    googleConfigured,
+    mongoConnected: mongoose.connection.readyState === 1,
+    env: {
+      googleClientId: process.env.GOOGLE_CLIENT_ID ? '✅ SET' : '❌ MISSING',
+      googleSecret: process.env.GOOGLE_CLIENT_SECRET ? '✅ SET' : '❌ MISSING',
+      googleRedirectUri: process.env.GOOGLE_REDIRECT_URI ? '✅ SET' : '❌ MISSING',
+      jwtSecret: process.env.JWT_SECRET ? '✅ SET' : '❌ MISSING',
+      mongoUri: process.env.MONGO_URI ? '✅ SET' : '❌ MISSING'
+    }
+  });
+});
+
 // Direct content endpoint for debugging - BEFORE route middleware
 app.get('/api/contents', async (req, res) => {
   try {
@@ -349,6 +374,7 @@ app.get('/api/video/:id', async (req, res) => {
 // ✅ Start Server
 // =======================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌐 Backend URL: https://climax-fullstack.onrender.com`);
 });
