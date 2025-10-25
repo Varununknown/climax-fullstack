@@ -245,15 +245,36 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     alert('Copied to clipboard!');
   };
 
+  // Inject CSS to ensure modal captures all touch events (fixes mobile touch freezing)
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      [data-payment-modal-root] {
+        touch-action: auto;
+        -webkit-touch-callout: default;
+        -webkit-user-select: text;
+      }
+      [data-payment-modal-root] * {
+        touch-action: auto;
+      }
+      [data-payment-modal-root] button,
+      [data-payment-modal-root] input {
+        touch-action: manipulation;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => style.remove();
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-3 pointer-events-none">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-3 pointer-events-none" data-payment-modal-root="true">
       {/* Compact Modal with Gradient */}
       <div className="bg-gradient-to-br from-slate-800 via-slate-900 to-black rounded-2xl w-full max-w-sm sm:max-w-md p-4 sm:p-6 relative
-        max-h-[90vh] overflow-y-auto portrait:max-w-sm shadow-2xl border border-slate-700 pointer-events-auto
-        landscape:max-w-6xl landscape:max-h-[90vh] landscape:overflow-visible landscape:flex landscape:gap-4 landscape:items-center landscape:p-0">
+        max-h-[90vh] overflow-y-auto portrait:max-w-sm shadow-2xl border border-slate-700 pointer-events-auto touch-auto
+        landscape:max-w-6xl landscape:max-h-[90vh] landscape:overflow-y-auto landscape:flex landscape:gap-4 landscape:items-center landscape:p-0">
         
         {/* Left QR section - visible only in landscape */}
-        <div className="hidden landscape:flex landscape:flex-col landscape:w-1/3 landscape:items-center landscape:justify-center landscape:gap-2 landscape:pr-4 landscape:border-r landscape:border-gray-700">
+        <div className="hidden landscape:flex landscape:flex-col landscape:w-1/3 landscape:items-center landscape:justify-center landscape:gap-2 landscape:pr-4 landscape:border-r landscape:border-gray-700 pointer-events-auto touch-auto">
           {paymentStep === 'qr' && paymentSettings?.isActive && qrCodeData && (
             <>
               <h3 className="text-base font-semibold text-white text-center">Scan to Pay</h3>
@@ -276,7 +297,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         </div>
 
         {/* Right form section - always visible */}
-        <div className="landscape:w-2/3 landscape:flex-1">
+        <div className="landscape:w-2/3 landscape:flex-1 pointer-events-auto touch-auto">
         {/* Close button - only available if not in waiting step */}
         {paymentStep !== 'waiting' && (
           <button 
