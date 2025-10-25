@@ -344,6 +344,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
     WebkitTouchCallout: 'none',
     WebkitUserSelect: 'none',
+    zIndex: 100,
+    pointerEvents: 'auto',
+    position: 'relative',
   };
 
   const disabledButtonStyle: React.CSSProperties = {
@@ -367,6 +370,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     marginTop: '8px',
     WebkitTouchCallout: 'none',
     WebkitUserSelect: 'none',
+    zIndex: 100,
+    pointerEvents: 'auto',
+    position: 'relative',
   };
 
   // ==================== RENDER ====================
@@ -380,6 +386,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               const confirmed = window.confirm('Cancel payment?');
               if (confirmed) onClose();
             }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              const confirmed = window.confirm('Cancel payment?');
+              if (confirmed) onClose();
+            }}
+            onMouseDown={(e) => e.preventDefault()}
             style={closeButtonStyle}
           >
             <X size={24} />
@@ -456,7 +468,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                             <span>{qrCodeData.upiId}</span>
                             <button
                               onClick={() => copyToClipboard(qrCodeData.upiId)}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb' }}
+                              onTouchStart={(e) => {
+                                e.preventDefault();
+                                copyToClipboard(qrCodeData.upiId);
+                              }}
+                              onMouseDown={(e) => e.preventDefault()}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', zIndex: 100, pointerEvents: 'auto', position: 'relative' }}
                             >
                               <Copy size={14} />
                             </button>
@@ -488,6 +505,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
                     <button
                       onClick={handlePaymentSubmit}
+                      onTouchStart={(e) => {
+                        if (!transactionId.trim()) return;
+                        e.preventDefault();
+                        handlePaymentSubmit();
+                      }}
+                      onMouseDown={(e) => e.preventDefault()}
                       disabled={!transactionId.trim()}
                       style={transactionId.trim() ? submitButtonStyle : disabledButtonStyle}
                     >
@@ -501,7 +524,15 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   </div>
                 )}
 
-                <button onClick={onClose} style={cancelButtonStyle}>
+                <button 
+                  onClick={onClose}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    onClose();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  style={cancelButtonStyle}
+                >
                   Cancel
                 </button>
               </>
@@ -522,6 +553,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
                 <button
                   onClick={handlePayUPayment}
+                  onTouchStart={(e) => {
+                    if (isProcessing) return;
+                    e.preventDefault();
+                    handlePayUPayment();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
                   disabled={isProcessing}
                   style={isProcessing ? disabledButtonStyle : submitButtonStyle}
                 >
@@ -542,7 +579,15 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   ✓ Instant & Secure Payment
                 </p>
 
-                <button onClick={onClose} style={cancelButtonStyle}>
+                <button 
+                  onClick={onClose}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    onClose();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  style={cancelButtonStyle}
+                >
                   Cancel
                 </button>
               </>
