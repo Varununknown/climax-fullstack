@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLoginButton } from './GoogleLoginButton';
 
 interface LoginFormProps {
   onToggleMode: () => void;
@@ -94,10 +95,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
         </button>
       </form>
 
-      <div className="mt-6 text-center text-gray-400">
-        Coming Soon
-        <br />
-        <span className="text-white">Logging with Google</span>
+      {/* Divider */}
+      <div className="mt-6 flex items-center gap-4">
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-white/20"></div>
+        <span className="text-gray-400 text-sm">OR</span>
+        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-white/20"></div>
+      </div>
+
+      {/* Google Login Button */}
+      <div className="mt-6">
+        <GoogleLoginButton />
       </div>
 
       <div className="mt-8 text-center">

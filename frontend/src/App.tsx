@@ -1,5 +1,6 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ContentProvider } from "./context/ContentContext";
 import { AuthPage } from "./components/auth/AuthPage";
@@ -13,6 +14,7 @@ import MoviesPage from "./components/user/MoviesPage";
 import ShowsPage from "./components/user/ShowsPage";
 import SearchPage from "./components/user/SearchPage";
 import ProfilePage from "./components/user/ProfilePage";
+import { OAuthCallback } from "./components/auth/OAuthCallback";
 
 const AppRoutes: React.FC = () => {
   const { user, isLoading } = useAuth();
@@ -25,51 +27,67 @@ const AppRoutes: React.FC = () => {
     );
   }
 
-  if (!user) {
-    return <AuthPage />;
-  }
-
   return (
     <Routes>
-      {/* Default Home → dashboard based on role */}
-      <Route
-        path="/"
-        element={user.role === "admin" ? <AdminDashboard /> : <UserDashboard />}
-      />
+      {/* OAuth Callback route - accessible without login */}
+      <Route path="/auth/success" element={<OAuthCallback />} />
 
-      {/* Admin-only routes */}
-      <Route
-        path="/admin/*"
-        element={
-          user.role === "admin" ? <AdminDashboard /> : <Navigate to="/" />
-        }
-      />
+      {/* Auth page - accessible without login */}
+      <Route path="/auth" element={<AuthPage />} />
 
-      {/* User content routes */}
-      <Route path="/movies" element={<MoviesPage />} />
-      <Route path="/shows" element={<ShowsPage />} />
-      <Route path="/search" element={<SearchPage />} />
-      <Route path="/profile" element={<ProfilePage />} />
+      {/* Protected routes - require authentication */}
+      {user ? (
+        <>
+          {/* Default Home → dashboard based on role */}
+          <Route
+            path="/"
+            element={user.role === "admin" ? <AdminDashboard /> : <UserDashboard />}
+          />
 
-      {/* Content Details Page - shows before playing */}
-      <Route path="/content/:id" element={<ContentDetailsPage />} />
+          {/* Admin-only routes */}
+          <Route
+            path="/admin/*"
+            element={
+              user.role === "admin" ? <AdminDashboard /> : <Navigate to="/" />
+            }
+          />
 
-      {/* Watch page stays same */}
-      <Route path="/watch/:id" element={<WatchPage />} />
+          {/* User content routes */}
+          <Route path="/movies" element={<MoviesPage />} />
+          <Route path="/shows" element={<ShowsPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
 
-      {/* Catch-all redirect */}
-      <Route path="*" element={<Navigate to="/" />} />
+          {/* Content Details Page - shows before playing */}
+          <Route path="/content/:id" element={<ContentDetailsPage />} />
+
+          {/* Watch page stays same */}
+          <Route path="/watch/:id" element={<WatchPage />} />
+
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </>
+      ) : (
+        <>
+          {/* Redirect to auth page if not logged in */}
+          <Route path="*" element={<Navigate to="/auth" />} />
+        </>
+      )}
     </Routes>
   );
 };
 
 function App() {
+  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+
   return (
-    <ContentProvider>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </ContentProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <ContentProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </ContentProvider>
+    </GoogleOAuthProvider>
   );
 }
 
