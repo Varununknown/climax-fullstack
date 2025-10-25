@@ -21,7 +21,10 @@ export const GoogleLoginButton: React.FC = () => {
         );
 
         if (response.data && response.data.token && response.data.user) {
-          // Store token and user in localStorage (same as regular login)
+          // Store token and user in localStorage (SAME FORMAT as email login)
+          localStorage.setItem('streamflix_user', JSON.stringify(response.data.user));
+          localStorage.setItem('streamflix_token', response.data.token);
+          // Also set backup keys for compatibility
           localStorage.setItem('token', response.data.token);
           localStorage.setItem('user', JSON.stringify(response.data.user));
 
