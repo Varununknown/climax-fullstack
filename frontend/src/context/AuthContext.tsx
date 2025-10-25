@@ -25,9 +25,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('streamflix_user');
+    // Check for both possible localStorage keys
+    let savedUser = localStorage.getItem('streamflix_user');
+    if (!savedUser) {
+      savedUser = localStorage.getItem('user');
+    }
+    
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Failed to parse user from localStorage:', error);
+        localStorage.removeItem('streamflix_user');
+        localStorage.removeItem('user');
+      }
     }
     setIsLoading(false);
   }, []);
@@ -72,6 +83,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     localStorage.removeItem('streamflix_user');
     localStorage.removeItem('streamflix_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   return (

@@ -29,13 +29,11 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      {/* OAuth Callback route - accessible without login */}
+      {/* Auth routes - always accessible */}
+      <Route path="/auth" element={<AuthPage />} />
       <Route path="/auth/success" element={<OAuthCallback />} />
 
-      {/* Auth page - accessible without login */}
-      <Route path="/auth" element={<AuthPage />} />
-
-      {/* Protected routes - require authentication */}
+      {/* Protected routes - only if logged in */}
       {user ? (
         <>
           {/* Default Home → dashboard based on role */}
@@ -64,12 +62,12 @@ const AppRoutes: React.FC = () => {
           {/* Watch page stays same */}
           <Route path="/watch/:id" element={<WatchPage />} />
 
-          {/* Catch-all redirect */}
+          {/* Catch-all for authenticated users */}
           <Route path="*" element={<Navigate to="/" />} />
         </>
       ) : (
         <>
-          {/* Redirect to auth page if not logged in */}
+          {/* All other routes redirect to login if not authenticated */}
           <Route path="*" element={<Navigate to="/auth" />} />
         </>
       )}
@@ -80,8 +78,13 @@ const AppRoutes: React.FC = () => {
 function App() {
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
+  // If Google Client ID is not set, show warning but still allow app to work
+  if (!GOOGLE_CLIENT_ID) {
+    console.warn('⚠️ VITE_GOOGLE_CLIENT_ID is not set. Google login will not work.');
+  }
+
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || "placeholder"}>
       <ContentProvider>
         <AuthProvider>
           <AppRoutes />
