@@ -616,11 +616,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     position: 'absolute',
                     width: '8px',
                     height: '8px',
-                    backgroundColor: ['#ff006e', '#8338ec', '#3a86ff', '#fb5607', '#ffbe0b'][i % 5],
+                    backgroundColor: ['#10b981', '#3b82f6', '#ffffff', '#000000'][i % 4],
                     borderRadius: '50%',
                     left: `${Math.random() * 100}%`,
                     top: '-10px',
-                    boxShadow: '0 0 10px currentColor',
+                    opacity: 0.8,
                     animation: `confetti-fall 3s ease-out ${i * 0.08}s forwards`,
                   }}
                 />
@@ -636,17 +636,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   justifyContent: 'center',
                   width: '90px',
                   height: '90px',
-                  background: 'linear-gradient(135deg, rgba(255, 0, 110, 0.3), rgba(131, 56, 236, 0.3))',
-                  backdropFilter: 'blur(16px)',
-                  WebkitBackdropFilter: 'blur(16px)',
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2))',
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
                   borderRadius: '50%',
                   marginBottom: '12px',
-                  border: '2px solid rgba(255, 0, 110, 0.5)',
-                  boxShadow: '0 8px 32px 0 rgba(255, 0, 110, 0.2)',
+                  border: '2px solid rgba(16, 185, 129, 0.4)',
+                  boxShadow: '0 8px 32px 0 rgba(16, 185, 129, 0.15)',
                   animation: 'pop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 }}
               >
-                <CheckCircle size={60} style={{ color: '#ff006e', filter: 'drop-shadow(0 0 10px rgba(255, 0, 110, 0.6))' }} />
+                <CheckCircle size={60} style={{ color: '#10b981' }} />
               </div>
             </div>
 
@@ -656,21 +656,21 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 fontSize: '32px',
                 fontWeight: '800',
                 marginBottom: '8px',
-                background: 'linear-gradient(135deg, #ff006e 0%, #8338ec 50%, #3a86ff 100%)',
+                background: 'linear-gradient(to right, #10b981, #3b82f6)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
                 animation: 'fade-in 0.8s ease-out 0.2s both',
-                textShadow: '0 0 30px rgba(255, 0, 110, 0.3)',
+                color: '#10b981',
               }}
             >
-              Payment Successful! 🎉
+              Payment Successful! ✓
             </h2>
 
             {/* Subtitle */}
             <p
               style={{
-                color: 'rgba(229, 229, 229, 0.9)',
+                color: 'rgba(255, 255, 255, 0.85)',
                 fontSize: '16px',
                 marginBottom: '24px',
                 animation: 'fade-in 0.8s ease-out 0.4s both',
@@ -683,35 +683,31 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             {/* Content Card - Glassmorphism */}
             <div
               style={{
-                background: 'linear-gradient(135deg, rgba(255, 0, 110, 0.15), rgba(131, 56, 236, 0.15))',
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(59, 130, 246, 0.12))',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 0, 110, 0.3)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
                 borderRadius: '16px',
                 padding: '20px',
                 marginBottom: '24px',
                 animation: 'slide-up 0.8s ease-out 0.3s both',
-                boxShadow: '0 8px 32px 0 rgba(255, 0, 110, 0.15)',
+                boxShadow: '0 8px 32px 0 rgba(16, 185, 129, 0.1)',
               }}
             >
-              <p style={{ color: 'rgba(200, 200, 255, 0.8)', fontSize: '12px', marginBottom: '6px', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                ✨ Unlocked
+              <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px', marginBottom: '8px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: '600' }}>
+                ✓ UNLOCKED
               </p>
               <h3
                 style={{
                   color: 'white',
                   fontSize: '20px',
                   fontWeight: '700',
-                  marginBottom: '8px',
-                  background: 'linear-gradient(135deg, #ff006e, #3a86ff)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
+                  marginBottom: '10px',
                 }}
               >
                 {content.title}
               </h3>
-              <p style={{ color: 'rgba(200, 200, 255, 0.7)', fontSize: '13px', letterSpacing: '0.5px' }}>
+              <p style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '13px', letterSpacing: '0.3px' }}>
                 📺 Full HD • ∞ Forever Access • 🎬 Premium Quality
               </p>
             </div>
@@ -719,32 +715,32 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             {/* Action Message */}
             <p
               style={{
-                background: 'linear-gradient(135deg, rgba(255, 0, 110, 0.2), rgba(131, 56, 236, 0.2))',
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.15))',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
-                color: 'rgba(255, 200, 255, 0.9)',
+                color: 'rgba(255, 255, 255, 0.9)',
                 fontSize: '13px',
                 fontWeight: '600',
                 marginBottom: '20px',
                 padding: '10px 16px',
                 borderRadius: '10px',
-                border: '1px solid rgba(255, 0, 110, 0.2)',
+                border: '1px solid rgba(59, 130, 246, 0.2)',
                 animation: 'fade-in 0.8s ease-out 0.5s both',
                 letterSpacing: '0.5px',
               }}
             >
-              ✨ Redirecting to content in 3 seconds...
+              ⏱️ Redirecting in 3 seconds...
             </p>
 
-            {/* Close Button - Modern Glassmorphic */}
+            {/* Close Button - Glassmorphic */}
             <button
               onClick={onClose}
               style={{
-                background: 'linear-gradient(135deg, rgba(255, 0, 110, 0.4), rgba(131, 56, 236, 0.4))',
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(59, 130, 246, 0.25))',
                 backdropFilter: 'blur(16px)',
                 WebkitBackdropFilter: 'blur(16px)',
                 color: 'white',
-                border: '1px solid rgba(255, 0, 110, 0.5)',
+                border: '1px solid rgba(16, 185, 129, 0.35)',
                 padding: '14px 40px',
                 borderRadius: '12px',
                 fontSize: '16px',
@@ -752,16 +748,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 cursor: 'pointer',
                 transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 animation: 'fade-in 0.8s ease-out 0.6s both',
-                boxShadow: '0 8px 32px 0 rgba(255, 0, 110, 0.3)',
+                boxShadow: '0 8px 32px 0 rgba(16, 185, 129, 0.15)',
                 letterSpacing: '0.5px',
               }}
               onMouseEnter={(e) => {
                 (e.target as HTMLButtonElement).style.transform = 'scale(1.08) translateY(-2px)';
-                (e.target as HTMLButtonElement).style.boxShadow = '0 12px 40px 0 rgba(255, 0, 110, 0.5)';
+                (e.target as HTMLButtonElement).style.boxShadow = '0 12px 40px 0 rgba(16, 185, 129, 0.25)';
+                (e.target as HTMLButtonElement).style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(59, 130, 246, 0.35))';
               }}
               onMouseLeave={(e) => {
                 (e.target as HTMLButtonElement).style.transform = 'scale(1) translateY(0)';
-                (e.target as HTMLButtonElement).style.boxShadow = '0 8px 32px 0 rgba(255, 0, 110, 0.3)';
+                (e.target as HTMLButtonElement).style.boxShadow = '0 8px 32px 0 rgba(16, 185, 129, 0.15)';
+                (e.target as HTMLButtonElement).style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(59, 130, 246, 0.25))';
               }}
             >
               Continue Watching 🎬
