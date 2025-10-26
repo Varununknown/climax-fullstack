@@ -155,7 +155,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       if (response.status === 409) {
         setTimeout(() => {
           setPaymentStep('success');
-          setTimeout(onSuccess, 3000);
+          setTimeout(onSuccess, 1000);
         }, 1000);
         return;
       }
@@ -165,7 +165,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const result = await response.json();
       if (result.paid || result.alreadyPaid) {
         setPaymentStep('success');
-        setTimeout(onSuccess, 3000);
+        setTimeout(onSuccess, 1500);
       } else {
         setPaymentStep('success');
       }
@@ -606,163 +606,28 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
         {/* Success Step */}
         {paymentStep === 'success' && (
-          <div style={{ textAlign: 'center', padding: '40px 20px', position: 'relative', overflow: 'hidden' }}>
-            {/* Confetti Background */}
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-              {[...Array(20)].map((_, i) => (
-                <div
-                  key={i}
-                  style={{
-                    position: 'absolute',
-                    width: '8px',
-                    height: '8px',
-                    backgroundColor: ['#10b981', '#3b82f6', '#ffffff', '#000000'][i % 4],
-                    borderRadius: '50%',
-                    left: `${Math.random() * 100}%`,
-                    top: '-10px',
-                    opacity: 0.8,
-                    animation: `confetti-fall 3s ease-out ${i * 0.08}s forwards`,
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Success Icon */}
-            <div style={{ position: 'relative', zIndex: 1, marginBottom: '24px' }}>
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '90px',
-                  height: '90px',
-                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2))',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  borderRadius: '50%',
-                  marginBottom: '12px',
-                  border: '2px solid rgba(16, 185, 129, 0.4)',
-                  boxShadow: '0 8px 32px 0 rgba(16, 185, 129, 0.15)',
-                  animation: 'pop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                }}
-              >
-                <CheckCircle size={60} style={{ color: '#10b981' }} />
-              </div>
-            </div>
-
-            {/* Main Message */}
-            <h2
-              style={{
-                fontSize: '32px',
-                fontWeight: '800',
-                marginBottom: '8px',
-                background: 'linear-gradient(to right, #10b981, #3b82f6)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                animation: 'fade-in 0.8s ease-out 0.2s both',
-                color: '#10b981',
-              }}
-            >
-              Payment Successful! ✓
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <CheckCircle size={64} style={{ color: '#10b981', margin: '0 auto 20px' }} />
+            <h2 style={{ color: 'white', fontSize: '28px', fontWeight: '700', marginBottom: '12px' }}>
+              Payment Successful!
             </h2>
-
-            {/* Subtitle */}
-            <p
-              style={{
-                color: 'rgba(255, 255, 255, 0.85)',
-                fontSize: '16px',
-                marginBottom: '24px',
-                animation: 'fade-in 0.8s ease-out 0.4s both',
-                fontWeight: '500',
-              }}
-            >
-              Your premium access is ready
+            <p style={{ color: 'rgb(209, 213, 219)', fontSize: '16px', marginBottom: '24px' }}>
+              Your premium access is ready. Enjoy!
             </p>
-
-            {/* Content Card - Glassmorphism */}
-            <div
-              style={{
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(59, 130, 246, 0.12))',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(16, 185, 129, 0.25)',
-                borderRadius: '16px',
-                padding: '20px',
-                marginBottom: '24px',
-                animation: 'slide-up 0.8s ease-out 0.3s both',
-                boxShadow: '0 8px 32px 0 rgba(16, 185, 129, 0.1)',
-              }}
-            >
-              <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px', marginBottom: '8px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: '600' }}>
-                ✓ UNLOCKED
-              </p>
-              <h3
-                style={{
-                  color: 'white',
-                  fontSize: '20px',
-                  fontWeight: '700',
-                  marginBottom: '10px',
-                }}
-              >
-                {content.title}
-              </h3>
-              <p style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '13px', letterSpacing: '0.3px' }}>
-                📺 Full HD • ∞ Forever Access • 🎬 Premium Quality
-              </p>
-            </div>
-
-            {/* Action Message */}
-            <p
-              style={{
-                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.15))',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                color: 'rgba(255, 255, 255, 0.9)',
-                fontSize: '13px',
-                fontWeight: '600',
-                marginBottom: '20px',
-                padding: '10px 16px',
-                borderRadius: '10px',
-                border: '1px solid rgba(59, 130, 246, 0.2)',
-                animation: 'fade-in 0.8s ease-out 0.5s both',
-                letterSpacing: '0.5px',
-              }}
-            >
-              ⏱️ Redirecting in 3 seconds...
-            </p>
-
-            {/* Close Button - Glassmorphic */}
             <button
               onClick={onClose}
               style={{
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(59, 130, 246, 0.25))',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
+                background: 'linear-gradient(to right, #10b981, #06b6d4)',
                 color: 'white',
-                border: '1px solid rgba(16, 185, 129, 0.35)',
-                padding: '14px 40px',
-                borderRadius: '12px',
+                border: 'none',
+                padding: '12px 32px',
+                borderRadius: '8px',
                 fontSize: '16px',
-                fontWeight: '700',
+                fontWeight: '600',
                 cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                animation: 'fade-in 0.8s ease-out 0.6s both',
-                boxShadow: '0 8px 32px 0 rgba(16, 185, 129, 0.15)',
-                letterSpacing: '0.5px',
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLButtonElement).style.transform = 'scale(1.08) translateY(-2px)';
-                (e.target as HTMLButtonElement).style.boxShadow = '0 12px 40px 0 rgba(16, 185, 129, 0.25)';
-                (e.target as HTMLButtonElement).style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(59, 130, 246, 0.35))';
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLButtonElement).style.transform = 'scale(1) translateY(0)';
-                (e.target as HTMLButtonElement).style.boxShadow = '0 8px 32px 0 rgba(16, 185, 129, 0.15)';
-                (e.target as HTMLButtonElement).style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(59, 130, 246, 0.25))';
               }}
             >
-              Continue Watching 🎬
+              Continue
             </button>
           </div>
         )}
@@ -771,42 +636,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
-        }
-        @keyframes confetti-fall {
-          to {
-            transform: translateY(500px) rotate(360deg);
-            opacity: 0;
-          }
-        }
-        @keyframes pop-in {
-          0% {
-            transform: scale(0) rotate(-180deg);
-            opacity: 0;
-          }
-          100% {
-            transform: scale(1) rotate(0deg);
-            opacity: 1;
-          }
-        }
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
         }
       `}</style>
     </div>
