@@ -606,10 +606,139 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
         {/* Success Step */}
         {paymentStep === 'success' && (
-          <div style={{ textAlign: 'center', padding: '24px 0' }}>
-            <CheckCircle size={48} style={{ color: '#10b981', margin: '0 auto 16px' }} />
-            <h2 style={{ color: 'white', fontSize: '18px', fontWeight: '600', marginBottom: '8px' }}>Payment Successful!</h2>
-            <p style={{ color: 'rgb(209, 213, 219)', fontSize: '14px' }}>Enjoy your premium content.</p>
+          <div style={{ textAlign: 'center', padding: '32px 16px', position: 'relative', overflow: 'hidden' }}>
+            {/* Confetti Background */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+              {[...Array(15)].map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    position: 'absolute',
+                    width: '6px',
+                    height: '6px',
+                    backgroundColor: ['#10b981', '#06b6d4', '#f59e0b', '#ec4899', '#8b5cf6'][i % 5],
+                    borderRadius: '50%',
+                    left: `${Math.random() * 100}%`,
+                    top: '-10px',
+                    animation: `confetti-fall 2.5s ease-out ${i * 0.1}s forwards`,
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Success Icon */}
+            <div style={{ position: 'relative', zIndex: 1, marginBottom: '20px' }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '80px',
+                  height: '80px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+                  borderRadius: '50%',
+                  marginBottom: '12px',
+                  animation: 'pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}
+              >
+                <CheckCircle size={56} style={{ color: 'white' }} />
+              </div>
+            </div>
+
+            {/* Main Message */}
+            <h2
+              style={{
+                color: 'white',
+                fontSize: '28px',
+                fontWeight: '700',
+                marginBottom: '8px',
+                background: 'linear-gradient(to right, #10b981, #06b6d4)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                animation: 'fade-in 0.8s ease-out 0.2s both',
+              }}
+            >
+              Payment Successful! 🎉
+            </h2>
+
+            {/* Subtitle */}
+            <p
+              style={{
+                color: 'rgb(209, 213, 219)',
+                fontSize: '16px',
+                marginBottom: '20px',
+                animation: 'fade-in 0.8s ease-out 0.4s both',
+              }}
+            >
+              Your premium access is ready
+            </p>
+
+            {/* Content Card */}
+            <div
+              style={{
+                background: 'linear-gradient(to bottom right, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1))',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '20px',
+                animation: 'slide-up 0.8s ease-out 0.3s both',
+              }}
+            >
+              <p style={{ color: 'rgb(209, 213, 219)', fontSize: '14px', marginBottom: '4px' }}>
+                Unlocked
+              </p>
+              <h3
+                style={{
+                  color: 'white',
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  marginBottom: '8px',
+                }}
+              >
+                {content.title}
+              </h3>
+              <p style={{ color: 'rgb(107, 114, 128)', fontSize: '12px' }}>
+                Full HD • All Episodes • Forever Access
+              </p>
+            </div>
+
+            {/* Action Message */}
+            <p
+              style={{
+                color: '#10b981',
+                fontSize: '14px',
+                fontWeight: '500',
+                marginBottom: '16px',
+                animation: 'fade-in 0.8s ease-out 0.5s both',
+              }}
+            >
+              ✓ Redirecting to content in 2 seconds...
+            </p>
+
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              style={{
+                background: 'linear-gradient(to right, #10b981, #06b6d4)',
+                color: 'white',
+                border: 'none',
+                padding: '12px 32px',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                animation: 'fade-in 0.8s ease-out 0.6s both',
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.transform = 'scale(1)';
+              }}
+            >
+              Continue Watching
+            </button>
           </div>
         )}
       </div>
@@ -617,6 +746,42 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
+        }
+        @keyframes confetti-fall {
+          to {
+            transform: translateY(400px) rotate(360deg);
+            opacity: 0;
+          }
+        }
+        @keyframes pop-in {
+          0% {
+            transform: scale(0) rotate(-180deg);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
+          }
+        }
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes slide-up {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
     </div>
