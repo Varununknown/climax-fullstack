@@ -79,6 +79,16 @@ router.post('/initiate', async (req, res) => {
 
     // Check if user already has approved payment for this content
     const mongoose = require('mongoose');
+    
+    // Validate ObjectIds
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(contentId)) {
+      console.error('❌ Invalid userId or contentId format');
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user or content ID'
+      });
+    }
+    
     const userIdObj = new mongoose.Types.ObjectId(userId);
     const contentIdObj = new mongoose.Types.ObjectId(contentId);
 
@@ -154,7 +164,7 @@ router.post('/initiate', async (req, res) => {
 
   } catch (err) {
     console.error('❌ PayU initiation error:', err);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Payment gateway error. Please try again.',
       error: process.env.NODE_ENV === 'development' ? err.message : undefined
