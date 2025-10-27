@@ -54,9 +54,18 @@ router.post('/initiate', async (req, res) => {
     // Validate PayU configuration
     if (!PAYU_MERCHANT_KEY || !PAYU_MERCHANT_SALT) {
       console.error('❌ PayU credentials not configured');
+      console.error('   PAYU_MERCHANT_KEY env:', process.env.PAYU_MERCHANT_KEY ? '✅ Set' : '❌ Not set');
+      console.error('   PAYU_MERCHANT_SALT env:', process.env.PAYU_MERCHANT_SALT ? '✅ Set' : '❌ Not set');
+      console.error('   Using fallback? Key:', PAYU_MERCHANT_KEY, 'Salt:', PAYU_MERCHANT_SALT);
       return res.status(500).json({
         success: false,
-        message: 'Payment gateway not configured. Please try UPI payment instead.'
+        message: 'Payment gateway not configured. Please try UPI payment instead.',
+        debug: {
+          hasKey: !!PAYU_MERCHANT_KEY,
+          hasSalt: !!PAYU_MERCHANT_SALT,
+          envKey: !!process.env.PAYU_MERCHANT_KEY,
+          envSalt: !!process.env.PAYU_MERCHANT_SALT
+        }
       });
     }
 
