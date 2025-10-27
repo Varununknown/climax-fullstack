@@ -122,24 +122,6 @@ router.post('/initiate', async (req, res) => {
 
     console.log('✅ PayU hash generated for txnid:', txnid);
 
-    // Create PayU form HTML
-    const formHtml = `
-      <form id="payu_form" method="POST" action="${PAYU_GATEWAY}">
-        <input type="hidden" name="key" value="${PAYU_MERCHANT_KEY}">
-        <input type="hidden" name="txnid" value="${txnid}">
-        <input type="hidden" name="amount" value="${amount}">
-        <input type="hidden" name="productinfo" value="${productinfo}">
-        <input type="hidden" name="firstname" value="${userName || 'User'}">
-        <input type="hidden" name="email" value="${userEmail}">
-        <input type="hidden" name="phone" value="9999999999">
-        <input type="hidden" name="surl" value="${BACKEND_URL}/api/payu/success">
-        <input type="hidden" name="furl" value="${BACKEND_URL}/api/payu/failure">
-        <input type="hidden" name="hash" value="${payuHash}">
-        <input type="hidden" name="service_provider" value="payu_paisa">
-        <button type="submit" style="display:none;">Submit</button>
-      </form>
-    `;
-
     // Save payment record in background (don't block form generation)
     setImmediate(async () => {
       try {
@@ -162,11 +144,25 @@ router.post('/initiate', async (req, res) => {
       }
     });
 
+    // Return form data - frontend will submit the form to PayU
     res.json({
       success: true,
-      formHtml: formHtml,
+      paymentData: {
+        key: PAYU_MERCHANT_KEY,
+        txnid: txnid,
+        amount: amount,
+        productinfo: productinfo,
+        firstname: userName || 'User',
+        email: userEmail,
+        phone: '9999999999',
+        surl: `${BACKEND_URL}/api/payu/success`,
+        furl: `${BACKEND_URL}/api/payu/failure`,
+        hash: payuHash,
+        service_provider: 'payu_paisa'
+      },
+      gatewayUrl: PAYU_GATEWAY,
       txnid: txnid,
-      message: 'PayU form ready for redirect'
+      message: 'Ready to redirect to PayU'
     });
 
   } catch (err) {

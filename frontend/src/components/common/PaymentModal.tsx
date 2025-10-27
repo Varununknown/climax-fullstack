@@ -97,26 +97,27 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const data = await response.json();
       console.log('PayU response:', data);
 
-      if (data.success && data.formHtml) {
-        // Create a temporary form element and submit it directly
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = data.formHtml;
-        const form = tempDiv.querySelector('form') as HTMLFormElement;
+      if (data.success && data.paymentData && data.gatewayUrl) {
+        // Create form with all payment data
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.gatewayUrl;
+        form.style.display = 'none';
+
+        // Add all fields to form
+        Object.entries(data.paymentData).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(value);
+          form.appendChild(input);
+        });
+
+        // Append and submit
+        document.body.appendChild(form);
+        form.submit();
         
-        if (form) {
-          // Append to body and submit
-          document.body.appendChild(form);
-          form.submit();
-          // Remove after submit is called
-          setTimeout(() => {
-            if (form.parentElement) {
-              form.parentElement.removeChild(form);
-            }
-          }, 100);
-        } else {
-          alert('PayU form error. Try UPI payment.');
-          setIsProcessing(false);
-        }
+        console.log('✅ Form submitted to PayU:', data.gatewayUrl);
       } else {
         alert('PayU unavailable. Try UPI payment.');
         setIsProcessing(false);
