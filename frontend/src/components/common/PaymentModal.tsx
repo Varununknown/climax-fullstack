@@ -78,7 +78,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       return;
     }
 
-    const paymentWindow = window.open('', '_blank');
     setIsProcessing(true);
     console.log('🔄 PayU initiated');
 
@@ -96,33 +95,36 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       });
 
       const data = await response.json();
+      console.log('PayU response:', data);
 
       if (data.success && data.formHtml) {
-        const form = document.createElement('form');
-        form.innerHTML = data.formHtml;
-        try {
-          if (paymentWindow && paymentWindow.name) {
-            form.target = paymentWindow.name;
-          }
-        } catch (e) {
-          console.warn('Window target error:', e);
-        }
-        document.body.appendChild(form);
-        try {
-          (form as HTMLFormElement).submit();
-        } catch (submitErr) {
-          const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-          if (submitBtn) submitBtn.click();
+        // Create a temporary form element and submit it directly
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = data.formHtml;
+        const form = tempDiv.querySelector('form') as HTMLFormElement;
+        
+        if (form) {
+          // Append to body and submit
+          document.body.appendChild(form);
+          form.submit();
+          // Remove after submit is called
+          setTimeout(() => {
+            if (form.parentElement) {
+              form.parentElement.removeChild(form);
+            }
+          }, 100);
+        } else {
+          alert('PayU form error. Try UPI payment.');
+          setIsProcessing(false);
         }
       } else {
         alert('PayU unavailable. Try UPI payment.');
         setIsProcessing(false);
-        if (paymentWindow) paymentWindow.close();
       }
     } catch (err) {
+      console.error('PayU error:', err);
       alert('Payment error. Try again.');
       setIsProcessing(false);
-      if (paymentWindow) paymentWindow.close();
     }
   };
 
