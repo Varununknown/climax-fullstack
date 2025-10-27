@@ -6,8 +6,9 @@ const User = require('../models/User.cjs');
 const Content = require('../models/Content.cjs');
 
 // PayU Configuration from environment variables
-const PAYU_MERCHANT_KEY = process.env.PAYU_MERCHANT_KEY;
-const PAYU_MERCHANT_SALT = process.env.PAYU_MERCHANT_SALT;
+// Support both test and live credentials - use test by default
+const PAYU_MERCHANT_KEY = process.env.PAYU_MERCHANT_KEY || 'gtKFFx';  // Test key fallback
+const PAYU_MERCHANT_SALT = process.env.PAYU_MERCHANT_SALT || 'eCwWELxi';  // Test salt fallback
 const PAYU_ENVIRONMENT = process.env.PAYU_ENVIRONMENT || 'test'; // 'test' or 'production'
 
 // PayU gateway URL
@@ -19,10 +20,11 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 console.log('🔐 PayU Configuration:');
-console.log('  Merchant Key:', PAYU_MERCHANT_KEY ? '✅ Set' : '❌ Not set');
+console.log('  Merchant Key:', PAYU_MERCHANT_KEY ? '✅ Set' : '❌ Not set', `(${PAYU_MERCHANT_KEY})`);
 console.log('  Merchant Salt:', PAYU_MERCHANT_SALT ? '✅ Set' : '❌ Not set');
 console.log('  Environment:', PAYU_ENVIRONMENT);
 console.log('  Gateway URL:', PAYU_GATEWAY);
+console.log('  Mode:', PAYU_ENVIRONMENT === 'production' ? '🔴 LIVE' : '🟢 TEST (Sandbox)');
 
 // Helper function to generate PayU hash
 const generateHash = (data) => {
