@@ -111,31 +111,16 @@ router.post('/initiate', async (req, res) => {
     const txnid = `${contentId}-${userId}-${Date.now()}`;
     const productinfo = `Climax Premium - ${contentId}`;
 
-    // Create payment record with pending status
-    const newPayment = new Payment({
-      userId: userIdObj,
-      contentId: contentIdObj,
-      amount: amount,
-      transactionId: txnid,
-      paymentMethod: 'payu',
-      status: 'pending',
-      payuTransactionId: null,
-      createdAt: new Date()
-    });
-
-    await newPayment.save();
-    console.log('✅ Payment record created:', txnid);
-
-    // Generate PayU hash
+    // Generate PayU hash (for payment form)
     const payuHash = generateHash({
       txnid: txnid,
       amount: amount,
       productinfo: productinfo,
-      firstname: userName,
+      firstname: userName || 'User',
       email: userEmail
     });
 
-    console.log('✅ PayU hash generated');
+    console.log('✅ PayU hash generated for txnid:', txnid);
 
     // Create PayU form HTML
     const formHtml = `
@@ -144,7 +129,7 @@ router.post('/initiate', async (req, res) => {
         <input type="hidden" name="txnid" value="${txnid}">
         <input type="hidden" name="amount" value="${amount}">
         <input type="hidden" name="productinfo" value="${productinfo}">
-        <input type="hidden" name="firstname" value="${userName}">
+        <input type="hidden" name="firstname" value="${userName || 'User'}">
         <input type="hidden" name="email" value="${userEmail}">
         <input type="hidden" name="phone" value="9999999999">
         <input type="hidden" name="surl" value="${BACKEND_URL}/api/payu/success">
@@ -154,6 +139,28 @@ router.post('/initiate', async (req, res) => {
         <button type="submit" style="display:none;">Submit</button>
       </form>
     `;
+
+    // Save payment record in background (don't block form generation)
+    setImmediate(async () => {
+      try {
+        const newPayment = new Payment({
+          userId: userIdObj,
+          contentId: contentIdObj,
+          amount: amount,
+          transactionId: txnid,
+          paymentMethod: 'payu',
+          status: 'pending',
+          payuTransactionId: null,
+          createdAt: new Date()
+        });
+
+        await newPayment.save();
+        console.log('✅ Payment record saved:', txnid);
+      } catch (dbErr) {
+        console.warn('⚠️ Payment record save failed (non-blocking):', dbErr.message);
+        // Don't fail the entire request if DB save fails
+      }
+    });
 
     res.json({
       success: true,
