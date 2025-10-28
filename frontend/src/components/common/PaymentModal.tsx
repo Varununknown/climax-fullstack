@@ -80,9 +80,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
     setIsProcessing(true);
     console.log('🔄 PayU Payment Initiated');
-    console.log('Backend URL:', BACKEND_URL);
-    console.log('User ID:', user.id);
-    console.log('Content ID:', content._id);
 
     try {
       console.log('📡 Fetching PayU form from backend...');
@@ -112,34 +109,43 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       if (data.success && data.paymentData && data.gatewayUrl) {
         console.log('🔗 Creating form for gateway:', data.gatewayUrl);
         
-        // Create form with all payment data
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = data.gatewayUrl;
-        form.style.display = 'none';
-        form.id = 'payu_form_' + Date.now();
-
-        // Add all fields to form
-        const fieldCount = Object.keys(data.paymentData).length;
-        console.log(`Adding ${fieldCount} fields to form...`);
+        // Build form manually as string and write to document
+        let formHtml = `<form id="payu_form_${Date.now()}" method="POST" action="${data.gatewayUrl}" style="display:none;">`;
         
         Object.entries(data.paymentData).forEach(([key, value]) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = String(value);
-          form.appendChild(input);
-          console.log(`  ✓ Added field: ${key}`);
+          formHtml += `<input type="hidden" name="${key}" value="${String(value).replace(/"/g, '&quot;')}">`;
         });
-
-        // Append and submit
-        console.log('📤 Appending form to document...');
-        document.body.appendChild(form);
         
-        console.log('🚀 Submitting form to PayU gateway...');
-        form.submit();
+        formHtml += '</form>';
         
-        console.log('✅ Form submitted successfully to PayU');
+        console.log('📝 Form HTML created, length:', formHtml.length);
+        
+        // Insert form into document
+        document.body.insertAdjacentHTML('beforeend', formHtml);
+        console.log('✅ Form inserted into DOM');
+        
+        // Get the form and submit
+        const formId = `payu_form_${Date.now()}`;
+        const form = document.getElementById(formId) || document.querySelector('form[id^="payu_form_"]');
+        
+        if (form) {
+          console.log('🚀 Submitting form...');
+          // Small delay to ensure form is in DOM
+          setTimeout(() => {
+            try {
+              (form as HTMLFormElement).submit();
+              console.log('✅ Form submitted successfully');
+            } catch (submitErr) {
+              console.error('❌ Submit error:', submitErr);
+              alert('Failed to redirect to PayU');
+              setIsProcessing(false);
+            }
+          }, 100);
+        } else {
+          console.error('❌ Form not found in DOM');
+          alert('Form creation error');
+          setIsProcessing(false);
+        }
       } else {
         console.error('❌ Invalid response format:', data);
         alert('PayU unavailable. Try UPI payment.');
