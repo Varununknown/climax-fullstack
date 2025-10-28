@@ -49,7 +49,9 @@ export const ParticipatePage: React.FC = () => {
   const fetchQuiz = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/api/quiz/user/${contentId}`);
+      const response = await fetch(`${BACKEND_URL}/api/quiz/user/${contentId}`, {
+        credentials: 'include'
+      });
       const data = await response.json();
 
       if (data.success) {
@@ -88,6 +90,7 @@ export const ParticipatePage: React.FC = () => {
       const response = await fetch(`${BACKEND_URL}/api/quiz/user/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           userId: user?.id,
           contentId: contentId,

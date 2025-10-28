@@ -36,7 +36,9 @@ export const QuizResults: React.FC = () => {
 
   const fetchQuizzes = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/quiz/admin/all`);
+      const response = await fetch(`${BACKEND_URL}/api/quiz/admin/all`, {
+        credentials: 'include'
+      });
       const data = await response.json();
       if (data.success) {
         setQuizzes(data.quizzes.map((q: any) => ({
@@ -53,7 +55,9 @@ export const QuizResults: React.FC = () => {
     setSelectedContentId(contentId);
     setLoading(true);
     try {
-      const response = await fetch(`${BACKEND_URL}/api/quiz/admin/results/${contentId}`);
+      const response = await fetch(`${BACKEND_URL}/api/quiz/admin/results/${contentId}`, {
+        credentials: 'include'
+      });
       const data = await response.json();
       if (data.success) {
         setResults(data.results);
@@ -80,7 +84,8 @@ export const QuizResults: React.FC = () => {
     setLoading(true);
     try {
       const response = await fetch(`${BACKEND_URL}/api/quiz/admin/clear/${selectedContentId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'
       });
 
       const data = await response.json();

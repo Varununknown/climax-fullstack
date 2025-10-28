@@ -47,7 +47,9 @@ export const QuizManagement: React.FC = () => {
 
   const fetchQuizzes = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/quiz/admin/all`);
+      const response = await fetch(`${BACKEND_URL}/api/quiz/admin/all`, {
+        credentials: 'include'
+      });
       const data = await response.json();
       if (data.success) {
         setQuizzes(data.quizzes);
@@ -164,6 +166,7 @@ export const QuizManagement: React.FC = () => {
       const response = await fetch(`${BACKEND_URL}/api/quiz/admin/upsert`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           contentId: selectedContentId || 'temp-' + Date.now(),
           contentName,
@@ -173,6 +176,7 @@ export const QuizManagement: React.FC = () => {
       });
 
       const data = await response.json();
+      console.log('💾 Quiz save response:', data);
       if (data.success) {
         setMessage({ type: 'success', text: 'Quiz saved successfully!' });
         setSelectedContentId('');
@@ -184,6 +188,7 @@ export const QuizManagement: React.FC = () => {
         setMessage({ type: 'error', text: data.message || 'Error saving quiz' });
       }
     } catch (err) {
+      console.error('❌ Quiz save error:', err);
       setMessage({ type: 'error', text: 'Error saving quiz: ' + (err instanceof Error ? err.message : 'Unknown') });
     } finally {
       setLoading(false);
@@ -198,7 +203,8 @@ export const QuizManagement: React.FC = () => {
     setLoading(true);
     try {
       const response = await fetch(`${BACKEND_URL}/api/quiz/admin/clear/${contentId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'
       });
 
       const data = await response.json();
