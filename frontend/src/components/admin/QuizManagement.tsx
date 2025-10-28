@@ -59,10 +59,13 @@ export const QuizManagement: React.FC = () => {
 
   const fetchAllContent = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/content`);
+      const response = await fetch(`${BACKEND_URL}/api/contents`, {
+        credentials: 'include'
+      });
       const data = await response.json();
-      if (data.success) {
-        setAllContent(data.content);
+      console.log('📚 Fetched content:', data);
+      if (Array.isArray(data)) {
+        setAllContent(data);
       }
     } catch (err) {
       console.error('Error fetching content:', err);
