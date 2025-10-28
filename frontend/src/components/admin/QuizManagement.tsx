@@ -175,6 +175,23 @@ export const QuizManagement: React.FC = () => {
         })
       });
 
+      console.log('📡 Response status:', response.status, response.statusText);
+      console.log('📡 Response headers:', response.headers.get('content-type'));
+
+      // Check if response is actually JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('❌ Expected JSON but got:', text.substring(0, 200));
+        
+        if (response.status === 401 || response.status === 403) {
+          setMessage({ type: 'error', text: 'Not authenticated as admin. Please login again.' });
+        } else {
+          setMessage({ type: 'error', text: `Server error (${response.status}). Check console for details.` });
+        }
+        return;
+      }
+
       const data = await response.json();
       console.log('💾 Quiz save response:', data);
       if (data.success) {
