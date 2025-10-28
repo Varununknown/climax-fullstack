@@ -158,10 +158,6 @@ export const ContentDetailsPage: React.FC = () => {
                 <span className="font-semibold">Watch Now</span>
               </button>
 
-              <button onClick={handleParticipate} className="bg-gradient-to-r from-amber-600/90 via-orange-500/80 to-red-500/90 backdrop-blur-lg text-white rounded-full py-2 sm:py-3 px-3 sm:px-6 flex items-center gap-2 sm:gap-3 shadow-lg hover:from-amber-500 hover:via-orange-400 hover:to-red-400 hover:scale-[1.01] transition-all border border-amber-400/20 text-xs sm:text-base">
-                <span className="font-semibold">🎁 Participate</span>
-              </button>
-
               <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all">
                 <Share size={16} className="sm:size-5" />
               </button>
@@ -234,7 +230,7 @@ export const ContentDetailsPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={handleWatch} className="flex-1 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all shadow-lg">
+                      <button onClick={handleParticipate} className="flex-1 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all shadow-lg">
                         Participate Now
                       </button>
                       <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 rounded-lg transition-all">
@@ -254,7 +250,7 @@ export const ContentDetailsPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={handleWatch} className="flex-1 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all shadow-lg">
+                      <button onClick={handleParticipate} className="flex-1 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all shadow-lg">
                         Participate Now
                       </button>
                       <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 rounded-lg transition-all">

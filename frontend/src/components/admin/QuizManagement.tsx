@@ -22,8 +22,16 @@ interface Quiz {
   questions: Question[];
 }
 
+interface Content {
+  _id: string;
+  title: string;
+  category: string;
+  thumbnail: string;
+}
+
 export const QuizManagement: React.FC = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [allContent, setAllContent] = useState<Content[]>([]);
   const [selectedContentId, setSelectedContentId] = useState<string>('');
   const [contentName, setContentName] = useState<string>('');
   const [isPaid, setIsPaid] = useState<boolean>(false);
@@ -34,6 +42,7 @@ export const QuizManagement: React.FC = () => {
   // Fetch all quizzes
   useEffect(() => {
     fetchQuizzes();
+    fetchAllContent();
   }, []);
 
   const fetchQuizzes = async () => {
@@ -45,6 +54,18 @@ export const QuizManagement: React.FC = () => {
       }
     } catch (err) {
       console.error('Error fetching quizzes:', err);
+    }
+  };
+
+  const fetchAllContent = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/content`);
+      const data = await response.json();
+      if (data.success) {
+        setAllContent(data.content);
+      }
+    } catch (err) {
+      console.error('Error fetching content:', err);
     }
   };
 
@@ -108,8 +129,8 @@ export const QuizManagement: React.FC = () => {
   };
 
   const handleSaveQuiz = async () => {
-    if (!contentName.trim()) {
-      setMessage({ type: 'error', text: 'Content name is required' });
+    if (!selectedContentId || !contentName.trim()) {
+      setMessage({ type: 'error', text: 'Please select a content first' });
       return;
     }
 
@@ -274,21 +295,32 @@ export const QuizManagement: React.FC = () => {
 
           <div style={{ marginBottom: '15px' }}>
             <label style={{ display: 'block', marginBottom: '5px', color: '#666', fontWeight: 'bold' }}>
-              Content Name
+              Select Content
             </label>
-            <input
-              type="text"
-              value={contentName}
-              onChange={e => setContentName(e.target.value)}
-              placeholder="e.g., Movie Title, Product Name"
+            <select
+              value={selectedContentId}
+              onChange={e => {
+                const selected = allContent.find(c => c._id === e.target.value);
+                setSelectedContentId(e.target.value);
+                setContentName(selected ? selected.title : '');
+              }}
               style={{
                 width: '100%',
                 padding: '8px',
                 border: '1px solid #ddd',
                 borderRadius: '4px',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                backgroundColor: 'white',
+                fontSize: '14px'
               }}
-            />
+            >
+              <option value="">-- Select a content --</option>
+              {allContent.map(content => (
+                <option key={content._id} value={content._id}>
+                  {content.title} ({content.category})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div style={{ marginBottom: '15px' }}>
