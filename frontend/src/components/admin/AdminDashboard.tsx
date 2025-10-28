@@ -7,6 +7,8 @@ import { Analytics } from './Analytics';
 import { PaymentSettings } from './PaymentSettings';
 import { PendingPayments } from './PendingPayments';
 import { ImageFixer } from './ImageFixer';
+import { QuizManagement } from './QuizManagement';
+import { QuizResults } from './QuizResults';
 
 export const AdminDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -31,6 +33,10 @@ export const AdminDashboard: React.FC = () => {
             <PendingPayments />
           </div>
         );
+      case 'quiz':
+        return <QuizManagement />;
+      case 'quizResults':
+        return <QuizResults />;
       default:
         return <DashboardStats />;
     }
@@ -56,7 +62,9 @@ export const AdminDashboard: React.FC = () => {
               { id: 'content', label: 'Content' },
               { id: 'users', label: 'Users' },
               { id: 'payments', label: 'Payments' },
-              { id: 'analytics', label: 'Analytics' }
+              { id: 'analytics', label: 'Analytics' },
+              { id: 'quiz', label: 'Quiz Management' },
+              { id: 'quizResults', label: 'Quiz Results' }
             ].map((item) => (
               <button
                 key={item.id}

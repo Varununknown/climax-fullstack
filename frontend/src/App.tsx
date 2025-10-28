@@ -8,6 +8,7 @@ import { UserDashboard } from "./components/user/UserDashboard";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
 import WatchPage from "./pages/WatchPage";
 import { ContentDetailsPage } from "./pages/ContentDetailsPage";
+import { ParticipatePage } from "./pages/ParticipatePage";
 
 // ✅ New placeholder pages for navigation
 import MoviesPage from "./components/user/MoviesPage";
@@ -58,6 +59,9 @@ const AppRoutes: React.FC = () => {
 
           {/* Content Details Page - shows before playing */}
           <Route path="/content/:id" element={<ContentDetailsPage />} />
+
+          {/* Participate Page - for quiz */}
+          <Route path="/participate/:contentId" element={<ParticipatePage />} />
 
           {/* Watch page stays same */}
           <Route path="/watch/:id" element={<WatchPage />} />
