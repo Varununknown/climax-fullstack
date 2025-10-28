@@ -79,9 +79,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     }
 
     setIsProcessing(true);
-    console.log('🔄 PayU initiated');
+    console.log('🔄 PayU Payment Initiated');
+    console.log('Backend URL:', BACKEND_URL);
+    console.log('User ID:', user.id);
+    console.log('Content ID:', content._id);
 
     try {
+      console.log('📡 Fetching PayU form from backend...');
       const response = await fetch(`${BACKEND_URL}/api/payu/initiate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -94,37 +98,56 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         })
       });
 
+      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('PayU response:', data);
+      console.log('✅ PayU response received:', data);
+
+      if (!response.ok) {
+        console.error('❌ Backend error:', data);
+        alert(`Error: ${data.message || 'Payment gateway error'}`);
+        setIsProcessing(false);
+        return;
+      }
 
       if (data.success && data.paymentData && data.gatewayUrl) {
+        console.log('🔗 Creating form for gateway:', data.gatewayUrl);
+        
         // Create form with all payment data
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = data.gatewayUrl;
         form.style.display = 'none';
+        form.id = 'payu_form_' + Date.now();
 
         // Add all fields to form
+        const fieldCount = Object.keys(data.paymentData).length;
+        console.log(`Adding ${fieldCount} fields to form...`);
+        
         Object.entries(data.paymentData).forEach(([key, value]) => {
           const input = document.createElement('input');
           input.type = 'hidden';
           input.name = key;
           input.value = String(value);
           form.appendChild(input);
+          console.log(`  ✓ Added field: ${key}`);
         });
 
         // Append and submit
+        console.log('📤 Appending form to document...');
         document.body.appendChild(form);
+        
+        console.log('🚀 Submitting form to PayU gateway...');
         form.submit();
         
-        console.log('✅ Form submitted to PayU:', data.gatewayUrl);
+        console.log('✅ Form submitted successfully to PayU');
       } else {
+        console.error('❌ Invalid response format:', data);
         alert('PayU unavailable. Try UPI payment.');
         setIsProcessing(false);
       }
     } catch (err) {
-      console.error('PayU error:', err);
-      alert('Payment error. Try again.');
+      console.error('❌ PayU error:', err);
+      alert('Payment error: ' + (err instanceof Error ? err.message : 'Unknown error'));
       setIsProcessing(false);
     }
   };
