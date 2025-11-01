@@ -7,8 +7,7 @@ import { Analytics } from './Analytics';
 import { PaymentSettings } from './PaymentSettings';
 import { PendingPayments } from './PendingPayments';
 import { ImageFixer } from './ImageFixer';
-import { QuizManagement } from './QuizManagement';
-import { QuizResults } from './QuizResults';
+import { FansFestManagement } from './FansFestManagement';
 
 export const AdminDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -34,9 +33,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
         );
       case 'quiz':
-        return <QuizManagement />;
-      case 'quizResults':
-        return <QuizResults />;
+        return <FansFestManagement />;
       default:
         return <DashboardStats />;
     }
