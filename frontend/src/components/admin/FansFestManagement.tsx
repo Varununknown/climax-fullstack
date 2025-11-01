@@ -34,15 +34,21 @@ export const FansFestManagement: React.FC = () => {
 
   const fetchContent = async () => {
     try {
+      console.log('📚 Fetching content from:', `${BACKEND_URL}/api/contents`);
       const response = await fetch(`${BACKEND_URL}/api/contents`, {
         credentials: 'include'
       });
+      console.log('📊 Content response status:', response.status);
       const data = await response.json();
+      console.log('📊 Content data received:', data);
       if (Array.isArray(data)) {
         setAllContent(data);
+        console.log('✅ Content set:', data.length, 'items');
+      } else {
+        console.warn('⚠️ Content response is not an array:', typeof data);
       }
     } catch (err) {
-      console.error('Error fetching content:', err);
+      console.error('❌ Error fetching content:', err);
     }
   };
 
@@ -216,6 +222,11 @@ export const FansFestManagement: React.FC = () => {
         {/* Left: Content List */}
         <div style={{ backgroundColor: 'white', padding: '15px', borderRadius: '8px' }}>
           <h3 style={{ marginBottom: '15px', color: '#444' }}>Select Content</h3>
+          {allContent.length === 0 ? (
+            <div style={{ padding: '10px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '4px', marginBottom: '15px' }}>
+              ⚠️ Loading content... If empty, check console (F12)
+            </div>
+          ) : null}
           <select
             value={selectedContentId}
             onChange={(e) => handleSelectContent(e.target.value)}
@@ -227,7 +238,7 @@ export const FansFestManagement: React.FC = () => {
               marginBottom: '15px'
             }}
           >
-            <option value="">-- Choose a content --</option>
+            <option value="">-- Choose a content ({allContent.length} available) --</option>
             {allContent.map(content => (
               <option key={content._id} value={content._id}>
                 {content.title}
