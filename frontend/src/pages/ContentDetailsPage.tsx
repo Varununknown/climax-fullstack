@@ -57,8 +57,8 @@ export const ContentDetailsPage: React.FC = () => {
   };
 
   const handleParticipate = () => {
-    // Navigate to participate page for quiz
-    navigate(`/participate/${id}`);
+    // Navigate to Fans Fest page - beautiful quiz experience
+    navigate(`/fansfest/${id}`);
   };
 
   const handleShare = async () => {
