@@ -44,4 +44,27 @@ let API = axios.create({
   }
 })();
 
+// Add response interceptor for debugging on localhost
+API.interceptors.response.use(
+  (response) => {
+    if (isLocalDevelopment) {
+      console.log(`📡 API Response [${response.config.method?.toUpperCase()}] ${response.config.url}:`, {
+        status: response.status,
+        data: response.data
+      });
+    }
+    return response;
+  },
+  (error) => {
+    if (isLocalDevelopment) {
+      console.error(`❌ API Error [${error.config?.method?.toUpperCase()}] ${error.config?.url}:`, {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default API;

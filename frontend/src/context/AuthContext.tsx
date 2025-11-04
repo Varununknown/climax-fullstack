@@ -55,7 +55,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
+      console.log('🔐 Attempting login with:', email);
       const response = await API.post('/auth/login', { email, password });
+      console.log('✅ Login response:', response.data);
 
       const loggedInUser: User = {
         id: response.data.user.id,
@@ -64,13 +66,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role: response.data.user.role,
         subscription: 'free',
       };
+      console.log('✅ User object created:', loggedInUser);
       setUser(loggedInUser);
       localStorage.setItem('streamflix_user', JSON.stringify(loggedInUser));
       localStorage.setItem('streamflix_token', response.data.token);
       setIsLoading(false);
       return true;
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('❌ Login failed:', error);
       setIsLoading(false);
       return false;
     }
