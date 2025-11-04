@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Trophy, Star, Sparkles } from 'lucide-react';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+import API from '../services/api';
 
 interface Question {
   questionText: string;
@@ -34,10 +33,8 @@ export const FansFestPage: React.FC = () => {
 
   const fetchFest = async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/participation/user/${contentId}/questions`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const response = await API.get(`/participation/user/${contentId}/questions`);
+      const data = response.data;
       
       if (data.success && data.questions && data.questions.length > 0) {
         setFest({
@@ -70,14 +67,8 @@ export const FansFestPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/participation/user/${contentId}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ answers })
-      });
-
-      const data = await response.json();
+      const response = await API.post(`/participation/user/${contentId}/submit`, { answers });
+      const data = response.data;
       
       if (data.success) {
         setScore(data.score);

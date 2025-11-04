@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Save, Trash2, AlertCircle } from 'lucide-react';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+import { Plus, Save, Trash2 } from 'lucide-react';
+import API from '../../services/api';
 
 interface Option {
   text: string;
@@ -34,12 +33,9 @@ export const FansFestManagement: React.FC = () => {
 
   const fetchContent = async () => {
     try {
-      console.log('📚 Fetching content from:', `${BACKEND_URL}/api/contents`);
-      const response = await fetch(`${BACKEND_URL}/api/contents`, {
-        credentials: 'include'
-      });
-      console.log('📊 Content response status:', response.status);
-      const data = await response.json();
+      console.log('📚 Fetching content from API...');
+      const response = await API.get('/contents');
+      const data = response.data;
       console.log('📊 Content data received:', data);
       if (Array.isArray(data)) {
         setAllContent(data);
@@ -61,10 +57,8 @@ export const FansFestManagement: React.FC = () => {
 
   const fetchQuestions = async (contentId: string) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/participation/admin/questions/${contentId}`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const response = await API.get(`/participation/admin/questions/${contentId}`);
+      const data = response.data;
       if (data.success) {
         setQuestions(data.data || []);
       }
@@ -88,10 +82,7 @@ export const FansFestManagement: React.FC = () => {
     const question = questions[index];
     if (question._id) {
       try {
-        await fetch(`${BACKEND_URL}/api/participation/admin/questions/${question._id}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
+        await API.delete(`/participation/admin/questions/${question._id}`);
       } catch (err) {
         console.error('Error deleting question:', err);
       }
@@ -165,19 +156,17 @@ export const FansFestManagement: React.FC = () => {
       // Save each question
       for (const question of questions) {
         if (!question._id) {
-          const response = await fetch(`${BACKEND_URL}/api/participation/admin/questions/${selectedContentId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
+          const response = await API.post(
+            `/participation/admin/questions/${selectedContentId}`,
+            {
               questionText: question.questionText,
               options: question.options.map(o => o.text),
               correctAnswer: question.correctAnswer,
               isRequired: true
-            })
-          });
+            }
+          );
 
-          const data = await response.json();
+          const data = response.data;
           if (!data.success) {
             setMessage({ type: 'error', text: `Failed to save question: ${data.message}` });
             return;
