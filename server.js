@@ -27,16 +27,22 @@ console.log('📌 Environment:', process.env.NODE_ENV || 'development');
 console.log('📌 Port:', PORT);
 
 // Try to load full backend with database
-let fullBackendLoaded = false;
+let fullBackend = null;
 try {
-  console.log('\n� Checking backend directory...');
+  console.log('\n📂 Checking backend directory...');
   const backendPath = path.join(__dirname, 'backend', 'server.cjs');
   if (fs.existsSync(backendPath)) {
     console.log('✅ Backend found at:', backendPath);
     console.log('📦 Loading backend/server.cjs...');
-    require('./backend/server.cjs');
-    fullBackendLoaded = true;
+    fullBackend = require('./backend/server.cjs'); // Import the Express app
     console.log('✅ Full backend loaded successfully!');
+    
+    // Start the full backend server
+    fullBackend.listen(PORT, '0.0.0.0', () => {
+      console.log(`\n✅ Full backend server running on port ${PORT}`);
+      console.log(`📍 Base URL: http://localhost:${PORT}`);
+      console.log(`📊 API endpoints: /api/auth, /api/contents, /api/participation, /api/quiz, etc.`);
+    });
   } else {
     console.log('⚠️  Backend not found at:', backendPath);
   }
@@ -47,7 +53,7 @@ try {
 }
 
 // If full backend didn't load, use fallback
-if (!fullBackendLoaded) {
+if (!fullBackend) {
   console.log('\n⚠️  Using fallback backend with basic endpoints');
   
   // Root endpoint
