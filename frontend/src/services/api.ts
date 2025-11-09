@@ -5,44 +5,22 @@ import axios from "axios";
 const PROD_BACKEND = import.meta.env.VITE_BACKEND_URL || 'https://climax-fullstack.onrender.com';
 const PREFERRED_LOCAL = 'http://localhost:5000';
 
-// Helper: test a URL quickly
-async function testUrl(url: string) {
-  try {
-    const res = await axios.get(url + '/api/health', { timeout: 1500 });
-    return res.status === 200;
-  } catch (e) {
-    return false;
-  }
-}
-
 // Force local development when running on localhost
 const isLocalDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-// Build default API instance (will be replaced after health check)
-let API = axios.create({ 
-  baseURL: isLocalDevelopment ? `${PREFERRED_LOCAL}/api` : `${PROD_BACKEND}/api`, 
+// Determine which backend to use
+const backendUrl = isLocalDevelopment ? PREFERRED_LOCAL : PROD_BACKEND;
+
+// Build API instance
+const API = axios.create({ 
+  baseURL: `${backendUrl}/api`,
   withCredentials: true, 
-  timeout: 10000 // Increased timeout for production
+  timeout: 10000
 });
 
-(async () => {
-  // If running on localhost hostname, prefer local backend when reachable
-  try {
-    if (isLocalDevelopment) {
-      const useLocal = await testUrl(PREFERRED_LOCAL);
-      const chosen = useLocal ? PREFERRED_LOCAL : PROD_BACKEND;
-      API = axios.create({ baseURL: `${chosen}/api`, withCredentials: true, timeout: 10000 });
-      // Expose chosen backend for debugging
-      (window as any).__BACKEND__ = chosen;
-      console.log('🔧 DEV MODE: API using backend ->', chosen);
-    } else {
-      (window as any).__BACKEND__ = PROD_BACKEND;
-      console.log('🚀 PROD MODE: API using backend ->', PROD_BACKEND);
-    }
-  } catch (e) {
-    console.log('API: falling back to', PROD_BACKEND);
-  }
-})();
+// Log which backend is being used
+console.log(isLocalDevelopment ? '🔧 DEV MODE: Using localhost backend' : '🚀 PROD MODE: Using production backend');
+console.log('📍 Backend URL:', backendUrl);
 
 // Add response interceptor for debugging on localhost
 API.interceptors.response.use(
