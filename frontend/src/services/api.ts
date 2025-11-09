@@ -22,6 +22,24 @@ const API = axios.create({
 console.log(isLocalDevelopment ? '🔧 DEV MODE: Using localhost backend' : '🚀 PROD MODE: Using production backend');
 console.log('📍 Backend URL:', backendUrl);
 
+// Add request interceptor to include auth token
+API.interceptors.request.use(
+  (config) => {
+    // Get token from localStorage (check both possible keys)
+    const token = localStorage.getItem('streamflix_token') || localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      if (isLocalDevelopment) {
+        console.log('🔑 Adding auth token to request:', config.url);
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Add response interceptor for debugging on localhost
 API.interceptors.response.use(
   (response) => {
