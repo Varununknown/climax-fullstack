@@ -14,10 +14,8 @@ const contentRoutes = require('./routes/contentRoutes.cjs');
 const paymentRoutes = require('./routes/paymentRoutes.cjs');
 const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs'); // ✅ NEW
 const payuRoutes = require('./routes/payuRoutes.cjs'); // ✅ PayU Gateway
-
-// Backend routes (from backend folder)
-const participationRoutes = require('./backend/routes/participationRoutes.cjs'); // ✅ Fans Fest
-const quizRoutes = require('./backend/routes/quizRoutes.cjs'); // ✅ Quiz System
+const participationRoutes = require('./routes/participationRoutes.cjs'); // ✅ Fans Fest
+const quizRoutes = require('./routes/quizRoutes.cjs'); // ✅ Quiz System
 
 const app = express();
 
