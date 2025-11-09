@@ -191,7 +191,22 @@ export const FansFestManagement: React.FC = () => {
       }
 
       console.log('🎉 All questions saved successfully!');
-      setMessage({ type: 'success', text: '✅ All questions saved successfully!' });
+      
+      // Enable participation for this content
+      console.log('🔧 Enabling participation for content...');
+      try {
+        const settingsResponse = await API.post(`/participation/admin/settings/${selectedContentId}`, {
+          isPaid: false,
+          pricePerParticipation: 0,
+          isActive: true
+        });
+        console.log('✅ Participation enabled:', settingsResponse.data);
+      } catch (settingsErr) {
+        console.warn('⚠️ Failed to enable participation settings:', settingsErr);
+        // Don't fail the whole operation if settings update fails
+      }
+      
+      setMessage({ type: 'success', text: '✅ All questions saved and participation enabled!' });
       setTimeout(() => {
         setQuestions([]);
         setSelectedContentId('');
