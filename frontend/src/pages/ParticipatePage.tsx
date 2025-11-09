@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 
-// UPDATED: 2025-11-09 - Fans Fest Integration v2.0
+// UPDATED: 2025-11-09 - Fans Fest Integration v2.1 (Force rebuild)
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface Question {
