@@ -3,7 +3,7 @@ services:
     name: climax-fullstack
     runtime: node
     buildCommand: npm install
-    startCommand: node server.js
+    startCommand: node server.cjs
     envVars:
       - key: NODE_ENV
         value: production

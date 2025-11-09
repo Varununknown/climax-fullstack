@@ -15,6 +15,10 @@ const paymentRoutes = require('./routes/paymentRoutes.cjs');
 const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs'); // ✅ NEW
 const payuRoutes = require('./routes/payuRoutes.cjs'); // ✅ PayU Gateway
 
+// Backend routes (from backend folder)
+const participationRoutes = require('./backend/routes/participationRoutes.cjs'); // ✅ Fans Fest
+const quizRoutes = require('./backend/routes/quizRoutes.cjs'); // ✅ Quiz System
+
 const app = express();
 
 // =======================
@@ -352,6 +356,9 @@ app.use('/api/auth', googleAuthRoutes);  // <-- Add Google auth routes here
 app.use('/api/payments', paymentRoutes); // ✅ This now handles /api/payments/check properly
 app.use('/api/payment-settings', paymentSettingsRoutes); // ✅ NEW
 app.use('/api/payu', payuRoutes); // ✅ PayU Gateway
+app.use('/api/participation', participationRoutes); // ✅ Fans Fest - CRITICAL FIX
+app.use('/api/quiz', quizRoutes); // ✅ Quiz System
+console.log('✅ All routes registered including participation and quiz');
 
 // Video proxy endpoint for better loading performance
 app.get('/api/video/:id', async (req, res) => {
