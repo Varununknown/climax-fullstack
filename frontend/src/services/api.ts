@@ -8,8 +8,8 @@ const PREFERRED_LOCAL = 'http://localhost:5000';
 // Helper: test a URL quickly
 async function testUrl(url: string) {
   try {
-    const res = await axios.get(url + '/api/contents', { timeout: 1500 });
-    return Array.isArray(res.data);
+    const res = await axios.get(url + '/api/health', { timeout: 1500 });
+    return res.status === 200;
   } catch (e) {
     return false;
   }
