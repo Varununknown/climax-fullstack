@@ -153,9 +153,20 @@ export const FansFestManagement: React.FC = () => {
 
     setLoading(true);
     try {
+      console.log('💾 Starting to save questions...');
+      console.log('📝 Selected Content ID:', selectedContentId);
+      console.log('📋 Number of questions to save:', questions.length);
+      
       // Save each question
-      for (const question of questions) {
+      for (let i = 0; i < questions.length; i++) {
+        const question = questions[i];
         if (!question._id) {
+          console.log(`📤 Saving question ${i + 1}/${questions.length}:`, {
+            questionText: question.questionText,
+            optionsCount: question.options.length,
+            correctAnswer: question.correctAnswer
+          });
+
           const response = await API.post(
             `/participation/admin/questions/${selectedContentId}`,
             {
@@ -166,23 +177,35 @@ export const FansFestManagement: React.FC = () => {
             }
           );
 
+          console.log(`✅ Response for question ${i + 1}:`, response.data);
+
           const data = response.data;
           if (!data.success) {
-            setMessage({ type: 'error', text: `Failed to save question: ${data.message}` });
+            console.error(`❌ Failed to save question ${i + 1}:`, data.message);
+            setMessage({ type: 'error', text: `Failed to save question ${i + 1}: ${data.message}` });
             return;
           }
         }
       }
 
+      console.log('🎉 All questions saved successfully!');
       setMessage({ type: 'success', text: '✅ All questions saved successfully!' });
       setTimeout(() => {
         setQuestions([]);
         setSelectedContentId('');
         setContentTitle('');
       }, 1500);
-    } catch (err) {
-      console.error('Error saving questions:', err);
-      setMessage({ type: 'error', text: `Error: ${err instanceof Error ? err.message : 'Unknown error'}` });
+    } catch (err: any) {
+      console.error('❌ Error saving questions:', err);
+      console.error('❌ Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        statusText: err.response?.statusText
+      });
+      
+      const errorMessage = err.response?.data?.message || err.message || 'Unknown error';
+      setMessage({ type: 'error', text: `Error: ${errorMessage}` });
     } finally {
       setLoading(false);
     }
