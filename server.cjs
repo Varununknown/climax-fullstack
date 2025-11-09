@@ -108,9 +108,14 @@ app.get('/api/health', (req, res) => {
   
   res.json({
     status: 'healthy',
+    version: '2.0-participation-enabled', // Version identifier
     timestamp: new Date().toISOString(),
     googleConfigured,
     mongoConnected: mongoose.connection.readyState === 1,
+    routes: {
+      participation: 'enabled',
+      quiz: 'enabled'
+    },
     env: {
       googleClientId: process.env.GOOGLE_CLIENT_ID ? '✅ SET' : '❌ MISSING',
       googleSecret: process.env.GOOGLE_CLIENT_SECRET ? '✅ SET' : '❌ MISSING',
