@@ -6,6 +6,7 @@ import { CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 interface Question {
+  _id?: string; // Optional ID for participation questions
   questionIndex: number;
   questionText: string;
   options: Array<{ optionText: string }>;
@@ -49,17 +50,46 @@ export const ParticipatePage: React.FC = () => {
   const fetchQuiz = async () => {
     try {
       setLoading(true);
+      console.log('📥 Fetching Fans Fest questions for content:', contentId);
+      
+      // Try participation (Fans Fest) endpoint first
+      const participationResponse = await fetch(`${BACKEND_URL}/api/participation/user/${contentId}/questions`, {
+        credentials: 'include'
+      });
+      const participationData = await participationResponse.json();
+
+      if (participationData.success && participationData.data.questions.length > 0) {
+        console.log('✅ Loaded Fans Fest questions:', participationData.data.questions.length);
+        // Format participation data to match quiz format
+        setQuiz({
+          contentId: contentId!,
+          contentName: participationData.data.content.title,
+          isPaid: participationData.data.settings.isPaid || false,
+          questions: participationData.data.questions.map((q: any, idx: number) => ({
+            _id: q._id, // Include question ID for submission
+            questionIndex: idx,
+            questionText: q.questionText,
+            options: q.options.map((opt: string) => ({ optionText: opt }))
+          })),
+          totalQuestions: participationData.data.questions.length
+        });
+        return;
+      }
+
+      // Fallback to old quiz endpoint if no participation questions
       const response = await fetch(`${BACKEND_URL}/api/quiz/user/${contentId}`, {
         credentials: 'include'
       });
       const data = await response.json();
 
       if (data.success) {
+        console.log('✅ Loaded quiz questions:', data.questions?.length || 0);
         setQuiz(data);
       } else {
-        setMessage({ type: 'error', text: data.message || 'Quiz not found' });
+        setMessage({ type: 'error', text: 'No questions found for this content' });
       }
     } catch (err) {
+      console.error('❌ Error loading questions:', err);
       setMessage({ type: 'error', text: 'Error loading quiz' });
     } finally {
       setLoading(false);
@@ -82,6 +112,37 @@ export const ParticipatePage: React.FC = () => {
 
     setSubmitting(true);
     try {
+      console.log('📤 Submitting answers...');
+      
+      // Try participation (Fans Fest) endpoint first
+      const participationAnswers = quiz.questions.map((q, idx) => ({
+        questionId: q._id || idx, // Use question ID if available
+        selectedOption: answers[idx]
+      }));
+
+      const participationResponse = await fetch(`${BACKEND_URL}/api/participation/user/${contentId}/submit`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('streamflix_token') || localStorage.getItem('token')}`
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          answers: participationAnswers
+        })
+      });
+
+      const participationData = await participationResponse.json();
+
+      if (participationData.success) {
+        console.log('✅ Participation submitted successfully');
+        setResult(participationData);
+        setSubmitted(true);
+        setMessage({ type: 'success', text: '🎉 Participation submitted successfully!' });
+        return;
+      }
+
+      // Fallback to quiz endpoint if participation fails
       const formattedAnswers = quiz.questions.map((_, idx) => ({
         questionIndex: idx,
         selectedOption: answers[idx]
