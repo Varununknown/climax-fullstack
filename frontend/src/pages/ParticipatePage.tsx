@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
+import API from '../services/api';
 
-// UPDATED: 2025-11-09 - Fans Fest Integration v2.1 (Force rebuild)
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+// UPDATED: 2025-11-09 - Fans Fest Integration v2.2 (Use API service)
 
 interface Question {
   _id?: string; // Optional ID for participation questions
@@ -54,10 +54,8 @@ export const ParticipatePage: React.FC = () => {
       console.log('📥 Fetching Fans Fest questions for content:', contentId);
       
       // Try participation (Fans Fest) endpoint first
-      const participationResponse = await fetch(`${BACKEND_URL}/api/participation/user/${contentId}/questions`, {
-        credentials: 'include'
-      });
-      const participationData = await participationResponse.json();
+      const participationResponse = await API.get(`/participation/user/${contentId}/questions`);
+      const participationData = participationResponse.data;
 
       if (participationData.success && participationData.data.questions.length > 0) {
         console.log('✅ Loaded Fans Fest questions:', participationData.data.questions.length);
@@ -78,10 +76,8 @@ export const ParticipatePage: React.FC = () => {
       }
 
       // Fallback to old quiz endpoint if no participation questions
-      const response = await fetch(`${BACKEND_URL}/api/quiz/user/${contentId}`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const response = await API.get(`/quiz/user/${contentId}`);
+      const data = response.data;
 
       if (data.success) {
         console.log('✅ Loaded quiz questions:', data.questions?.length || 0);
@@ -121,19 +117,11 @@ export const ParticipatePage: React.FC = () => {
         selectedOption: answers[idx]
       }));
 
-      const participationResponse = await fetch(`${BACKEND_URL}/api/participation/user/${contentId}/submit`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('streamflix_token') || localStorage.getItem('token')}`
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          answers: participationAnswers
-        })
+      const participationResponse = await API.post(`/participation/user/${contentId}/submit`, {
+        answers: participationAnswers
       });
 
-      const participationData = await participationResponse.json();
+      const participationData = participationResponse.data;
 
       if (participationData.success) {
         console.log('✅ Participation submitted successfully');
@@ -149,20 +137,15 @@ export const ParticipatePage: React.FC = () => {
         selectedOption: answers[idx]
       }));
 
-      const response = await fetch(`${BACKEND_URL}/api/quiz/user/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          userId: user?.id,
-          contentId: contentId,
-          userEmail: user?.email,
-          userName: user?.name,
-          answers: formattedAnswers
-        })
+      const response = await API.post(`/quiz/user/submit`, {
+        userId: user?.id,
+        contentId: contentId,
+        userEmail: user?.email,
+        userName: user?.name,
+        answers: formattedAnswers
       });
 
-      const data = await response.json();
+      const data = response.data;
 
       if (data.success) {
         setResult(data);
