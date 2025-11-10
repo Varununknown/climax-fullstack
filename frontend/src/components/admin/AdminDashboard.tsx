@@ -9,6 +9,7 @@ import { PendingPayments } from './PendingPayments';
 import { ImageFixer } from './ImageFixer';
 import { FansFestManagement } from './FansFestManagement';
 import QuizResults from './QuizResults';
+import QuizEditor from './QuizEditor';
 
 export const AdminDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -35,6 +36,23 @@ export const AdminDashboard: React.FC = () => {
         );
       case 'quiz':
         return <FansFestManagement />;
+      case 'quiz-editor':
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {[
+                { id: '689dd061d104dc0916adbeac', title: 'Cheap Song Ui' },
+                { id: '689dd061d104dc0916adbeac', title: 'All Content (Default)' }
+              ].map((content) => (
+                <QuizEditor
+                  key={content.id}
+                  contentId={content.id}
+                  contentTitle={content.title}
+                />
+              ))}
+            </div>
+          </div>
+        );
       case 'quiz-results':
         return (
           <div className="space-y-6">
@@ -72,6 +90,7 @@ export const AdminDashboard: React.FC = () => {
               { id: 'payments', label: 'Payments' },
               { id: 'analytics', label: 'Analytics' },
               { id: 'quiz', label: 'Quiz Management' },
+              { id: 'quiz-editor', label: 'Quiz Editor' },
               { id: 'quiz-results', label: 'Quiz Results' }
             ].map((item) => (
               <button
