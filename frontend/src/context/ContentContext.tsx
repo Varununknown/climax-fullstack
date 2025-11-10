@@ -70,34 +70,75 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   const addContent = async (data: Omit<Content, '_id' | 'createdAt'>) => {
     try {
+      console.log('📝 ContentContext: Adding content...', data);
+      
+      // Validation
+      if (!data.title?.trim()) {
+        throw new Error('Title is required');
+      }
+      if (!data.language) {
+        throw new Error('Language is required');
+      }
+      if (!data.category) {
+        throw new Error('Category is required');
+      }
+      
       const res = await API.post('/contents', data);
+      console.log('✅ ContentContext: Content added successfully:', res.data);
       setContents((prev) => [res.data, ...prev]);
-    } catch (err) { console.error(err); }
+      return res.data;
+    } catch (err: any) {
+      console.error('❌ ContentContext: Error adding content:', err);
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to add content';
+      throw new Error(errorMsg);
+    }
   };
 
   const updateContent = async (id: string, contentData: Partial<Content>) => {
     try {
-      console.log('🔄 ContentContext: Updating content:', id, contentData);
+      console.log('🔄 ContentContext: Updating content:', id);
+      console.log('📊 Update payload:', contentData);
+      
+      // Validation
+      if (contentData.title !== undefined && !contentData.title?.trim()) {
+        throw new Error('Title cannot be empty');
+      }
+      if (contentData.language !== undefined && !contentData.language) {
+        throw new Error('Language is required');
+      }
+      if (contentData.category !== undefined && !contentData.category) {
+        throw new Error('Category is required');
+      }
+      
       const res = await API.put(`/contents/${id}`, contentData);
       console.log('✅ ContentContext: Content updated successfully:', res.data);
       setContents((prev) => prev.map(c => (c._id === id ? res.data : c)));
-      return res.data; // Return the updated content
+      return res.data;
     } catch (err: any) { 
       console.error('❌ ContentContext: Update failed:', err);
       console.error('❌ Error details:', {
         status: err.response?.status,
         statusText: err.response?.statusText,
-        data: err.response?.data
+        data: err.response?.data,
+        message: err.message
       });
-      throw err; // Re-throw so EditContentModal can handle it
+      
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to update content';
+      throw new Error(errorMsg);
     }
   };
 
   const deleteContent = async (id: string) => {
     try {
+      console.log('🗑️ ContentContext: Deleting content:', id);
       await API.delete(`/contents/${id}`);
+      console.log('✅ ContentContext: Content deleted successfully');
       setContents((prev) => prev.filter(c => c._id !== id));
-    } catch (err) { console.error(err); }
+    } catch (err: any) { 
+      console.error('❌ ContentContext: Delete failed:', err);
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to delete content';
+      throw new Error(errorMsg);
+    }
   };
 
   const getContentById = (id: string) => contents.find(c => c._id === id);

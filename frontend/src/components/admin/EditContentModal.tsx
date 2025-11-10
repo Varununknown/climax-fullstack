@@ -20,6 +20,8 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
 
   const [newGenre, setNewGenre] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   // Reset form data when content changes
   useEffect(() => {
@@ -33,6 +35,22 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    // Validation
+    if (!formData.title?.trim()) {
+      setError('Title is required');
+      return;
+    }
+    if (!formData.language) {
+      setError('Language selection is required');
+      return;
+    }
+    if (!formData.category) {
+      setError('Category is required');
+      return;
+    }
 
     try {
       setLoading(true);
@@ -49,7 +67,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
       
       if (!contentId) {
         console.error('❌ No valid content ID found!');
-        alert('❌ Cannot update: Content ID is missing');
+        setError('❌ Cannot update: Content ID is missing');
         return;
       }
       
@@ -66,16 +84,18 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
       // Use context updateContent instead of direct API call
       try {
         await updateContent(contentId, payload);
-        alert('✅ Content updated successfully!');
-        onSuccess();
-        onClose();
+        setSuccess('✅ Content updated successfully!');
+        setTimeout(() => {
+          onSuccess();
+          onClose();
+        }, 1500);
       } catch (error: any) {
         console.error('❌ Update failed in EditContentModal:', error);
         if (error.response?.status === 404) {
           const contentId = content._id || content.id;
-          alert(`❌ Content not found on server!\n\nThis content (ID: ${contentId}) exists locally but not on the production database.\n\nPossible solutions:\n1. Start local backend server\n2. Add this content to production database\n3. Use content that exists on production`);
+          setError(`❌ Content not found on server!\n\nThis content (ID: ${contentId}) exists locally but not on the production database.\n\nPossible solutions:\n1. Start local backend server\n2. Add this content to production database\n3. Use content that exists on production`);
         } else {
-          alert(`⚠️ Update failed: ${error.response?.status} ${error.response?.statusText}\nCheck console for details.`);
+          setError(`⚠️ Update failed: ${error.response?.status} ${error.response?.statusText}\nCheck console for details.`);
         }
       }
     } catch (error: any) {
@@ -89,9 +109,9 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
       
       if (error.response?.status === 404) {
         const contentId = content._id || content.id;
-        alert(`❌ Content not found on server!\n\nThis content (ID: ${contentId}) exists locally but not on the production database.\n\nPossible solutions:\n1. Start local backend server\n2. Add this content to production database\n3. Use content that exists on production`);
+        setError(`❌ Content not found on server!\n\nThis content (ID: ${contentId}) exists locally but not on the production database.\n\nPossible solutions:\n1. Start local backend server\n2. Add this content to production database\n3. Use content that exists on production`);
       } else {
-        alert(`⚠️ Update failed: ${error.response?.status} ${error.response?.statusText}\nCheck console for details.`);
+        setError(`⚠️ Update failed: ${error.response?.status} ${error.response?.statusText}\nCheck console for details.`);
       }
     } finally {
       setLoading(false);
@@ -101,7 +121,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
   const handleAddGenre = () => {
     const trimmed = newGenre.trim();
     if (trimmed && !formData.genre.includes(trimmed)) {
-      setFormData(prev => ({
+      setFormData((prev: any) => ({
         ...prev,
         genre: [...prev.genre, trimmed]
       }));
@@ -110,9 +130,9 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
   };
 
   const handleRemoveGenre = (genreToRemove: string) => {
-    setFormData(prev => ({
+    setFormData((prev: any) => ({
       ...prev,
-      genre: prev.genre.filter(g => g !== genreToRemove)
+      genre: prev.genre.filter((g: string) => g !== genreToRemove)
     }));
   };
 
@@ -134,6 +154,20 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Error Message */}
+          {error && (
+            <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded whitespace-pre-wrap text-sm">
+              {error}
+            </div>
+          )}
+          
+          {/* Success Message */}
+          {success && (
+            <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+              {success}
+            </div>
+          )}
+
           {/* Title + Type */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -141,7 +175,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                onChange={(e) => setFormData((prev: any) => ({ ...prev, title: e.target.value }))}
                 className="w-full bg-gray-800 text-white rounded px-3 py-2"
                 required
               />
@@ -150,7 +184,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
               <label className="block text-sm text-white mb-1">Type *</label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
+                onChange={(e) => setFormData((prev: any) => ({ ...prev, type: e.target.value as any }))}
                 className="w-full bg-gray-800 text-white rounded px-3 py-2"
                 required
               >
@@ -166,7 +200,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
             <label className="block text-sm text-white mb-1">Description *</label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, description: e.target.value }))}
               className="w-full bg-gray-800 text-white rounded px-3 py-2"
               rows={3}
               required
@@ -178,7 +212,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
             <label className="block text-sm text-white mb-1">Category *</label>
             <select
               value={formData.category}
-              onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, category: e.target.value }))}
               className="w-full bg-gray-800 text-white rounded px-3 py-2"
               required
             >
@@ -194,7 +228,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
             <label className="block text-sm text-white mb-1">Language *</label>
             <select
               value={formData.language || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, language: e.target.value }))}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, language: e.target.value }))}
               className="w-full bg-gray-800 text-white rounded px-3 py-2"
               required
             >
@@ -218,7 +252,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
             <input
               type="url"
               value={formData.thumbnail}
-              onChange={(e) => setFormData(prev => ({ ...prev, thumbnail: e.target.value }))}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, thumbnail: e.target.value }))}
               className="w-full bg-gray-800 text-white rounded px-3 py-2"
               required
             />
@@ -230,7 +264,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
             <input
               type="url"
               value={formData.videoUrl || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, videoUrl: e.target.value }))}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, videoUrl: e.target.value }))}
               className="w-full bg-gray-800 text-white rounded px-3 py-2"
               placeholder="Leave empty for upcoming content"
             />
@@ -245,7 +279,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
                 value={formData.duration ? formData.duration / 60 : ''}
                 onChange={(e) => {
                   const val = parseInt(e.target.value);
-                  setFormData(prev => ({ ...prev, duration: isNaN(val) ? 0 : val * 60 }));
+                  setFormData((prev: any) => ({ ...prev, duration: isNaN(val) ? 0 : val * 60 }));
                 }}
                 className="w-full bg-gray-800 text-white rounded px-3 py-2"
               />
@@ -257,7 +291,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
                 value={formData.climaxTimestamp ? parseInt(formData.climaxTimestamp) / 60 : ''}
                 onChange={(e) => {
                   const val = parseInt(e.target.value);
-                  setFormData(prev => ({ ...prev, climaxTimestamp: isNaN(val) ? '' : (val * 60).toString() }));
+                  setFormData((prev: any) => ({ ...prev, climaxTimestamp: isNaN(val) ? '' : (val * 60).toString() }));
                 }}
                 className="w-full bg-gray-800 text-white rounded px-3 py-2"
               />
@@ -267,7 +301,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
               <input
                 type="number"
                 value={formData.premiumPrice}
-                onChange={(e) => setFormData(prev => ({ ...prev, premiumPrice: parseInt(e.target.value) }))}
+                onChange={(e) => setFormData((prev: any) => ({ ...prev, premiumPrice: parseInt(e.target.value) }))}
                 className="w-full bg-gray-800 text-white rounded px-3 py-2"
               />
             </div>
@@ -282,7 +316,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
               min="0"
               max="5"
               value={formData.rating}
-              onChange={(e) => setFormData(prev => ({ ...prev, rating: parseFloat(e.target.value) }))}
+              onChange={(e) => setFormData((prev: any) => ({ ...prev, rating: parseFloat(e.target.value) }))}
               className="w-full bg-gray-800 text-white rounded px-3 py-2"
             />
           </div>
@@ -303,7 +337,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {formData.genre?.map((g) => (
+              {formData.genre?.map((g: string) => (
                 <span key={g} className="bg-gray-700 text-white px-3 py-1 rounded-full text-sm flex items-center">
                   {g}
                   <button onClick={() => handleRemoveGenre(g)} className="ml-2 text-red-400 hover:text-red-200">
