@@ -158,7 +158,7 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
     pdf.text('Participant Analytics Report', pageWidth / 2, 22, { align: 'center' });
     
     pdf.setFontSize(9);
-    pdf.text(`📺 ${contentTitle}`, pageWidth / 2, 28, { align: 'center' });
+    pdf.text(`Content: ${contentTitle}`, pageWidth / 2, 28, { align: 'center' });
 
     yPosition = 42;
 
@@ -171,10 +171,10 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
     pdf.setFont('Helvetica', 'normal');
     pdf.setFontSize(9);
     const now = new Date();
-    pdf.text(`📅 Generated: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`, 15, yPosition + 2);
-    pdf.text(`🕐 Time: ${now.toLocaleTimeString()}`, 15, yPosition + 6);
-    pdf.text(`👥 Total Participants: ${data.totalResponses}`, pageWidth / 2 + 10, yPosition + 2);
-    pdf.text(`⭐ Average Score: ${data.averageScore}`, pageWidth / 2 + 10, yPosition + 6);
+    pdf.text(`Generated: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`, 15, yPosition + 2);
+    pdf.text(`Time: ${now.toLocaleTimeString()}`, 15, yPosition + 6);
+    pdf.text(`Total Participants: ${data.totalResponses}`, pageWidth / 2 + 10, yPosition + 2);
+    pdf.text(`Average Score: ${data.averageScore}`, pageWidth / 2 + 10, yPosition + 6);
     
     yPosition += 18;
 
@@ -230,11 +230,11 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
     pdf.rect(col4, yPosition, col5 - col4, 8, 'F');
     pdf.rect(col5, yPosition, pageWidth - 15 - col5, 8, 'F');
 
-    pdf.text('👤 Name', col1 + 1, yPosition + 5);
-    pdf.text('📱 Phone', col2 + 1, yPosition + 5);
-    pdf.text('📅 Date/Time', col3 + 1, yPosition + 5);
-    pdf.text('✏️ Answer', col4 + 1, yPosition + 5);
-    pdf.text('⭐ Score', col5 + 1, yPosition + 5);
+    pdf.text('Name', col1 + 1, yPosition + 5);
+    pdf.text('Phone', col2 + 1, yPosition + 5);
+    pdf.text('Date/Time', col3 + 1, yPosition + 5);
+    pdf.text('Answer', col4 + 1, yPosition + 5);
+    pdf.text('Score', col5 + 1, yPosition + 5);
     yPosition += 8;
 
     // Table Rows with premium styling
