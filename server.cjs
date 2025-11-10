@@ -16,6 +16,7 @@ const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs'); // 
 const payuRoutes = require('./routes/payuRoutes.cjs'); // ✅ PayU Gateway
 const participationRoutes = require('./routes/participationRoutes.cjs'); // ✅ Fans Fest
 const quizRoutes = require('./routes/quizRoutes.cjs'); // ✅ Quiz System
+const simpleParticipationRoutes = require('./routes/simpleParticipation.cjs'); // ✅ SIMPLE FIX
 
 const app = express();
 
@@ -360,6 +361,7 @@ app.use('/api/payments', paymentRoutes); // ✅ This now handles /api/payments/c
 app.use('/api/payment-settings', paymentSettingsRoutes); // ✅ NEW
 app.use('/api/payu', payuRoutes); // ✅ PayU Gateway
 app.use('/api/participation', participationRoutes); // ✅ Fans Fest - CRITICAL FIX
+app.use('/api/participation/simple', simpleParticipationRoutes); // ✅ SIMPLE WORKING FIX
 app.use('/api/quiz', quizRoutes); // ✅ Quiz System
 console.log('✅ All routes registered including participation and quiz');
 

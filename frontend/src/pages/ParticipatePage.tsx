@@ -59,7 +59,7 @@ export const ParticipatePage: React.FC = () => {
       console.log('📥 Fetching Fans Fest questions for content:', contentId);
       
       // Try participation (Fans Fest) endpoint first
-      const participationResponse = await API.get(`/participation/user/${contentId}/questions`);
+      const participationResponse = await API.get(`/participation/simple/${contentId}/questions`);
       const participationData = participationResponse.data;
 
       console.log('📊 Participation response:', {
@@ -156,13 +156,13 @@ export const ParticipatePage: React.FC = () => {
       }));
 
       console.log('📦 Submission payload:', {
-        endpoint: `/participation/user/${contentId}/submit`,
+        endpoint: `/participation/simple/${contentId}/submit`,
         payload: { answers: participationAnswers },
         answersSelected: answers,
         questionsCount: quiz.questions.length
       });
 
-      const participationResponse = await API.post(`/participation/user/${contentId}/submit`, {
+      const participationResponse = await API.post(`/participation/simple/${contentId}/submit`, {
         answers: participationAnswers
       });
 
