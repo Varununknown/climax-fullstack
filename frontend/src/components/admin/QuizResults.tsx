@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import API from '../../services/api';
 import { RefreshCw, Download } from 'lucide-react';
 
@@ -29,11 +29,10 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'
 const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTitle }) => {
   const [data, setData] = useState<QuizResultsData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   const loadResults = async () => {
     setLoading(true);
-    setError('');
     
     try {
       const response = await API.get(`/quiz-system/admin/responses/${contentId}`);
@@ -41,8 +40,7 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
         setData(response.data.data);
       }
     } catch (err) {
-      setError('Failed to load quiz results');
-      console.error(err);
+      console.error('Failed to load quiz results:', err);
     }
     
     setLoading(false);
@@ -51,6 +49,17 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
   useEffect(() => {
     loadResults();
   }, [contentId]);
+
+  // Auto-refresh every 5 seconds
+  useEffect(() => {
+    if (!autoRefresh) return;
+    
+    const interval = setInterval(() => {
+      loadResults();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [contentId, autoRefresh]);
 
   if (loading) {
     return (
@@ -112,7 +121,7 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
         <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Quiz Results: {contentTitle}</h3>
         
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-4 gap-4 mb-4">
           <div className="bg-white rounded-lg p-4 border border-blue-100">
             <div className="text-sm text-gray-600">Total Responses</div>
             <div className="text-2xl font-bold text-blue-600">{data.totalResponses}</div>
@@ -125,9 +134,20 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
             onClick={loadResults}
             disabled={loading}
             className="bg-white rounded-lg p-4 border border-purple-100 hover:bg-purple-50 transition-colors cursor-pointer"
+            title="Manually refresh data"
           >
-            <div className="text-sm text-gray-600 mb-2">Refresh Data</div>
-            <RefreshCw size={20} className="text-purple-600" />
+            <div className="text-sm text-gray-600 mb-2">Refresh</div>
+            <RefreshCw size={20} className={`text-purple-600 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <button
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className={`bg-white rounded-lg p-4 border-2 transition-colors cursor-pointer ${
+              autoRefresh ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:bg-gray-50'
+            }`}
+            title={autoRefresh ? 'Auto-refresh: ON (every 5s)' : 'Auto-refresh: OFF'}
+          >
+            <div className="text-xs text-gray-600 mb-2">Auto</div>
+            <div className="text-xs font-bold">{autoRefresh ? '🟢 ON' : '⚪ OFF'}</div>
           </button>
         </div>
 
@@ -171,7 +191,7 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
                     fill="#8884d8"
                     dataKey="count"
                   >
-                    {answers.map((entry, index) => (
+                    {answers.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
