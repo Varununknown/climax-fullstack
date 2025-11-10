@@ -159,6 +159,10 @@ export const ContentDetailsPage: React.FC = () => {
                 <span className="font-semibold">Watch Now</span>
               </button>
 
+              <button onClick={handleParticipate} className="bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white rounded-full py-2 sm:py-3 px-3 sm:px-6 flex items-center gap-2 sm:gap-3 shadow-lg hover:scale-[1.01] transition-all border border-orange-400/30 text-xs sm:text-base font-medium">
+                <span className="font-semibold">Participate Now</span>
+              </button>
+
               <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all">
                 <Share size={16} className="sm:size-5" />
               </button>
@@ -210,53 +214,6 @@ export const ContentDetailsPage: React.FC = () => {
                     <div>
                       <span className="text-gray-400">Year:</span>
                       <span className="ml-2 text-white">{new Date().getFullYear()}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Events Section - Right Side */}
-              <div className="w-full lg:w-96 mt-4 lg:mt-0 flex-shrink-0">
-                <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Events</h3>
-                <div className="space-y-2 sm:space-y-3">
-                  {/* Example episode row - in your real data you would map episodes */}
-                  <div className="bg-gray-900/60 p-3 sm:p-4 rounded-lg">
-                    <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                      <div className="w-16 sm:w-20 h-10 sm:h-12 bg-gray-800 rounded overflow-hidden flex-shrink-0">
-                        <img src={content.thumbnail} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-xs sm:text-sm truncate">Event 1 · Skeletons in the Closet</div>
-                        <div className="text-xs text-gray-400">10 Oct 2025 · 42m</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={handleParticipate} className="flex-1 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all shadow-lg">
-                        Participate Now
-                      </button>
-                      <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 rounded-lg transition-all">
-                        <Share size={16} className="sm:size-5" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-900/60 p-3 sm:p-4 rounded-lg">
-                    <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                      <div className="w-16 sm:w-20 h-10 sm:h-12 bg-gray-800 rounded overflow-hidden flex-shrink-0">
-                        <img src={content.thumbnail} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-xs sm:text-sm truncate">Event 2 · Mystery Unfolds</div>
-                        <div className="text-xs text-gray-400">12 Oct 2025 · 38m</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={handleParticipate} className="flex-1 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all shadow-lg">
-                        Participate Now
-                      </button>
-                      <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 rounded-lg transition-all">
-                        <Share size={16} className="sm:size-5" />
-                      </button>
                     </div>
                   </div>
                 </div>
