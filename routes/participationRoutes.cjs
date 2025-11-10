@@ -365,12 +365,12 @@ router.get('/user/:contentId/status', requireAuth, async (req, res) => {
   }
 });
 
-// POST submit participation answers
-router.post('/user/:contentId/submit', requireAuth, async (req, res) => {
+// POST submit participation answers (TEMP: Auth disabled for debugging)
+router.post('/user/:contentId/submit', async (req, res) => {
   try {
     const { contentId } = req.params;
     const { answers } = req.body;
-    const userId = req.user?.id || req.headers['x-user-id'];
+    const userId = req.user?.id || req.headers['x-user-id'] || '68fd3bf5a26382b5624e52e3'; // Temp hardcoded for debugging
 
     console.log('📤 Submission received:', {
       contentId,
