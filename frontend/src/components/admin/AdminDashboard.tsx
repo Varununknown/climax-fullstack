@@ -7,7 +7,6 @@ import { Analytics } from './Analytics';
 import { PaymentSettings } from './PaymentSettings';
 import { PendingPayments } from './PendingPayments';
 import { ImageFixer } from './ImageFixer';
-import { FansFestManagement } from './FansFestManagement';
 import QuizResults from './QuizResults';
 import QuizEditor from './QuizEditor';
 
@@ -34,8 +33,6 @@ export const AdminDashboard: React.FC = () => {
             <PendingPayments />
           </div>
         );
-      case 'quiz':
-        return <FansFestManagement />;
       case 'quiz-editor':
         return <QuizEditor />;
       case 'quiz-results':
@@ -74,7 +71,6 @@ export const AdminDashboard: React.FC = () => {
               { id: 'users', label: 'Users' },
               { id: 'payments', label: 'Payments' },
               { id: 'analytics', label: 'Analytics' },
-              { id: 'quiz', label: 'Quiz Management' },
               { id: 'quiz-editor', label: 'Quiz Editor' },
               { id: 'quiz-results', label: 'Quiz Results' }
             ].map((item) => (

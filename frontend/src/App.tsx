@@ -9,6 +9,7 @@ import { AdminDashboard } from "./components/admin/AdminDashboard";
 import WatchPage from "./pages/WatchPage";
 import { ContentDetailsPage } from "./pages/ContentDetailsPage";
 import { ParticipatePage } from "./pages/ParticipatePage";
+import { QuizPage } from "./pages/QuizPage";
 
 // ✅ New placeholder pages for navigation
 import MoviesPage from "./components/user/MoviesPage";
@@ -60,7 +61,10 @@ const AppRoutes: React.FC = () => {
           {/* Content Details Page - shows before playing */}
           <Route path="/content/:id" element={<ContentDetailsPage />} />
 
-          {/* Participate Page - for quiz */}
+          {/* Quiz Page - for new quiz system */}
+          <Route path="/quiz/:contentId" element={<QuizPage />} />
+
+          {/* Participate Page - for old quiz (kept for backward compatibility) */}
           <Route path="/participate/:contentId" element={<ParticipatePage />} />
 
           {/* Watch page stays same */}

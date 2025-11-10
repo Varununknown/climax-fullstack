@@ -58,8 +58,8 @@ export const ContentDetailsPage: React.FC = () => {
   };
 
   const handleParticipate = () => {
-    // Navigate to Participate page with debug mode to see API response
-    navigate(`/participate/${id}?debug=true`);
+    // Navigate to new Quiz page with the new quiz system
+    navigate(`/quiz/${id}`);
   };
 
   const handleShare = async () => {
