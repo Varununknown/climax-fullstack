@@ -33,7 +33,7 @@ export const ParticipatePage: React.FC = () => {
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [result, setResult] = useState<any>(null);
   const [message, setMessage] = useState<{ type: string; text: string }>({ type: '', text: '' });
@@ -124,16 +124,23 @@ export const ParticipatePage: React.FC = () => {
     }
   };
 
-  const handleAnswerChange = (questionIndex: number, option: string) => {
+  const handleAnswerChange = (questionId: string, option: string) => {
+    console.log('📝 Answer changed:', questionId, option);
     setAnswers({
       ...answers,
-      [questionIndex]: option
+      [questionId]: option
     });
   };
 
   const handleSubmit = async () => {
     // Validate all questions are answered
-    if (!quiz || Object.keys(answers).length !== quiz.questions.length) {
+    if (!quiz) {
+      setMessage({ type: 'error', text: 'No quiz data available' });
+      return;
+    }
+
+    const unansweredQuestions = quiz.questions.filter(q => !answers[q._id || q.questionIndex]);
+    if (unansweredQuestions.length > 0) {
       setMessage({ type: 'error', text: 'Please answer all questions' });
       return;
     }
@@ -145,7 +152,7 @@ export const ParticipatePage: React.FC = () => {
       // Try participation (Fans Fest) endpoint first
       const participationAnswers = quiz.questions.map((q, idx) => ({
         questionId: q._id || idx, // Use question ID if available
-        selectedOption: answers[idx]
+        selectedOption: answers[q._id || idx]
       }));
 
       const participationResponse = await API.post(`/participation/user/${contentId}/submit`, {
@@ -163,9 +170,9 @@ export const ParticipatePage: React.FC = () => {
       }
 
       // Fallback to quiz endpoint if participation fails
-      const formattedAnswers = quiz.questions.map((_, idx) => ({
+      const formattedAnswers = quiz.questions.map((q, idx) => ({
         questionIndex: idx,
-        selectedOption: answers[idx]
+        selectedOption: answers[q._id || idx]
       }));
 
       const response = await API.post(`/quiz/user/submit`, {
@@ -356,10 +363,10 @@ export const ParticipatePage: React.FC = () => {
                 >
                   <input
                     type="radio"
-                    name={`question_${idx}`}
+                    name={`question_${question._id || idx}`}
                     value={option.optionText}
-                    checked={answers[idx] === option.optionText}
-                    onChange={e => handleAnswerChange(idx, e.target.value)}
+                    checked={answers[question._id || idx] === option.optionText}
+                    onChange={e => handleAnswerChange(question._id || idx.toString(), e.target.value)}
                     style={{ marginRight: '10px', cursor: 'pointer' }}
                   />
                   <span style={{ color: '#333' }}>{option.optionText}</span>
@@ -372,15 +379,15 @@ export const ParticipatePage: React.FC = () => {
 
       <button
         onClick={handleSubmit}
-        disabled={submitting || Object.keys(answers).length !== quiz.questions.length}
+        disabled={submitting || quiz.questions.some(q => !answers[q._id || q.questionIndex])}
         style={{
           width: '100%',
           padding: '15px',
-          backgroundColor: Object.keys(answers).length === quiz.questions.length ? '#4CAF50' : '#ccc',
+          backgroundColor: quiz.questions.every(q => answers[q._id || q.questionIndex]) ? '#4CAF50' : '#ccc',
           color: 'white',
           border: 'none',
           borderRadius: '4px',
-          cursor: Object.keys(answers).length === quiz.questions.length ? 'pointer' : 'not-allowed',
+          cursor: quiz.questions.every(q => answers[q._id || q.questionIndex]) ? 'pointer' : 'not-allowed',
           fontSize: '16px',
           fontWeight: 'bold',
           marginTop: '20px'
