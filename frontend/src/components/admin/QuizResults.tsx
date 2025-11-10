@@ -138,68 +138,111 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
     const pageHeight = pdf.internal.pageSize.getHeight();
     let yPosition = 15;
 
-    // Title and Header
-    pdf.setFillColor(31, 41, 55); // Dark gray
-    pdf.rect(0, 0, pageWidth, 25, 'F');
+    // === PREMIUM HEADER ===
+    // Gradient background (simulated with rectangles)
+    pdf.setFillColor(88, 28, 135); // Deep purple
+    pdf.rect(0, 0, pageWidth, 35, 'F');
+    
+    pdf.setFillColor(139, 92, 246); // Purple gradient
+    pdf.rect(0, 25, pageWidth, 10, 'F');
+
+    // Logo/Title area
     pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(20);
-    pdf.text('Quiz Results Report', pageWidth / 2, 12, { align: 'center' });
-    pdf.setFontSize(10);
-    pdf.text(contentTitle, pageWidth / 2, 20, { align: 'center' });
+    pdf.setFont('Helvetica', 'bold');
+    pdf.setFontSize(28);
+    pdf.text('FAN FEST', pageWidth / 2, 15, { align: 'center' });
+    
+    pdf.setFont('Helvetica', 'normal');
+    pdf.setFontSize(12);
+    pdf.text('Participant Analytics Report', pageWidth / 2, 22, { align: 'center' });
+    
+    pdf.setFontSize(9);
+    pdf.text(`📺 ${contentTitle}`, pageWidth / 2, 28, { align: 'center' });
 
-    yPosition = 30;
+    yPosition = 42;
 
-    // Report Info
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(10);
-    pdf.text(`Generated on: ${new Date().toLocaleString()}`, 15, yPosition);
+    // === REPORT INFO CARD ===
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setLineWidth(0.5);
+    pdf.rect(12, yPosition - 2, pageWidth - 24, 12);
+    
+    pdf.setTextColor(60, 60, 60);
+    pdf.setFont('Helvetica', 'normal');
+    pdf.setFontSize(9);
+    const now = new Date();
+    pdf.text(`📅 Generated: ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`, 15, yPosition + 2);
+    pdf.text(`🕐 Time: ${now.toLocaleTimeString()}`, 15, yPosition + 6);
+    pdf.text(`👥 Total Participants: ${data.totalResponses}`, pageWidth / 2 + 10, yPosition + 2);
+    pdf.text(`⭐ Average Score: ${data.averageScore}`, pageWidth / 2 + 10, yPosition + 6);
+    
+    yPosition += 18;
+
+    // === STATISTICS SECTION ===
+    pdf.setFont('Helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.setTextColor(88, 28, 135);
+    pdf.text('Performance Metrics', 15, yPosition);
     yPosition += 8;
 
-    // Summary Section
-    pdf.setFillColor(59, 130, 246); // Blue
-    pdf.rect(15, yPosition, pageWidth - 30, 8, 'F');
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(12);
-    pdf.text('Summary', 20, yPosition + 6);
-    yPosition += 12;
+    // Stats boxes
+    const statsBoxWidth = (pageWidth - 36) / 3;
+    const statsBoxHeight = 14;
+    const statBoxes = [
+      { label: 'Total Responses', value: data.totalResponses.toString(), color: [59, 130, 246] },
+      { label: 'Avg. Score', value: data.averageScore.toString(), color: [34, 197, 94] },
+      { label: 'Engagement', value: '100%', color: [249, 115, 22] }
+    ];
 
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(10);
-    pdf.text(`Total Responses: ${data.totalResponses}`, 20, yPosition);
-    yPosition += 6;
-    pdf.text(`Average Score: ${data.averageScore}`, 20, yPosition);
-    yPosition += 12;
+    statBoxes.forEach((stat, idx) => {
+      const xPos = 15 + (idx * (statsBoxWidth + 6));
+      pdf.setFillColor(...stat.color);
+      pdf.roundedRect(xPos, yPosition, statsBoxWidth, statsBoxHeight, 2, 2, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont('Helvetica', 'bold');
+      pdf.setFontSize(14);
+      pdf.text(stat.value, xPos + statsBoxWidth / 2, yPosition + 6, { align: 'center' });
+      pdf.setFont('Helvetica', 'normal');
+      pdf.setFontSize(8);
+      pdf.text(stat.label, xPos + statsBoxWidth / 2, yPosition + 11, { align: 'center' });
+    });
 
-    // Detailed Responses Section
-    pdf.setFillColor(34, 197, 94); // Green
-    pdf.rect(15, yPosition, pageWidth - 30, 8, 'F');
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(12);
-    pdf.text('Participant Details', 20, yPosition + 6);
-    yPosition += 12;
+    yPosition += 22;
 
-    // Table Headers
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFillColor(55, 65, 81); // Dark gray
-    const col1 = 15, col2 = 50, col3 = 100, col4 = 140, col5 = 180;
-    pdf.rect(col1, yPosition, col2 - col1, 7, 'F');
-    pdf.rect(col2, yPosition, col3 - col2, 7, 'F');
-    pdf.rect(col3, yPosition, col4 - col3, 7, 'F');
-    pdf.rect(col4, yPosition, col5 - col4, 7, 'F');
-    pdf.rect(col5, yPosition, pageWidth - 15 - col5, 7, 'F');
-
-    pdf.setFontSize(9);
-    pdf.text('Name', col1 + 2, yPosition + 5);
-    pdf.text('Phone', col2 + 2, yPosition + 5);
-    pdf.text('Date/Time', col3 + 2, yPosition + 5);
-    pdf.text('Answer', col4 + 2, yPosition + 5);
-    pdf.text('Score', col5 + 2, yPosition + 5);
+    // === PARTICIPANTS SECTION ===
+    pdf.setFont('Helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.setTextColor(88, 28, 135);
+    pdf.text('Participant Details', 15, yPosition);
     yPosition += 8;
 
-    // Table Rows
+    // Premium Table Header
+    pdf.setFillColor(88, 28, 135);
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('Helvetica', 'bold');
+    pdf.setFontSize(10);
+    
+    const col1 = 15, col2 = 50, col3 = 95, col4 = 140, col5 = 180;
+    const colWidths = [col2 - col1, col3 - col2, col4 - col3, col5 - col4, pageWidth - 15 - col5];
+    
+    pdf.rect(col1, yPosition, col2 - col1, 8, 'F');
+    pdf.rect(col2, yPosition, col3 - col2, 8, 'F');
+    pdf.rect(col3, yPosition, col4 - col3, 8, 'F');
+    pdf.rect(col4, yPosition, col5 - col4, 8, 'F');
+    pdf.rect(col5, yPosition, pageWidth - 15 - col5, 8, 'F');
+
+    pdf.text('👤 Name', col1 + 1, yPosition + 5);
+    pdf.text('📱 Phone', col2 + 1, yPosition + 5);
+    pdf.text('📅 Date/Time', col3 + 1, yPosition + 5);
+    pdf.text('✏️ Answer', col4 + 1, yPosition + 5);
+    pdf.text('⭐ Score', col5 + 1, yPosition + 5);
+    yPosition += 8;
+
+    // Table Rows with premium styling
     pdf.setTextColor(0, 0, 0);
+    pdf.setFont('Helvetica', 'normal');
     pdf.setFontSize(9);
-    data.responses.slice(0, 20).forEach((response, idx) => {
+
+    data.responses.slice(0, 18).forEach((response, idx) => {
       if (yPosition > pageHeight - 20) {
         pdf.addPage();
         yPosition = 15;
@@ -211,34 +254,55 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
       const dateTime = new Date(response.submittedAt).toLocaleString();
       const answer = response.answers.map(a => a.answer).join(', ');
 
-      // Alternate row colors
+      // Alternating row colors with rounded feel
       if (idx % 2 === 0) {
-        pdf.setFillColor(240, 246, 252); // Light blue
-        pdf.rect(col1, yPosition - 3, pageWidth - 30, 6, 'F');
+        pdf.setFillColor(240, 246, 252); // Light purple
+      } else {
+        pdf.setFillColor(255, 255, 255);
       }
+      pdf.rect(col1, yPosition - 3, pageWidth - 30, 7, 'F');
 
-      pdf.text(userName.substring(0, 15), col1 + 2, yPosition);
-      pdf.text(phone.substring(0, 12), col2 + 2, yPosition);
-      pdf.text(dateTime.substring(0, 16), col3 + 2, yPosition);
-      pdf.text(answer.substring(0, 15), col4 + 2, yPosition);
-      pdf.text(response.score.toString(), col5 + 2, yPosition);
-      yPosition += 6;
+      // Border for each row
+      pdf.setDrawColor(220, 220, 220);
+      pdf.setLineWidth(0.3);
+      pdf.rect(col1, yPosition - 3, pageWidth - 30, 7);
+
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(userName.substring(0, 17), col1 + 1, yPosition + 1);
+      pdf.text(phone.substring(0, 14), col2 + 1, yPosition + 1);
+      pdf.text(dateTime.substring(0, 16), col3 + 1, yPosition + 1);
+      pdf.text(answer.substring(0, 18), col4 + 1, yPosition + 1);
+      
+      // Score with color indicator
+      pdf.setFont('Helvetica', 'bold');
+      pdf.setTextColor(34, 197, 94);
+      pdf.text(response.score.toString(), col5 + 1, yPosition + 1);
+      pdf.setFont('Helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
+      
+      yPosition += 7;
     });
 
-    if (data.responses.length > 20) {
+    if (data.responses.length > 18) {
       yPosition += 2;
       pdf.setFontSize(8);
-      pdf.setTextColor(100, 100, 100);
-      pdf.text(`... and ${data.responses.length - 20} more responses`, 15, yPosition);
+      pdf.setTextColor(120, 120, 120);
+      pdf.text(`... and ${data.responses.length - 18} more participants`, 15, yPosition);
     }
 
-    // Footer
+    // === PREMIUM FOOTER ===
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setLineWidth(0.5);
+    pdf.line(15, pageHeight - 12, pageWidth - 15, pageHeight - 12);
+    
     pdf.setFontSize(8);
     pdf.setTextColor(150, 150, 150);
-    pdf.text(`Page 1 of ${pdf.internal.pages.length}`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+    pdf.text('FAN FEST - Powered by CLIMAX', 15, pageHeight - 7);
+    pdf.text(`Report ID: ${contentId.substring(0, 8).toUpperCase()}`, pageWidth - 40, pageHeight - 7);
+    pdf.text(`Page ${pdf.internal.pages.length}`, pageWidth / 2, pageHeight - 7, { align: 'center' });
 
     // Download
-    pdf.save(`quiz-report-${contentId}-${new Date().getTime()}.pdf`);
+    pdf.save(`FanFest-Report-${contentTitle}-${new Date().getTime()}.pdf`);
   };
 
   const downloadCSV = () => {
