@@ -7,12 +7,9 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
-// Route Imports
+// Route Imports - CLEAN VERSION
 const authRoutes = require('./routes/authRoutes.cjs');
 const googleAuthRoutes = require('./routes/googleAuth.cjs'); // Added Google Auth routes
-const contentRoutes = require('./routes/contentRoutes.cjs');
-const paymentRoutes = require('./routes/paymentRoutes.cjs');
-const authRoutes = require('./routes/authRoutes.cjs');
 const contentRoutes = require('./routes/contentRoutes.cjs');
 const paymentRoutes = require('./routes/paymentRoutes.cjs');
 const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs'); // ✅ NEW
