@@ -1,23 +1,33 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 const router = express.Router();
+
+// Helper function to create hash of questions (for versioning)
+const getQuizHash = (questions) => {
+  const quizString = JSON.stringify(questions);
+  return crypto.createHash('sha256').update(quizString).digest('hex').substring(0, 12);
+};
 
 // Simple Quiz Schema - completely separate from existing participation
 const SimpleQuizSchema = new mongoose.Schema({
   contentId: { type: String, required: true },
+  quizHash: { type: String, required: true }, // Version hash of the questions
   questions: [{ 
     question: String, 
     options: [String], 
     correctAnswer: String 
   }],
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 });
 
 const SimpleQuiz = mongoose.model('SimpleQuiz', SimpleQuizSchema);
 
-// User Response Schema
+// User Response Schema - NOW TRACKS QUIZ VERSION
 const SimpleQuizResponseSchema = new mongoose.Schema({
   contentId: String,
+  quizHash: String,  // NEW: Stores which version of quiz was answered
   userId: String,
   answers: [{ question: String, answer: String }],
   score: Number,
@@ -35,26 +45,30 @@ router.get('/:contentId', async (req, res) => {
     
     // If no quiz exists, create a sample one
     if (!quiz) {
+      const defaultQuestions = [
+        {
+          question: "What do you think about this content?",
+          options: ["Excellent", "Good", "Average", "Poor"],
+          correctAnswer: "Excellent"
+        },
+        {
+          question: "Would you recommend this to others?",
+          options: ["Definitely", "Maybe", "No"],
+          correctAnswer: "Definitely"
+        }
+      ];
+      
       quiz = new SimpleQuiz({
         contentId,
-        questions: [
-          {
-            question: "What do you think about this content?",
-            options: ["Excellent", "Good", "Average", "Poor"],
-            correctAnswer: "Excellent"
-          },
-          {
-            question: "Would you recommend this to others?",
-            options: ["Definitely", "Maybe", "No"],
-            correctAnswer: "Definitely"
-          }
-        ]
+        quizHash: getQuizHash(defaultQuestions),
+        questions: defaultQuestions
       });
       await quiz.save();
     }
     
     res.json({
       success: true,
+      quizHash: quiz.quizHash,  // Send hash to frontend
       quiz: quiz.questions.map(q => ({
         question: q.question,
         options: q.options,
@@ -64,33 +78,44 @@ router.get('/:contentId', async (req, res) => {
     
   } catch (error) {
     console.error('Quiz fetch error:', error);
+    const defaultQuestions = [
+      {
+        question: "Rate this content",
+        options: ["Amazing", "Good", "Okay"],
+        id: "default1"
+      }
+    ];
     res.json({
       success: true,
-      quiz: [
-        {
-          question: "Rate this content",
-          options: ["Amazing", "Good", "Okay"],
-          id: "default1"
-        }
-      ]
+      quizHash: getQuizHash([defaultQuestions[0]]),
+      quiz: defaultQuestions
     });
   }
 });
 
-// ✅ NEW: Check if user already answered for this content
+// ✅ NEW: Check if user already answered THIS VERSION of the quiz
 router.get('/check/:contentId/:userId', async (req, res) => {
   try {
     const { contentId, userId } = req.params;
     
+    // Get current quiz to check version
+    const currentQuiz = await SimpleQuiz.findOne({ contentId });
+    const currentHash = currentQuiz?.quizHash;
+    
+    console.log('🔍 Checking quiz response for:', { contentId, userId, currentHash });
+    
+    // Check if user answered THIS SPECIFIC VERSION of the quiz
     const existingResponse = await SimpleQuizResponse.findOne({
       contentId,
-      userId
+      userId,
+      quizHash: currentHash  // Only blocks if they answered THIS version
     });
     
     res.json({
       success: true,
       hasResponded: !!existingResponse,
-      response: existingResponse || null
+      response: existingResponse || null,
+      currentHash: currentHash
     });
   } catch (error) {
     console.error('Check response error:', error);
@@ -106,11 +131,12 @@ router.get('/check/:contentId/:userId', async (req, res) => {
 router.post('/:contentId/submit', async (req, res) => {
   try {
     const { contentId } = req.params;
-    const { answers, userId } = req.body;
+    const { answers, userId, quizHash } = req.body;
     
     console.log('📝 Quiz Submit Received:', {
       contentId,
       userId,
+      quizHash,
       answersCount: answers?.length,
       answers
     });
@@ -119,24 +145,30 @@ router.post('/:contentId/submit', async (req, res) => {
     
     console.log('👤 Using userId:', finalUserId);
     
-    // Check if user already answered for this content
+    // Get current quiz hash to verify user is submitting current version
+    const currentQuiz = await SimpleQuiz.findOne({ contentId });
+    const currentHash = currentQuiz?.quizHash || quizHash;
+    
+    // Check if user already answered THIS VERSION of the quiz
     const existingResponse = await SimpleQuizResponse.findOne({
       contentId,
-      userId: finalUserId
+      userId: finalUserId,
+      quizHash: currentHash  // Only block if they answered THIS version
     });
     
     if (existingResponse) {
-      console.log('⚠️ User already answered for this content');
+      console.log('⚠️ User already answered this version of the quiz');
       return res.json({
         success: false,
-        message: "You have already answered this quiz for this content!",
+        message: "You have already answered this version of the quiz!",
         alreadyAnswered: true
       });
     }
     
-    // Save the response
+    // Save the response WITH THE QUIZ VERSION HASH
     const response = new SimpleQuizResponse({
       contentId,
+      quizHash: currentHash,  // Store which version was answered
       userId: finalUserId,
       answers: answers || [],
       score: answers?.length || 1
@@ -147,6 +179,7 @@ router.post('/:contentId/submit', async (req, res) => {
     console.log('✅ Response saved successfully:', {
       id: response._id,
       contentId,
+      quizHash: currentHash,
       userId: finalUserId,
       answersCount: answers?.length
     });
@@ -174,13 +207,37 @@ router.post('/admin/:contentId', async (req, res) => {
     const { contentId } = req.params;
     const { questions } = req.body;
     
-    await SimpleQuiz.findOneAndUpdate(
+    // Create hash of new questions
+    const newHash = getQuizHash(questions);
+    
+    console.log('📝 Admin updating quiz:', {
+      contentId,
+      newHash,
+      questionsCount: questions?.length
+    });
+    
+    const updatedQuiz = await SimpleQuiz.findOneAndUpdate(
       { contentId },
-      { contentId, questions },
+      { 
+        contentId, 
+        questions,
+        quizHash: newHash,  // Update hash - enables users to re-answer
+        updatedAt: new Date()
+      },
       { upsert: true, new: true }
     );
     
-    res.json({ success: true, message: "Quiz updated successfully" });
+    console.log('✅ Quiz updated with new version:', {
+      contentId,
+      newHash,
+      previousResponses: 'Still accessible in history'
+    });
+    
+    res.json({ 
+      success: true, 
+      message: "Quiz updated successfully",
+      quizHash: newHash
+    });
   } catch (error) {
     console.error('Quiz admin error:', error);
     res.json({ success: true, message: "Quiz saved" });

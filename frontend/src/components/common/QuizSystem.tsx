@@ -16,6 +16,7 @@ interface QuizSystemProps {
 const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   const { user } = useAuth();
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [quizHash, setQuizHash] = useState<string>('');  // Track quiz version
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,30 +24,17 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   const [checkingStatus, setCheckingStatus] = useState(true);
 
   useEffect(() => {
-    checkIfUserAnswered();
     loadQuiz();
+    checkIfUserAnswered();
   }, [contentId, user]);
-
-  const checkIfUserAnswered = async () => {
-    if (!user?.id) return;
-    
-    try {
-      const response = await API.get(`/quiz-system/check/${contentId}/${user.id}`);
-      if (response.data.success) {
-        setUserHasAnswered(response.data.hasResponded);
-      }
-    } catch (error) {
-      console.log('Could not check response status');
-    } finally {
-      setCheckingStatus(false);
-    }
-  };
 
   const loadQuiz = async () => {
     try {
       const response = await API.get(`/quiz-system/${contentId}`);
       if (response.data.success) {
         setQuestions(response.data.quiz);
+        setQuizHash(response.data.quizHash);  // Store quiz version hash
+        console.log('📋 Quiz loaded with hash:', response.data.quizHash);
       }
     } catch (error) {
       console.log('Using default quiz');
@@ -55,6 +43,22 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         question: 'How would you rate this content?',
         options: ['Excellent', 'Good', 'Average']
       }]);
+    }
+  };
+
+  const checkIfUserAnswered = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const response = await API.get(`/quiz-system/check/${contentId}/${user.id}`);
+      if (response.data.success) {
+        setUserHasAnswered(response.data.hasResponded);
+        console.log('✓ User answered check - hasResponded:', response.data.hasResponded);
+      }
+    } catch (error) {
+      console.log('Could not check response status');
+    } finally {
+      setCheckingStatus(false);
     }
   };
 
@@ -73,7 +77,8 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
 
       const response = await API.post(`/quiz-system/${contentId}/submit`, { 
         answers: submissionData,
-        userId: user?.id
+        userId: user?.id,
+        quizHash: quizHash  // Send quiz version with submission
       });
       
       if (response.data.success) {
@@ -92,7 +97,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
     setLoading(false);
   };
 
-  // Show already answered message if user has responded
+  // Show already answered message if user has responded to this version
   if (userHasAnswered && !checkingStatus) {
     return (
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
@@ -101,7 +106,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
           Already Answered
         </h3>
         <p className="text-blue-600">
-          Thank you! You've already submitted your feedback for "{contentTitle}". You can only answer once per content.
+          Thank you! You've already submitted your feedback for "{contentTitle}". You can answer again if the quiz is updated with new questions.
         </p>
       </div>
     );
