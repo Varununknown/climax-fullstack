@@ -18,6 +18,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [quizHash, setQuizHash] = useState<string>('');  // Track quiz version
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
+  const [phoneNumber, setPhoneNumber] = useState<string>('');  // NEW: Phone number field
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userHasAnswered, setUserHasAnswered] = useState(false);
@@ -78,7 +79,9 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
       const response = await API.post(`/quiz-system/${contentId}/submit`, { 
         answers: submissionData,
         userId: user?.id,
-        quizHash: quizHash  // Send quiz version with submission
+        quizHash: quizHash,  // Send quiz version with submission
+        userName: user?.name || 'Anonymous',  // NEW: Send user name
+        phoneNumber: phoneNumber  // NEW: Send optional phone number
       });
       
       if (response.data.success) {
@@ -159,6 +162,21 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Phone Number Field - Optional for Winner Contact */}
+      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          📱 Phone Number <span className="text-gray-500">(Optional - for winner rewards)</span>
+        </label>
+        <input
+          type="tel"
+          placeholder="+91 9876543210"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <p className="text-xs text-gray-600 mt-1">We'll use this to contact you if you win! Your number is kept private.</p>
       </div>
 
       <button

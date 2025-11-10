@@ -24,11 +24,13 @@ const SimpleQuizSchema = new mongoose.Schema({
 
 const SimpleQuiz = mongoose.model('SimpleQuiz', SimpleQuizSchema);
 
-// User Response Schema - NOW TRACKS QUIZ VERSION
+// User Response Schema - NOW TRACKS QUIZ VERSION + USER INFO
 const SimpleQuizResponseSchema = new mongoose.Schema({
   contentId: String,
   quizHash: String,  // NEW: Stores which version of quiz was answered
   userId: String,
+  userName: String,  // NEW: User's name for admin visibility
+  phoneNumber: String,  // NEW: Optional phone number (for winners contact)
   answers: [{ question: String, answer: String }],
   score: Number,
   submittedAt: { type: Date, default: Date.now }
@@ -131,11 +133,13 @@ router.get('/check/:contentId/:userId', async (req, res) => {
 router.post('/:contentId/submit', async (req, res) => {
   try {
     const { contentId } = req.params;
-    const { answers, userId, quizHash } = req.body;
+    const { answers, userId, quizHash, userName, phoneNumber } = req.body;
     
     console.log('📝 Quiz Submit Received:', {
       contentId,
       userId,
+      userName,
+      phoneNumber,
       quizHash,
       answersCount: answers?.length,
       answers
@@ -143,7 +147,7 @@ router.post('/:contentId/submit', async (req, res) => {
     
     const finalUserId = userId || req.user?.id || 'anonymous';
     
-    console.log('👤 Using userId:', finalUserId);
+    console.log('👤 Using userId:', finalUserId, 'userName:', userName, 'phone:', phoneNumber);
     
     // Get current quiz hash to verify user is submitting current version
     const currentQuiz = await SimpleQuiz.findOne({ contentId });
@@ -165,11 +169,13 @@ router.post('/:contentId/submit', async (req, res) => {
       });
     }
     
-    // Save the response WITH THE QUIZ VERSION HASH
+    // Save the response WITH THE QUIZ VERSION HASH + USER INFO
     const response = new SimpleQuizResponse({
       contentId,
       quizHash: currentHash,  // Store which version was answered
       userId: finalUserId,
+      userName: userName || 'Anonymous',  // Store user name
+      phoneNumber: phoneNumber || '',  // Store optional phone number
       answers: answers || [],
       score: answers?.length || 1
     });
@@ -181,6 +187,8 @@ router.post('/:contentId/submit', async (req, res) => {
       contentId,
       quizHash: currentHash,
       userId: finalUserId,
+      userName: userName,
+      phoneNumber: phoneNumber,
       answersCount: answers?.length
     });
     

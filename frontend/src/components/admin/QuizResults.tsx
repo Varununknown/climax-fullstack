@@ -124,17 +124,42 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
   });
 
   const downloadCSV = () => {
-    let csv = `Question,Answer,Count\n`;
+    if (!data) return;
+
+    const timestamp = new Date().toLocaleString();
+    const reportTitle = `Quiz Results Report - ${contentTitle}`;
+    const reportDate = `Generated on: ${timestamp}`;
+    
+    // Create header with report info
+    let csv = `${reportTitle}\n${reportDate}\n\n`;
+    
+    // Summary statistics
+    csv += `Total Responses,${data.totalResponses}\n`;
+    csv += `Average Score,${data.averageScore}\n\n`;
+    
+    // Answer frequency summary
+    csv += `Question,Answer,Responses\n`;
     Object.entries(data.answerFrequency).forEach(([key, count]) => {
       const [question, answer] = key.split('||');
       csv += `"${question}","${answer}",${count}\n`;
     });
     
-    const blob = new Blob([csv], { type: 'text/csv' });
+    // Individual Responses with User Info
+    csv += `\n\nDetailed Responses\n`;
+    csv += `User Name,Phone Number,Date/Time,Answers,Score\n`;
+    data.responses.forEach((response) => {
+      const userName = (response as any).userName || 'Anonymous';
+      const phoneNumber = (response as any).phoneNumber || 'Not provided';
+      const dateTime = new Date(response.submittedAt).toLocaleString();
+      const answersText = response.answers.map(a => a.answer).join(' | ');
+      csv += `"${userName}","${phoneNumber}","${dateTime}","${answersText}",${response.score}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `quiz-results-${contentId}.csv`;
+    a.download = `quiz-results-${contentId}-${new Date().getTime()}.csv`;
     a.click();
   };
 
@@ -279,20 +304,28 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
         <h4 className="font-semibold text-gray-800 mb-4">👥 Individual Responses ({data.responses.length})</h4>
         
         <div className="space-y-3 max-h-96 overflow-y-auto">
-          {data.responses.slice(0, 10).map((response, idx) => (
-            <div key={response._id || idx} className="border border-gray-100 rounded p-3 bg-gray-50 hover:bg-gray-100 transition-colors">
-              <div className="flex justify-between items-start mb-2">
-                <div className="text-sm font-medium text-gray-700">User: {response.userId.substring(0, 8)}...</div>
-                <div className="text-xs text-gray-500">Score: {response.score}</div>
+          {data.responses.slice(0, 10).map((response, idx) => {
+            const resp = response as any;
+            return (
+              <div key={response._id || idx} className="border border-gray-100 rounded p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-gray-800">👤 {resp.userName || 'Anonymous'}</div>
+                    {resp.phoneNumber && (
+                      <div className="text-xs text-blue-600 font-medium">📱 {resp.phoneNumber}</div>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-500 font-semibold">Score: {response.score}</div>
+                </div>
+                <div className="text-xs text-gray-600 mb-2">
+                  📅 {new Date(response.submittedAt).toLocaleDateString()} 🕐 {new Date(response.submittedAt).toLocaleTimeString()}
+                </div>
+                <div className="mt-2 text-sm text-gray-700 bg-white p-2 rounded border border-gray-200">
+                  <strong>Answers:</strong> {response.answers.map(a => `${a.answer}`).join(', ')}
+                </div>
               </div>
-              <div className="text-xs text-gray-600">
-                {new Date(response.submittedAt).toLocaleDateString()} {new Date(response.submittedAt).toLocaleTimeString()}
-              </div>
-              <div className="mt-2 text-sm text-gray-700">
-                Answers: {response.answers.map(a => `${a.answer}`).join(', ')}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {data.responses.length > 10 && (
