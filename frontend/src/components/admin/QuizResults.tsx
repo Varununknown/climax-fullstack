@@ -379,6 +379,7 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
           <p className="text-gray-500 text-sm sm:text-base">{contentTitle}</p>
         </div>
       </div>
+      </div>
         
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Responses Card */}
@@ -619,6 +620,7 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
             ... and {data.responses.length - 10} more responses
           </div>
         )}
+        </div>
       </div>
     </div>
   );
