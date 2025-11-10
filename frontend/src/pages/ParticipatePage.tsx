@@ -57,7 +57,14 @@ export const ParticipatePage: React.FC = () => {
       const participationResponse = await API.get(`/participation/user/${contentId}/questions`);
       const participationData = participationResponse.data;
 
-      if (participationData.success && participationData.data.questions.length > 0) {
+      console.log('📊 Participation response:', {
+        success: participationData.success,
+        hasData: !!participationData.data,
+        questionsCount: participationData.data?.questions?.length,
+        fullResponse: participationData
+      });
+
+      if (participationData.success && participationData.data?.questions?.length > 0) {
         console.log('✅ Loaded Fans Fest questions:', participationData.data.questions.length);
         // Format participation data to match quiz format
         setQuiz({
@@ -75,6 +82,8 @@ export const ParticipatePage: React.FC = () => {
         return;
       }
 
+      console.log('⚠️ No participation questions, falling back to quiz endpoint');
+
       // Fallback to old quiz endpoint if no participation questions
       const response = await API.get(`/quiz/user/${contentId}`);
       const data = response.data;
@@ -83,10 +92,17 @@ export const ParticipatePage: React.FC = () => {
         console.log('✅ Loaded quiz questions:', data.questions?.length || 0);
         setQuiz(data);
       } else {
+        console.log('❌ Quiz endpoint returned no data');
         setMessage({ type: 'error', text: 'No questions found for this content' });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('❌ Error loading questions:', err);
+      console.error('❌ Error details:', {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data,
+        statusText: err.response?.statusText
+      });
       setMessage({ type: 'error', text: 'Error loading quiz' });
     } finally {
       setLoading(false);
