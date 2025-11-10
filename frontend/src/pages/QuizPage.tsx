@@ -86,121 +86,165 @@ export const QuizPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Clean Professional Background */}
-      <div className="fixed inset-0 bg-gray-50"></div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Premium Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"></div>
+      <div className="fixed inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
 
-      {/* Professional Header */}
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
+      {/* Premium Header */}
+      <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-slate-200/60 shadow-lg shadow-slate-200/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-3 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              className="group flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-all duration-300"
             >
-              <div className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors duration-200">
-                <ArrowLeft size={20} />
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-slate-200 to-slate-300 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
+                <div className="relative p-2 sm:p-3 rounded-lg bg-slate-100/80 group-hover:bg-slate-200/80 transition-all duration-300 backdrop-blur-sm">
+                  <ArrowLeft size={20} />
+                </div>
               </div>
-              <span className="font-medium">Back</span>
+              <span className="font-semibold hidden sm:block">Back</span>
             </button>
             
-            <div className="flex items-center gap-3">
-              <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                Premium Content
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full blur opacity-30"></div>
+                <div className="relative px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full text-xs sm:text-sm font-bold shadow-lg">
+                  Premium Experience
+                </div>
               </div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600">
                 Fan Fest
               </h1>
             </div>
-            <div className="w-20" />
+            <div className="w-16 sm:w-20" />
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-8">
-        {/* Hero Card */}
-        <div className="mb-8">
-          {/* Clean Professional Card */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 sm:p-8">
-              {/* Professional Header */}
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium mb-4">
-                  <span>📊</span>
-                  <span>Feedback Collection</span>
+      {/* Premium Main Content */}
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {/* Premium Hero Section */}
+        <div className="mb-8 sm:mb-12">
+          <div className="relative group">
+            {/* Premium Card Background */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-200 via-indigo-200 to-purple-200 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
+            
+            <div className="relative bg-white/80 border border-slate-200/60 rounded-2xl shadow-2xl backdrop-blur-sm p-6 sm:p-8 lg:p-12">
+              {/* Premium Header */}
+              <div className="text-center mb-8 sm:mb-12">
+                <div className="relative inline-block mb-6">
+                  <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl blur opacity-30"></div>
+                  <div className="relative inline-flex items-center gap-3 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl text-sm sm:text-base font-bold shadow-xl">
+                    <span>📊</span>
+                    <span>Premium Feedback Collection</span>
+                  </div>
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+                
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 mb-6">
                   {content.title}
                 </h2>
+                
                 {content.description && (
-                  <p className="text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                  <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
                     {content.description}
                   </p>
                 )}
               </div>
 
-              {/* Thumbnail */}
+              {/* Premium Thumbnail */}
               {content.thumbnail && (
-                <div className="mb-6 flex justify-center">
-                  <div className="w-full max-w-md">
-                    <div className="rounded-lg overflow-hidden border border-gray-200">
+                <div className="mb-8 sm:mb-12 flex justify-center">
+                  <div className="relative group/image">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-slate-200 to-slate-300 rounded-xl blur opacity-50 group-hover/image:opacity-75 transition-opacity duration-300"></div>
+                    <div className="relative w-full max-w-lg overflow-hidden rounded-xl border border-slate-200/60 shadow-xl">
                       <img
                         src={content.thumbnail}
                         alt={content.title}
-                        className="w-full h-auto object-cover"
+                        className="w-full h-auto object-cover group-hover/image:scale-105 transition-transform duration-500"
                       />
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Professional Features */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="text-2xl mb-2">🎬</div>
-                  <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">Exclusive</p>
-                  <p className="text-sm font-semibold text-gray-900">Content</p>
+              {/* Premium Features Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+                <div className="relative group/feature">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-400 to-pink-500 rounded-xl opacity-0 group-hover/feature:opacity-100 transition-opacity duration-300 blur-sm"></div>
+                  <div className="relative text-center p-4 sm:p-6 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200/60 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div className="text-3xl sm:text-4xl mb-3">🎬</div>
+                    <p className="text-xs sm:text-sm text-purple-600 uppercase tracking-wider font-bold mb-1">Exclusive</p>
+                    <p className="text-sm sm:text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-700 to-pink-700">Premium Content</p>
+                  </div>
                 </div>
-                <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="text-2xl mb-2">📊</div>
-                  <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">Feedback</p>
-                  <p className="text-sm font-semibold text-gray-900">Collection</p>
+                
+                <div className="relative group/feature">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-xl opacity-0 group-hover/feature:opacity-100 transition-opacity duration-300 blur-sm"></div>
+                  <div className="relative text-center p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/60 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div className="text-3xl sm:text-4xl mb-3">📊</div>
+                    <p className="text-xs sm:text-sm text-blue-600 uppercase tracking-wider font-bold mb-1">Advanced</p>
+                    <p className="text-sm sm:text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700">Analytics</p>
+                  </div>
                 </div>
-                <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="text-2xl mb-2">🏆</div>
-                  <p className="text-xs text-gray-600 uppercase tracking-wide font-medium">Rewards</p>
-                  <p className="text-sm font-semibold text-gray-900">Program</p>
+                
+                <div className="relative group/feature">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-xl opacity-0 group-hover/feature:opacity-100 transition-opacity duration-300 blur-sm"></div>
+                  <div className="relative text-center p-4 sm:p-6 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/60 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div className="text-3xl sm:text-4xl mb-3">🏆</div>
+                    <p className="text-xs sm:text-sm text-emerald-600 uppercase tracking-wider font-bold mb-1">Exclusive</p>
+                    <p className="text-sm sm:text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 to-teal-700">Rewards</p>
+                  </div>
                 </div>
               </div>
 
-              {/* Instructions Panel */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-xl flex-shrink-0">💡</span>
-                  <div>
-                    <h3 className="text-base font-semibold text-blue-900 mb-2">How to Participate</h3>
-                    <p className="text-sm text-blue-700 leading-relaxed">
-                      Answer all questions honestly to share your valuable feedback. Top participants with outstanding responses will receive exciting rewards. Enter your phone number to be eligible for prizes!
-                    </p>
+              {/* Premium Instructions */}
+              <div className="relative">
+                <div className="absolute -inset-1 bg-gradient-to-r from-amber-200 via-orange-200 to-red-200 rounded-xl blur opacity-30"></div>
+                <div className="relative bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 border border-amber-200/60 rounded-xl p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-xl text-white">💡</span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-700 to-orange-700 mb-3">
+                        Premium Participation Guidelines
+                      </h3>
+                      <p className="text-sm sm:text-base text-amber-700 leading-relaxed">
+                        Provide authentic, detailed feedback to maximize your impact on our premium content ecosystem. 
+                        Outstanding participants will be selected for exclusive rewards and early access to new features. 
+                        Include your contact information to join our VIP community!
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
         </div>
 
-        {/* Professional Form Card */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 sm:p-8">
+        {/* Premium Quiz Container */}
+        <div className="relative">
           <QuizSystem 
             contentId={contentId!} 
             contentTitle={content.title}
           />
         </div>
 
-        {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">
-            Powered by <span className="font-semibold text-gray-700">CLIMAX</span> Fan Fest
-          </p>
+        {/* Premium Footer */}
+        <div className="mt-12 sm:mt-16 text-center">
+          <div className="relative inline-block">
+            <div className="absolute -inset-2 bg-gradient-to-r from-slate-200 to-slate-300 rounded-lg blur opacity-30"></div>
+            <div className="relative px-6 py-3 bg-white/80 border border-slate-200/60 rounded-lg backdrop-blur-sm">
+              <p className="text-sm sm:text-base text-slate-500">
+                Powered by <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-600">CLIMAX</span> Premium Experience
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
