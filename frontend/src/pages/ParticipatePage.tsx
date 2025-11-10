@@ -155,6 +155,13 @@ export const ParticipatePage: React.FC = () => {
         selectedOption: answers[q._id || idx]
       }));
 
+      console.log('📦 Submission payload:', {
+        endpoint: `/participation/user/${contentId}/submit`,
+        payload: { answers: participationAnswers },
+        answersSelected: answers,
+        questionsCount: quiz.questions.length
+      });
+
       const participationResponse = await API.post(`/participation/user/${contentId}/submit`, {
         answers: participationAnswers
       });
