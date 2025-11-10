@@ -171,11 +171,13 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         </label>
         <input
           type="text"
-          placeholder="+91 9876543210"
-          inputMode="numeric"
+          placeholder="e.g., +91 9876543210 or 9876543210"
           value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={(e) => {
+            console.log('Phone input changed:', e.target.value);
+            setPhoneNumber(e.target.value);
+          }}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
         />
         <p className="text-xs text-gray-600 mt-1">We'll use this to contact you if you win! Your number is kept private.</p>
       </div>
