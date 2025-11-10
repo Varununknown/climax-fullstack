@@ -77,16 +77,57 @@ router.get('/:contentId', async (req, res) => {
   }
 });
 
+// ✅ NEW: Check if user already answered for this content
+router.get('/check/:contentId/:userId', async (req, res) => {
+  try {
+    const { contentId, userId } = req.params;
+    
+    const existingResponse = await SimpleQuizResponse.findOne({
+      contentId,
+      userId
+    });
+    
+    res.json({
+      success: true,
+      hasResponded: !!existingResponse,
+      response: existingResponse || null
+    });
+  } catch (error) {
+    console.error('Check response error:', error);
+    res.json({
+      success: true,
+      hasResponded: false,
+      response: null
+    });
+  }
+});
+
 // POST quiz response
 router.post('/:contentId/submit', async (req, res) => {
   try {
     const { contentId } = req.params;
-    const { answers } = req.body;
+    const { answers, userId } = req.body;
     
-    // Always save the response
+    const finalUserId = userId || req.user?.id || 'anonymous';
+    
+    // Check if user already answered for this content
+    const existingResponse = await SimpleQuizResponse.findOne({
+      contentId,
+      userId: finalUserId
+    });
+    
+    if (existingResponse) {
+      return res.json({
+        success: false,
+        message: "You have already answered this quiz for this content!",
+        alreadyAnswered: true
+      });
+    }
+    
+    // Save the response
     const response = new SimpleQuizResponse({
       contentId,
-      userId: req.user?.id || 'anonymous',
+      userId: finalUserId,
       answers: answers || [],
       score: answers?.length || 1
     });
@@ -96,7 +137,8 @@ router.post('/:contentId/submit', async (req, res) => {
     res.json({
       success: true,
       message: "Thank you for your feedback!",
-      score: answers?.length || 1
+      score: answers?.length || 1,
+      alreadyAnswered: false
     });
     
   } catch (error) {

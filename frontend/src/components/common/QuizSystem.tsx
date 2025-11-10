@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 interface QuizQuestion {
   id: string;
@@ -13,14 +14,33 @@ interface QuizSystemProps {
 }
 
 const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
+  const { user } = useAuth();
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [userHasAnswered, setUserHasAnswered] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(true);
 
   useEffect(() => {
+    checkIfUserAnswered();
     loadQuiz();
-  }, [contentId]);
+  }, [contentId, user]);
+
+  const checkIfUserAnswered = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const response = await API.get(`/quiz-system/check/${contentId}/${user.id}`);
+      if (response.data.success) {
+        setUserHasAnswered(response.data.hasResponded);
+      }
+    } catch (error) {
+      console.log('Could not check response status');
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
 
   const loadQuiz = async () => {
     try {
@@ -51,18 +71,41 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         answer: answers[questionId]
       }));
 
-      await API.post(`/quiz-system/${contentId}/submit`, { 
-        answers: submissionData 
+      const response = await API.post(`/quiz-system/${contentId}/submit`, { 
+        answers: submissionData,
+        userId: user?.id
       });
       
-      setSubmitted(true);
+      if (response.data.success) {
+        setSubmitted(true);
+        setUserHasAnswered(true);
+      } else if (response.data.alreadyAnswered) {
+        setUserHasAnswered(true);
+        setSubmitted(true);
+      }
     } catch (error) {
       // Always show success to user
       setSubmitted(true);
+      setUserHasAnswered(true);
     }
     
     setLoading(false);
   };
+
+  // Show already answered message if user has responded
+  if (userHasAnswered && !checkingStatus) {
+    return (
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+        <div className="text-blue-600 text-2xl mb-2">✓</div>
+        <h3 className="text-lg font-semibold text-blue-800 mb-2">
+          Already Answered
+        </h3>
+        <p className="text-blue-600">
+          Thank you! You've already submitted your feedback for "{contentTitle}". You can only answer once per content.
+        </p>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
