@@ -57,8 +57,8 @@ export const ContentDetailsPage: React.FC = () => {
   };
 
   const handleParticipate = () => {
-    // Navigate to Fans Fest page - beautiful quiz experience
-    navigate(`/fansfest/${id}`);
+    // Navigate to Participate page with debug mode to see API response
+    navigate(`/participate/${id}?debug=true`);
   };
 
   const handleShare = async () => {

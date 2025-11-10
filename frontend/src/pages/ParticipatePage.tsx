@@ -25,6 +25,10 @@ export const ParticipatePage: React.FC = () => {
   const { contentId } = useParams<{ contentId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  
+  // Check for debug mode
+  const searchParams = new URLSearchParams(window.location.search);
+  const isDebugMode = searchParams.get('debug') === 'true';
 
   const [quiz, setQuiz] = useState<QuizData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -33,6 +37,7 @@ export const ParticipatePage: React.FC = () => {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [result, setResult] = useState<any>(null);
   const [message, setMessage] = useState<{ type: string; text: string }>({ type: '', text: '' });
+  const [debugData, setDebugData] = useState<any>(null);
 
   useEffect(() => {
     if (!user) {
@@ -63,6 +68,16 @@ export const ParticipatePage: React.FC = () => {
         questionsCount: participationData.data?.questions?.length,
         fullResponse: participationData
       });
+
+      // Store debug data
+      if (isDebugMode) {
+        setDebugData({
+          apiResponse: participationData,
+          timestamp: new Date().toISOString(),
+          contentId,
+          userInfo: user
+        });
+      }
 
       if (participationData.success && participationData.data?.questions?.length > 0) {
         console.log('✅ Loaded Fans Fest questions:', participationData.data.questions.length);
@@ -377,6 +392,30 @@ export const ParticipatePage: React.FC = () => {
       <p style={{ textAlign: 'center', color: '#999', marginTop: '15px', fontSize: '14px' }}>
         {Object.keys(answers).length}/{quiz.questions.length} questions answered
       </p>
+
+      {/* Debug Mode Display */}
+      {isDebugMode && debugData && (
+        <div style={{ 
+          marginTop: '30px', 
+          padding: '20px', 
+          backgroundColor: '#1a1a1a', 
+          border: '2px solid #00ff00', 
+          borderRadius: '8px',
+          color: '#00ff00',
+          fontFamily: 'monospace'
+        }}>
+          <h3 style={{ color: '#00ff00', marginBottom: '15px' }}>🐛 DEBUG MODE - API Response</h3>
+          <pre style={{ 
+            whiteSpace: 'pre-wrap', 
+            wordBreak: 'break-word',
+            fontSize: '12px',
+            maxHeight: '400px',
+            overflow: 'auto'
+          }}>
+            {JSON.stringify(debugData, null, 2)}
+          </pre>
+        </div>
+      )}
     </div>
   );
 };
