@@ -49,15 +49,15 @@ export const QuizPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center bg-white/10 backdrop-blur-2xl border border-white/20 rounded-2xl p-8">
           <div className="mb-6">
-            <div className="w-16 h-16 mx-auto border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            <div className="w-16 h-16 mx-auto border-4 border-white/30 border-t-blue-400 rounded-full animate-spin"></div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl font-bold text-white mb-2">
             Loading Fan Fest
           </h2>
-          <p className="text-gray-600">Preparing your experience...</p>
+          <p className="text-slate-300">Preparing your experience...</p>
         </div>
       </div>
     );
@@ -65,18 +65,20 @@ export const QuizPage: React.FC = () => {
 
   if (!content) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md px-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="text-center max-w-md px-6 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-2xl p-8">
           <div className="mb-6">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100">
-              <span className="text-3xl">❌</span>
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-500/20 border border-red-400/30">
+              <svg className="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
+              </svg>
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Content Not Found</h2>
-          <p className="text-gray-600 mb-8">The requested Fan Fest content could not be located.</p>
+          <h2 className="text-2xl font-bold text-white mb-4">Content Not Found</h2>
+          <p className="text-slate-300 mb-8">The requested Fan Fest content could not be located.</p>
           <button
             onClick={() => navigate('/')}
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
+            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 border border-white/20 backdrop-blur-sm"
           >
             Return Home
           </button>
@@ -87,21 +89,23 @@ export const QuizPage: React.FC = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Premium Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"></div>
-      <div className="fixed inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+      {/* Professional Gradient Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"></div>
+      <div className="fixed inset-0 bg-gradient-to-r from-transparent via-slate-800/20 to-transparent"></div>
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.15),transparent_50%)]"></div>
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(79,70,229,0.15),transparent_50%)]"></div>
 
-      {/* Premium Header */}
-      <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-slate-200/60 shadow-lg shadow-slate-200/50">
+      {/* Professional Glass Header */}
+      <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/10 border-b border-white/20 shadow-2xl">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(-1)}
-              className="group flex items-center gap-3 text-slate-600 hover:text-slate-900 transition-all duration-300"
+              className="group flex items-center gap-3 text-slate-300 hover:text-white transition-all duration-300"
             >
               <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-slate-200 to-slate-300 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
-                <div className="relative p-2 sm:p-3 rounded-lg bg-slate-100/80 group-hover:bg-slate-200/80 transition-all duration-300 backdrop-blur-sm">
+                <div className="absolute -inset-1 bg-gradient-to-r from-white/10 to-white/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
+                <div className="relative p-2 sm:p-3 rounded-lg bg-white/10 group-hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/20">
                   <ArrowLeft size={20} />
                 </div>
               </div>
@@ -110,12 +114,12 @@ export const QuizPage: React.FC = () => {
             
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full blur opacity-30"></div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full blur opacity-40"></div>
                 <div className="relative px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full text-xs sm:text-sm font-bold shadow-lg">
                   Premium Experience
                 </div>
               </div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
                 Fan Fest
               </h1>
             </div>
