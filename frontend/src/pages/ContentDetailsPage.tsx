@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Plus, Share, Heart, Download } from 'lucide-react';
 import API from '../services/api';
 import { Content } from '../types';
+import QuizSystem from '../components/common/QuizSystem';
 
 /*
   High-fidelity OTT-style Content Details Page
@@ -297,6 +298,10 @@ export const ContentDetailsPage: React.FC = () => {
             </div>
           )}
 
+          {/* NEW INDEPENDENT QUIZ SYSTEM */}
+          <div className="mt-8">
+            <QuizSystem contentId={content._id} contentTitle={content.title} />
+          </div>
 
         </div>
       </div>

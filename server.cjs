@@ -17,6 +17,11 @@ const payuRoutes = require('./routes/payuRoutes.cjs'); // ✅ PayU Gateway
 const participationRoutes = require('./routes/participationRoutes.cjs'); // ✅ Fans Fest
 const quizRoutes = require('./routes/quizRoutes.cjs'); // ✅ Quiz System
 const simpleParticipationRoutes = require('./routes/simpleParticipation.cjs'); // ✅ SIMPLE FIX
+const quizSystemRoutes = require('./routes/quizSystemRoutes.cjs'); // ✅ NEW QUIZ SYSTEM
+const authRoutes = require('./routes/authRoutes.cjs');
+const contentRoutes = require('./routes/contentRoutes.cjs');
+const paymentRoutes = require('./routes/paymentRoutes.cjs');
+const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs');
 
 const app = express();
 
@@ -363,7 +368,8 @@ app.use('/api/payu', payuRoutes); // ✅ PayU Gateway
 app.use('/api/participation', participationRoutes); // ✅ Fans Fest - CRITICAL FIX
 app.use('/api/participation/simple', simpleParticipationRoutes); // ✅ SIMPLE WORKING FIX
 app.use('/api/quiz', quizRoutes); // ✅ Quiz System
-console.log('✅ All routes registered including participation and quiz');
+app.use('/api/quiz-system', quizSystemRoutes); // ✅ NEW INDEPENDENT QUIZ SYSTEM
+console.log('✅ All routes registered including participation, quiz, and quiz-system');
 
 // Video proxy endpoint for better loading performance
 app.get('/api/video/:id', async (req, res) => {
