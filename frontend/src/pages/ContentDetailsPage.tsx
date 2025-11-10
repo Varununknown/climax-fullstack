@@ -3,13 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Plus, Share } from 'lucide-react';
 import API from '../services/api';
 import { Content } from '../types';
-import QuizSystem from '../components/common/QuizSystem';
 
 /*
   High-fidelity OTT-style Content Details Page
   - Matches screenshots: large poster, pill 'Watch First Episode', meta row, tabs, season list
   - Keeps navigation to `/watch/:id` untouched
   - Lightweight placeholders for cast/gallery/videos
+  - Quiz is accessible via "Participate Now" button only
 */
 
 export const ContentDetailsPage: React.FC = () => {
@@ -297,11 +297,6 @@ export const ContentDetailsPage: React.FC = () => {
               </div>
             </div>
           )}
-
-          {/* NEW INDEPENDENT QUIZ SYSTEM */}
-          <div className="mt-8">
-            <QuizSystem contentId={content._id} contentTitle={content.title} />
-          </div>
 
         </div>
       </div>
