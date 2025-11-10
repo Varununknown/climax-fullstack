@@ -170,8 +170,9 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
           📱 Phone Number <span className="text-gray-500">(Optional - for winner rewards)</span>
         </label>
         <input
-          type="tel"
+          type="text"
           placeholder="+91 9876543210"
+          inputMode="numeric"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
