@@ -116,15 +116,20 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
       return res.data;
     } catch (err: any) { 
       console.error('❌ ContentContext: Update failed:', err);
+      const status = err?.response?.status;
+      const statusText = err?.response?.statusText;
+      const backendError = err?.response?.data?.error;
+      const errorMessage = err?.message || 'Failed to update content';
+      
       console.error('❌ Error details:', {
-        status: err.response?.status,
-        statusText: err.response?.statusText,
-        data: err.response?.data,
-        message: err.message
+        status: status,
+        statusText: statusText,
+        data: backendError,
+        message: errorMessage
       });
       
-      const errorMsg = err.response?.data?.error || err.message || 'Failed to update content';
-      throw new Error(errorMsg);
+      // Re-throw with original error object so caller can access response
+      throw err;
     }
   };
 

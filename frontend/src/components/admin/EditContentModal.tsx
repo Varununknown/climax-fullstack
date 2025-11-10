@@ -92,27 +92,67 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
         }, 1500);
       } catch (error: any) {
         console.error('❌ Update failed in EditContentModal:', error);
-        if (error.response?.status === 404) {
+        
+        // Extract error details safely
+        const status = error?.response?.status;
+        const statusText = error?.response?.statusText;
+        const errorMsg = error?.message || 'Unknown error';
+        const backendError = error?.response?.data?.error;
+        
+        console.error('Detailed error info:', { 
+          status, 
+          statusText, 
+          errorMsg, 
+          backendError,
+          hasResponse: !!error?.response
+        });
+        
+        // Build user-friendly error message
+        if (status === 404) {
           const contentId = content._id || content.id;
           setError(`❌ Content not found on server!\n\nThis content (ID: ${contentId}) exists locally but not on the production database.\n\nPossible solutions:\n1. Start local backend server\n2. Add this content to production database\n3. Use content that exists on production`);
+        } else if (status === 401 || status === 403) {
+          setError(`❌ Access Denied\n\nYou don't have permission to update this content. Please check your authentication and try again.`);
+        } else if (status >= 400 && status < 500) {
+          setError(`⚠️ Client Error (${status})\n\n${backendError || errorMsg}\n\nCheck console for details.`);
+        } else if (status >= 500) {
+          setError(`⚠️ Server Error (${status})\n\nThe server encountered an error. Please try again later.`);
+        } else if (errorMsg.includes('Network') || errorMsg.includes('timeout')) {
+          setError(`⚠️ Network Error\n\nCannot reach the server. Please check:\n1. Internet connection\n2. Backend server is running\n3. Backend URL is correct`);
         } else {
-          setError(`⚠️ Update failed: ${error.response?.status} ${error.response?.statusText}\nCheck console for details.`);
+          setError(`⚠️ Update Failed\n\n${backendError || errorMsg}\n\nCheck console for more details.`);
         }
       }
     } catch (error: any) {
-      console.error('❌ Update content failed:', error);
-      console.error('❌ Error details:', {
-        message: error.message,
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data
+      console.error('❌ Update content failed (outer catch):', error);
+      
+      const status = error?.response?.status;
+      const statusText = error?.response?.statusText;
+      const errorMsg = error?.message || 'Unknown error';
+      const backendError = error?.response?.data?.error;
+      
+      console.error('Outer catch - Error details:', {
+        message: errorMsg,
+        status: status,
+        statusText: statusText,
+        data: backendError,
+        hasResponse: !!error?.response
       });
       
-      if (error.response?.status === 404) {
+      // Build user-friendly error message
+      if (status === 404) {
         const contentId = content._id || content.id;
         setError(`❌ Content not found on server!\n\nThis content (ID: ${contentId}) exists locally but not on the production database.\n\nPossible solutions:\n1. Start local backend server\n2. Add this content to production database\n3. Use content that exists on production`);
+      } else if (status === 401 || status === 403) {
+        setError(`❌ Access Denied\n\nYou don't have permission to update this content. Please check your authentication and try again.`);
+      } else if (status >= 400 && status < 500) {
+        setError(`⚠️ Client Error (${status})\n\n${backendError || errorMsg}\n\nCheck console for details.`);
+      } else if (status >= 500) {
+        setError(`⚠️ Server Error (${status})\n\nThe server encountered an error. Please try again later.`);
+      } else if (errorMsg.includes('Network') || errorMsg.includes('timeout')) {
+        setError(`⚠️ Network Error\n\nCannot reach the server. Please check:\n1. Internet connection\n2. Backend server is running\n3. Backend URL is correct`);
       } else {
-        setError(`⚠️ Update failed: ${error.response?.status} ${error.response?.statusText}\nCheck console for details.`);
+        setError(`⚠️ Update Failed\n\n${backendError || errorMsg}\n\nCheck console for more details.`);
       }
     } finally {
       setLoading(false);
