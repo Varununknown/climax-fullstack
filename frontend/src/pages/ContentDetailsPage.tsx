@@ -57,6 +57,11 @@ export const ContentDetailsPage: React.FC = () => {
     navigate(`/watch/${id}`);
   };
 
+  const handleParticipate = () => {
+    // Navigate to new Quiz page with the new quiz system
+    navigate(`/quiz/${id}`);
+  };
+
   const handleShare = async () => {
     if (navigator.share && content) {
       try { await navigator.share({ title: content.title, text: content.description, url: window.location.href }); }
