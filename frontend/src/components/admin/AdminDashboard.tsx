@@ -8,6 +8,7 @@ import { PaymentSettings } from './PaymentSettings';
 import { PendingPayments } from './PendingPayments';
 import { ImageFixer } from './ImageFixer';
 import { FansFestManagement } from './FansFestManagement';
+import QuizResults from './QuizResults';
 
 export const AdminDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -34,6 +35,16 @@ export const AdminDashboard: React.FC = () => {
         );
       case 'quiz':
         return <FansFestManagement />;
+      case 'quiz-results':
+        return (
+          <div className="space-y-6">
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Quiz System Results</h2>
+              <p className="text-gray-600">View feedback and participation data from users</p>
+            </div>
+            <QuizResults contentId="689dd061d104dc0916adbeac" contentTitle="All Content" />
+          </div>
+        );
       default:
         return <DashboardStats />;
     }
@@ -61,7 +72,7 @@ export const AdminDashboard: React.FC = () => {
               { id: 'payments', label: 'Payments' },
               { id: 'analytics', label: 'Analytics' },
               { id: 'quiz', label: 'Quiz Management' },
-              { id: 'quizResults', label: 'Quiz Results' }
+              { id: 'quiz-results', label: 'Quiz Results' }
             ].map((item) => (
               <button
                 key={item.id}

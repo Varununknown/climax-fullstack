@@ -1,284 +1,250 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Trash2 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import API from '../../services/api';
+import { RefreshCw, Download } from 'lucide-react';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-interface Participant {
+interface QuizResponse {
   _id: string;
-  userEmail: string;
-  userName: string;
-  answers: Array<{
-    questionText: string;
-    selectedOption: string;
-    isCorrect: boolean;
-  }>;
+  userId: string;
+  answers: { question: string; answer: string }[];
   score: number;
-  totalQuestions: number;
-  participatedAt: string;
+  submittedAt: string;
 }
 
-interface QuizData {
+interface QuizResultsData {
   contentId: string;
-  contentName: string;
+  totalResponses: number;
+  responses: QuizResponse[];
+  answerFrequency: { [key: string]: number };
+  averageScore: number;
 }
 
-export const QuizResults: React.FC = () => {
-  const [quizzes, setQuizzes] = useState<QuizData[]>([]);
-  const [selectedContentId, setSelectedContentId] = useState<string>('');
-  const [results, setResults] = useState<Participant[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [message, setMessage] = useState<{ type: string; text: string }>({ type: '', text: '' });
+interface QuizResultsProps {
+  contentId: string;
+  contentTitle: string;
+}
 
-  // Fetch all quizzes on mount
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTitle }) => {
+  const [data, setData] = useState<QuizResultsData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const loadResults = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await API.get(`/quiz-system/admin/responses/${contentId}`);
+      if (response.data.success) {
+        setData(response.data.data);
+      }
+    } catch (err) {
+      setError('Failed to load quiz results');
+      console.error(err);
+    }
+    
+    setLoading(false);
+  };
+
   useEffect(() => {
-    fetchQuizzes();
-  }, []);
+    loadResults();
+  }, [contentId]);
 
-  const fetchQuizzes = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/quiz/admin/all`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      if (data.success) {
-        setQuizzes(data.quizzes.map((q: any) => ({
-          contentId: q.contentId,
-          contentName: q.contentName
-        })));
-      }
-    } catch (err) {
-      console.error('Error fetching quizzes:', err);
+  if (loading) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-48 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || data.totalResponses === 0) {
+    return (
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-blue-900 mb-2">📊 Quiz Results</h3>
+        <p className="text-blue-700">No responses yet for "{contentTitle}"</p>
+      </div>
+    );
+  }
+
+  // Prepare answer frequency data for charts
+  const answerData = Object.entries(data.answerFrequency).map(([key, count]) => {
+    const [question, answer] = key.split('||');
+    return {
+      label: answer,
+      count: count as number,
+      question
+    };
+  });
+
+  // Group by question for visualization
+  const questionGroups = new Map<string, any[]>();
+  answerData.forEach(item => {
+    if (!questionGroups.has(item.question)) {
+      questionGroups.set(item.question, []);
     }
-  };
+    questionGroups.get(item.question)?.push(item);
+  });
 
-  const handleSelectQuiz = async (contentId: string) => {
-    setSelectedContentId(contentId);
-    setLoading(true);
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/quiz/admin/results/${contentId}`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
-      if (data.success) {
-        setResults(data.results);
-        setMessage({ type: 'success', text: `Found ${data.results.length} participants` });
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Error fetching results' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleClearAll = async () => {
-    if (!selectedContentId) {
-      setMessage({ type: 'error', text: 'Select a quiz first' });
-      return;
-    }
-
-    const quiz = quizzes.find(q => q.contentId === selectedContentId);
-    if (!window.confirm(`Clear ALL data for "${quiz?.contentName}"? This will delete all questions and ${results.length} participant answers.`)) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/quiz/admin/clear/${selectedContentId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setMessage({ 
-          type: 'success', 
-          text: `Cleared! Deleted ${data.participantsDeleted} participant records and questions.` 
-        });
-        setSelectedContentId('');
-        setResults([]);
-        fetchQuizzes();
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Error clearing data' });
-    } finally {
-      setLoading(false);
-    }
+  const downloadCSV = () => {
+    let csv = `Question,Answer,Count\n`;
+    Object.entries(data.answerFrequency).forEach(([key, count]) => {
+      const [question, answer] = key.split('||');
+      csv += `"${question}","${answer}",${count}\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `quiz-results-${contentId}.csv`;
+    a.click();
   };
 
   return (
-    <div style={{ padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
-      <h2 style={{ marginBottom: '20px', color: '#333' }}>📊 Quiz Results & Analytics</h2>
+    <div className="space-y-6">
+      {/* Stats Header */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+        <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Quiz Results: {contentTitle}</h3>
+        
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="bg-white rounded-lg p-4 border border-blue-100">
+            <div className="text-sm text-gray-600">Total Responses</div>
+            <div className="text-2xl font-bold text-blue-600">{data.totalResponses}</div>
+          </div>
+          <div className="bg-white rounded-lg p-4 border border-green-100">
+            <div className="text-sm text-gray-600">Average Score</div>
+            <div className="text-2xl font-bold text-green-600">{data.averageScore}</div>
+          </div>
+          <button
+            onClick={loadResults}
+            disabled={loading}
+            className="bg-white rounded-lg p-4 border border-purple-100 hover:bg-purple-50 transition-colors cursor-pointer"
+          >
+            <div className="text-sm text-gray-600 mb-2">Refresh Data</div>
+            <RefreshCw size={20} className="text-purple-600" />
+          </button>
+        </div>
 
-      {message.text && (
-        <div
-          style={{
-            padding: '12px',
-            marginBottom: '20px',
-            borderRadius: '6px',
-            backgroundColor: message.type === 'success' ? '#d4edda' : '#f8d7da',
-            color: message.type === 'success' ? '#155724' : '#721c24',
-            border: `1px solid ${message.type === 'success' ? '#c3e6cb' : '#f5c6cb'}`
-          }}
+        <button
+          onClick={downloadCSV}
+          className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
         >
-          {message.text}
-        </div>
-      )}
+          <Download size={18} />
+          <span>Download CSV</span>
+        </button>
+      </div>
 
-      <div style={{ marginBottom: '20px', display: 'grid', gridTemplateColumns: '250px 1fr', gap: '20px' }}>
-        {/* Quiz Selector */}
-        <div style={{ backgroundColor: 'white', padding: '15px', borderRadius: '8px', height: 'fit-content' }}>
-          <h3 style={{ marginBottom: '15px', color: '#444' }}>Quizzes</h3>
-          {quizzes.length === 0 ? (
-            <p style={{ color: '#999', fontSize: '14px' }}>No quizzes available</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {quizzes.map(quiz => (
-                <button
-                  key={quiz.contentId}
-                  onClick={() => handleSelectQuiz(quiz.contentId)}
-                  style={{
-                    padding: '10px',
-                    backgroundColor: selectedContentId === quiz.contentId ? '#2196f3' : '#f0f0f0',
-                    color: selectedContentId === quiz.contentId ? 'white' : '#333',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    fontWeight: selectedContentId === quiz.contentId ? 'bold' : 'normal'
-                  }}
-                >
-                  {quiz.contentName}
-                </button>
-              ))}
+      {/* Answer Distribution Charts */}
+      <div className="space-y-6">
+        {Array.from(questionGroups.entries()).map(([question, answers]) => (
+          <div key={question} className="bg-white border border-gray-200 rounded-lg p-6">
+            <h4 className="font-semibold text-gray-800 mb-4">📋 {question}</h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Bar Chart */}
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={answers}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="label" angle={-45} textAnchor="end" height={100} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+
+              {/* Pie Chart */}
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={answers}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ label, count }) => `${label}: ${count}`}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="count"
+                  >
+                    {answers.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-          )}
-        </div>
 
-        {/* Results View */}
-        <div style={{ backgroundColor: 'white', padding: '15px', borderRadius: '8px' }}>
-          {selectedContentId ? (
-            <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h3 style={{ color: '#444' }}>Results ({results.length})</h3>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => handleSelectQuiz(selectedContentId)}
-                    style={{
-                      padding: '8px 12px',
-                      backgroundColor: '#2196f3',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <RefreshCw size={16} />
-                  </button>
-                  <button
-                    onClick={handleClearAll}
-                    disabled={results.length === 0}
-                    style={{
-                      padding: '8px 12px',
-                      backgroundColor: results.length === 0 ? '#ccc' : '#ff4444',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: results.length === 0 ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    <Trash2 size={16} /> Clear All
-                  </button>
-                </div>
+            {/* Answer Details Table */}
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-100 border-b border-gray-200">
+                  <tr>
+                    <th className="text-left px-4 py-2">Answer</th>
+                    <th className="text-left px-4 py-2">Responses</th>
+                    <th className="text-left px-4 py-2">Percentage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {answers.map((answer, idx) => (
+                    <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-4 py-2 font-medium">{answer.label}</td>
+                      <td className="px-4 py-2">{answer.count}</td>
+                      <td className="px-4 py-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-32 bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full"
+                              style={{
+                                width: `${(answer.count / data.totalResponses) * 100}%`
+                              }}
+                            ></div>
+                          </div>
+                          <span>{((answer.count / data.totalResponses) * 100).toFixed(1)}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Individual Responses */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <h4 className="font-semibold text-gray-800 mb-4">👥 Individual Responses ({data.responses.length})</h4>
+        
+        <div className="space-y-3 max-h-96 overflow-y-auto">
+          {data.responses.slice(0, 10).map((response, idx) => (
+            <div key={response._id || idx} className="border border-gray-100 rounded p-3 bg-gray-50 hover:bg-gray-100 transition-colors">
+              <div className="flex justify-between items-start mb-2">
+                <div className="text-sm font-medium text-gray-700">User: {response.userId.substring(0, 8)}...</div>
+                <div className="text-xs text-gray-500">Score: {response.score}</div>
               </div>
-
-              {results.length === 0 ? (
-                <p style={{ color: '#999', textAlign: 'center', padding: '40px 20px' }}>
-                  No participants yet
-                </p>
-              ) : (
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ backgroundColor: '#f0f0f0' }}>
-                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: 'bold', borderBottom: '2px solid #ddd' }}>
-                          Email
-                        </th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: 'bold', borderBottom: '2px solid #ddd' }}>
-                          Name
-                        </th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: 'bold', borderBottom: '2px solid #ddd' }}>
-                          Answers
-                        </th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: 'bold', borderBottom: '2px solid #ddd' }}>
-                          Score
-                        </th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: 'bold', borderBottom: '2px solid #ddd' }}>
-                          Date
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {results.map((result, idx) => (
-                        <tr
-                          key={idx}
-                          style={{
-                            backgroundColor: idx % 2 === 0 ? '#fafafa' : 'white',
-                            borderBottom: '1px solid #eee'
-                          }}
-                        >
-                          <td style={{ padding: '12px', fontSize: '14px' }}>{result.userEmail}</td>
-                          <td style={{ padding: '12px', fontSize: '14px' }}>
-                            {result.userName || '—'}
-                          </td>
-                          <td style={{ padding: '12px', fontSize: '14px' }}>
-                            <details>
-                              <summary style={{ cursor: 'pointer', color: '#2196f3' }}>
-                                View ({result.answers.length})
-                              </summary>
-                              <div style={{ marginTop: '8px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-                                {result.answers.map((ans, i) => (
-                                  <div key={i} style={{ marginBottom: '8px', fontSize: '12px' }}>
-                                    <div style={{ fontWeight: 'bold', color: '#333' }}>Q{i + 1}: {ans.questionText}</div>
-                                    <div style={{ color: '#666', marginLeft: '10px' }}>
-                                      Answer: <strong>{ans.selectedOption}</strong>
-                                      <span style={{
-                                        marginLeft: '8px',
-                                        color: ans.isCorrect ? '#4CAF50' : '#ff4444',
-                                        fontWeight: 'bold'
-                                      }}>
-                                        {ans.isCorrect ? '✓ Correct' : '✗ Incorrect'}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </details>
-                          </td>
-                          <td style={{ padding: '12px', fontSize: '14px', fontWeight: 'bold' }}>
-                            <span style={{
-                              color: result.score === result.totalQuestions ? '#4CAF50' : 
-                                    result.score > result.totalQuestions / 2 ? '#ff9800' : '#ff4444'
-                            }}>
-                              {result.score}/{result.totalQuestions}
-                            </span>
-                          </td>
-                          <td style={{ padding: '12px', fontSize: '14px', color: '#999' }}>
-                            {new Date(result.participatedAt).toLocaleDateString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </>
-          ) : (
-            <p style={{ color: '#999', textAlign: 'center', padding: '40px 20px' }}>
-              Select a quiz to view results
-            </p>
-          )}
+              <div className="text-xs text-gray-600">
+                {new Date(response.submittedAt).toLocaleDateString()} {new Date(response.submittedAt).toLocaleTimeString()}
+              </div>
+              <div className="mt-2 text-sm text-gray-700">
+                Answers: {response.answers.map(a => `${a.answer}`).join(', ')}
+              </div>
+            </div>
+          ))}
         </div>
+
+        {data.responses.length > 10 && (
+          <div className="mt-4 text-sm text-gray-600 text-center">
+            ... and {data.responses.length - 10} more responses
+          </div>
+        )}
       </div>
     </div>
   );
 };
+export default QuizResultsComponent;

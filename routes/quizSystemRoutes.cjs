@@ -128,4 +128,84 @@ router.post('/admin/:contentId', async (req, res) => {
   }
 });
 
+// ✅ NEW: Get all quiz responses for a content (ADMIN)
+router.get('/admin/responses/:contentId', async (req, res) => {
+  try {
+    const { contentId } = req.params;
+    
+    const responses = await SimpleQuizResponse.find({ contentId })
+      .sort({ submittedAt: -1 })
+      .lean();
+    
+    // Calculate statistics
+    const totalResponses = responses.length;
+    const answerFrequency = {};
+    
+    responses.forEach(response => {
+      response.answers.forEach(answer => {
+        const key = `${answer.question}||${answer.answer}`;
+        answerFrequency[key] = (answerFrequency[key] || 0) + 1;
+      });
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        contentId,
+        totalResponses,
+        responses,
+        answerFrequency,
+        averageScore: responses.length > 0 ? (responses.reduce((sum, r) => sum + (r.score || 0), 0) / responses.length).toFixed(2) : 0
+      }
+    });
+  } catch (error) {
+    console.error('Get responses error:', error);
+    res.json({
+      success: true,
+      data: {
+        totalResponses: 0,
+        responses: [],
+        answerFrequency: {}
+      }
+    });
+  }
+});
+
+// ✅ NEW: Get summary across all contents (ADMIN DASHBOARD)
+router.get('/admin/summary/all', async (req, res) => {
+  try {
+    const allResponses = await SimpleQuizResponse.find().lean();
+    
+    const contentStats = {};
+    allResponses.forEach(response => {
+      if (!contentStats[response.contentId]) {
+        contentStats[response.contentId] = { count: 0, score: 0 };
+      }
+      contentStats[response.contentId].count += 1;
+      contentStats[response.contentId].score += response.score || 0;
+    });
+    
+    const summary = Object.entries(contentStats).map(([contentId, stats]) => ({
+      contentId,
+      totalResponses: stats.count,
+      averageScore: (stats.score / stats.count).toFixed(2)
+    }));
+    
+    res.json({
+      success: true,
+      data: {
+        totalContentsWithResponses: summary.length,
+        totalResponses: allResponses.length,
+        contentStats: summary
+      }
+    });
+  } catch (error) {
+    console.error('Get summary error:', error);
+    res.json({
+      success: true,
+      data: { totalResponses: 0, contentStats: [] }
+    });
+  }
+});
+
 module.exports = router;
