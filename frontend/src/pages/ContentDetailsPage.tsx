@@ -257,6 +257,31 @@ export const ContentDetailsPage: React.FC = () => {
 
         </div>
       </div>
+
+      {/* Events Section - Single Event Card with Participate Button */}
+      <div className="mx-auto px-4 sm:px-6 py-8 max-w-5xl">
+        <h2 className="text-xl sm:text-2xl font-bold mb-6">Live Events</h2>
+        <div className="grid grid-cols-1 gap-4">
+          <div className="bg-gradient-to-r from-purple-900/40 to-pink-900/40 rounded-lg overflow-hidden border border-purple-500/30 hover:border-purple-400/60 transition-all">
+            <div className="flex flex-col sm:flex-row">
+              <img src={content.thumbnail} alt="Live Event" className="w-full sm:w-48 h-32 sm:h-40 object-cover" />
+              <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
+                <div>
+                  <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Live Q&A Session</h3>
+                  <p className="text-gray-300 text-sm sm:text-base mb-3">Join us for an exclusive live event with the cast and crew</p>
+                  <div className="flex gap-3 text-xs sm:text-sm text-gray-400">
+                    <span>📅 Today at 8:00 PM</span>
+                    <span>👥 2.5K Watching</span>
+                  </div>
+                </div>
+                <button onClick={handleParticipate} className="mt-4 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white rounded-lg py-2 px-4 font-semibold shadow-lg hover:scale-[1.02] transition-all border border-orange-400/30 w-full sm:w-auto text-center">
+                  Participate Now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
