@@ -89,11 +89,11 @@ export const QuizPage: React.FC = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Professional Gradient Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"></div>
-      <div className="fixed inset-0 bg-gradient-to-r from-transparent via-slate-800/20 to-transparent"></div>
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.15),transparent_50%)]"></div>
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(79,70,229,0.15),transparent_50%)]"></div>
+      {/* Professional Gradient Background - Black to Violet */}
+      <div className="fixed inset-0 bg-gradient-to-br from-black via-slate-950 to-violet-950"></div>
+      <div className="fixed inset-0 bg-gradient-to-r from-transparent via-slate-900/30 to-transparent"></div>
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(139,92,246,0.08),transparent_50%)]"></div>
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(168,85,247,0.05),transparent_50%)]"></div>
 
       {/* Professional Glass Header */}
       <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/10 border-b border-white/20 shadow-2xl">

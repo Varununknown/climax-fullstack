@@ -103,7 +103,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   if (userHasAnswered && !checkingStatus) {
     return (
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-violet-950"></div>
         <div className="relative bg-white/10 border border-white/20 rounded-2xl p-8 sm:p-12 text-center backdrop-blur-2xl">
           <div className="mb-6">
             <div className="relative inline-block">
@@ -141,7 +141,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   if (submitted) {
     return (
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-violet-950"></div>
         
         <div className="relative bg-white/10 border border-white/20 rounded-2xl p-8 sm:p-12 text-center backdrop-blur-2xl shadow-2xl">
           <div className="mb-8">
@@ -199,10 +199,10 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
 
   return (
     <div className="relative overflow-hidden">
-      {/* Professional Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(59,130,246,0.1),transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(79,70,229,0.1),transparent_50%)]"></div>
+      {/* Professional Gradient Background - Black to Violet */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-violet-950">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(139,92,246,0.08),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(168,85,247,0.05),transparent_50%)]"></div>
       </div>
       
       {/* Professional Glass Container */}
@@ -212,16 +212,16 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
         
         {/* Professional Header */}
-        <div className="relative bg-gradient-to-r from-slate-800/80 via-blue-900/80 to-indigo-900/80 border-b border-white/10 p-8 sm:p-10 lg:p-12 rounded-t-2xl backdrop-blur-xl">
+        <div className="relative bg-gradient-to-r from-black/80 via-slate-900/80 to-violet-950/80 border-b border-white/10 p-8 sm:p-10 lg:p-12 rounded-t-2xl backdrop-blur-xl">
           {/* Glass Effect Overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent rounded-t-2xl"></div>
           
           <div className="relative z-10">
             <div className="flex items-center justify-center mb-8">
               <div className="relative">
-                <div className="absolute -inset-2 bg-gradient-to-r from-blue-500/20 to-indigo-600/20 rounded-xl blur-lg"></div>
+                <div className="absolute -inset-2 bg-gradient-to-r from-violet-600/20 to-purple-600/20 rounded-xl blur-lg"></div>
                 <div className="relative bg-white/10 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
-                  <svg className="w-8 h-8 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-8 h-8 text-violet-300" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                     <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm2.5 4a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100-2 1 1 0 000 2zm-1 4h2v-1a1 1 0 00-1-1h-1v2z" clipRule="evenodd"/>
                   </svg>
