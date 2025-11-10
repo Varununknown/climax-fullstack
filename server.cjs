@@ -12,16 +12,15 @@ const authRoutes = require('./routes/authRoutes.cjs');
 const googleAuthRoutes = require('./routes/googleAuth.cjs'); // Added Google Auth routes
 const contentRoutes = require('./routes/contentRoutes.cjs');
 const paymentRoutes = require('./routes/paymentRoutes.cjs');
+const authRoutes = require('./routes/authRoutes.cjs');
+const contentRoutes = require('./routes/contentRoutes.cjs');
+const paymentRoutes = require('./routes/paymentRoutes.cjs');
 const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs'); // ✅ NEW
 const payuRoutes = require('./routes/payuRoutes.cjs'); // ✅ PayU Gateway
 const participationRoutes = require('./routes/participationRoutes.cjs'); // ✅ Fans Fest
 const quizRoutes = require('./routes/quizRoutes.cjs'); // ✅ Quiz System
 const simpleParticipationRoutes = require('./routes/simpleParticipation.cjs'); // ✅ SIMPLE FIX
 const quizSystemRoutes = require('./routes/quizSystemRoutes.cjs'); // ✅ NEW QUIZ SYSTEM
-const authRoutes = require('./routes/authRoutes.cjs');
-const contentRoutes = require('./routes/contentRoutes.cjs');
-const paymentRoutes = require('./routes/paymentRoutes.cjs');
-const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs');
 
 const app = express();
 

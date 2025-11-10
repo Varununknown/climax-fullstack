@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Plus, Share, Heart, Download } from 'lucide-react';
+import { ArrowLeft, Play, Plus, Share } from 'lucide-react';
 import API from '../services/api';
 import { Content } from '../types';
 import QuizSystem from '../components/common/QuizSystem';
