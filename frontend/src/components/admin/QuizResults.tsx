@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import API from '../../services/api';
-import { RefreshCw, Download, Trash2 } from 'lucide-react';
+import { RefreshCw, Download, Trash2, FileText } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface QuizResponse {
   _id: string;
@@ -123,6 +125,122 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
     questionGroups.get(item.question)?.push(item);
   });
 
+  const downloadPDF = async () => {
+    if (!data) return;
+
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    let yPosition = 15;
+
+    // Title and Header
+    pdf.setFillColor(31, 41, 55); // Dark gray
+    pdf.rect(0, 0, pageWidth, 25, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(20);
+    pdf.text('Quiz Results Report', pageWidth / 2, 12, { align: 'center' });
+    pdf.setFontSize(10);
+    pdf.text(contentTitle, pageWidth / 2, 20, { align: 'center' });
+
+    yPosition = 30;
+
+    // Report Info
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(10);
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, 15, yPosition);
+    yPosition += 8;
+
+    // Summary Section
+    pdf.setFillColor(59, 130, 246); // Blue
+    pdf.rect(15, yPosition, pageWidth - 30, 8, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(12);
+    pdf.text('Summary', 20, yPosition + 6);
+    yPosition += 12;
+
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(10);
+    pdf.text(`Total Responses: ${data.totalResponses}`, 20, yPosition);
+    yPosition += 6;
+    pdf.text(`Average Score: ${data.averageScore}`, 20, yPosition);
+    yPosition += 12;
+
+    // Detailed Responses Section
+    pdf.setFillColor(34, 197, 94); // Green
+    pdf.rect(15, yPosition, pageWidth - 30, 8, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(12);
+    pdf.text('Participant Details', 20, yPosition + 6);
+    yPosition += 12;
+
+    // Table Headers
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFillColor(55, 65, 81); // Dark gray
+    const col1 = 15, col2 = 50, col3 = 100, col4 = 140, col5 = 180;
+    pdf.rect(col1, yPosition, col2 - col1, 7, 'F');
+    pdf.rect(col2, yPosition, col3 - col2, 7, 'F');
+    pdf.rect(col3, yPosition, col4 - col3, 7, 'F');
+    pdf.rect(col4, yPosition, col5 - col4, 7, 'F');
+    pdf.rect(col5, yPosition, pageWidth - 15 - col5, 7, 'F');
+
+    pdf.setFontSize(9);
+    pdf.text('Name', col1 + 2, yPosition + 5);
+    pdf.text('Phone', col2 + 2, yPosition + 5);
+    pdf.text('Date/Time', col3 + 2, yPosition + 5);
+    pdf.text('Answer', col4 + 2, yPosition + 5);
+    pdf.text('Score', col5 + 2, yPosition + 5);
+    yPosition += 8;
+
+    // Table Rows
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(9);
+    data.responses.slice(0, 20).forEach((response, idx) => {
+      if (yPosition > pageHeight - 20) {
+        pdf.addPage();
+        yPosition = 15;
+      }
+
+      const resp = response as any;
+      const userName = resp.userName || 'Anonymous';
+      const phone = resp.phoneNumber || 'N/A';
+      const dateTime = new Date(response.submittedAt).toLocaleString();
+      const answer = response.answers.map(a => a.answer).join(', ');
+
+      // Alternate row colors
+      if (idx % 2 === 0) {
+        pdf.setFillColor(240, 246, 252); // Light blue
+        pdf.rect(col1, yPosition - 3, pageWidth - 30, 6, 'F');
+      }
+
+      pdf.text(userName.substring(0, 15), col1 + 2, yPosition);
+      pdf.text(phone.substring(0, 12), col2 + 2, yPosition);
+      pdf.text(dateTime.substring(0, 16), col3 + 2, yPosition);
+      pdf.text(answer.substring(0, 15), col4 + 2, yPosition);
+      pdf.text(response.score.toString(), col5 + 2, yPosition);
+      yPosition += 6;
+    });
+
+    if (data.responses.length > 20) {
+      yPosition += 2;
+      pdf.setFontSize(8);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(`... and ${data.responses.length - 20} more responses`, 15, yPosition);
+    }
+
+    // Footer
+    pdf.setFontSize(8);
+    pdf.setTextColor(150, 150, 150);
+    pdf.text(`Page 1 of ${pdf.internal.pages.length}`, pageWidth / 2, pageHeight - 5, { align: 'center' });
+
+    // Download
+    pdf.save(`quiz-report-${contentId}-${new Date().getTime()}.pdf`);
+  };
+
   const downloadCSV = () => {
     if (!data) return;
 
@@ -205,6 +323,15 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
         >
           <Download size={18} />
           <span>Download CSV</span>
+        </button>
+
+        <button
+          onClick={downloadPDF}
+          className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+          title="Download professional PDF report"
+        >
+          <FileText size={18} />
+          <span>Download PDF Report</span>
         </button>
 
         <button
