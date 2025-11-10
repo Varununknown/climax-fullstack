@@ -57,11 +57,6 @@ export const ContentDetailsPage: React.FC = () => {
     navigate(`/watch/${id}`);
   };
 
-  const handleParticipate = () => {
-    // Navigate to new Quiz page with the new quiz system
-    navigate(`/quiz/${id}`);
-  };
-
   const handleShare = async () => {
     if (navigator.share && content) {
       try { await navigator.share({ title: content.title, text: content.description, url: window.location.href }); }
@@ -157,10 +152,6 @@ export const ContentDetailsPage: React.FC = () => {
               <button onClick={handleWatch} className="bg-gradient-to-r from-black/90 via-slate-200/80 to-white/90 backdrop-blur-lg text-black rounded-full py-2 sm:py-3 px-3 sm:px-6 flex items-center gap-2 sm:gap-3 shadow-lg hover:from-white hover:via-slate-100 hover:to-white hover:scale-[1.01] transition-all border border-white/20 text-xs sm:text-base">
                 <Play size={16} className="sm:size-5" />
                 <span className="font-semibold">Watch Now</span>
-              </button>
-
-              <button onClick={handleParticipate} className="bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white rounded-full py-2 sm:py-3 px-3 sm:px-6 flex items-center gap-2 sm:gap-3 shadow-lg hover:scale-[1.01] transition-all border border-orange-400/30 text-xs sm:text-base font-medium">
-                <span className="font-semibold">Participate Now</span>
               </button>
 
               <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all">
