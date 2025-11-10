@@ -55,23 +55,24 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
     try {
       setLoading(true);
 
-      // Debug: Check what ID we're using
-      console.log('Content object:', content);
-      console.log('Available ID fields:');
-      console.log('- content._id:', content._id);
-      console.log('- content.id:', content.id);
-      console.log('- content.createdAt:', content.createdAt);
+      // Extract ID safely - ensure it's a clean string (not object-like)
+      let contentId = content._id || content.id;
       
-      // Try multiple ID field possibilities
-      const contentId = content._id || content.id;
+      // Ensure we have a string ID and remove any unwanted properties/indices
+      if (typeof contentId === 'object') {
+        console.warn('⚠️ Content ID is an object, attempting to extract string value');
+        contentId = String(contentId).split(':')[0]; // Take only the main ID part
+      }
       
-      if (!contentId) {
-        console.error('❌ No valid content ID found!');
-        setError('❌ Cannot update: Content ID is missing');
+      contentId = String(contentId).trim();
+      
+      if (!contentId || contentId === '') {
+        console.error('❌ No valid content ID found!', { content, contentId });
+        setError('❌ Cannot update: Content ID is missing or invalid');
         return;
       }
       
-      console.log('Using ID for update:', contentId);
+      console.log('🔍 Extracted ID for update:', contentId);
 
       const payload = {
         ...formData,
