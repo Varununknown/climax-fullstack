@@ -8,7 +8,6 @@ import { UserDashboard } from "./components/user/UserDashboard";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
 import WatchPage from "./pages/WatchPage";
 import { ContentDetailsPage } from "./pages/ContentDetailsPage";
-import { ParticipatePage } from "./pages/ParticipatePage";
 import { QuizPage } from "./pages/QuizPage";
 
 // ✅ New placeholder pages for navigation
@@ -63,9 +62,6 @@ const AppRoutes: React.FC = () => {
 
           {/* Quiz Page - for new quiz system */}
           <Route path="/quiz/:contentId" element={<QuizPage />} />
-
-          {/* Participate Page - for old quiz (kept for backward compatibility) */}
-          <Route path="/participate/:contentId" element={<ParticipatePage />} />
 
           {/* Watch page stays same */}
           <Route path="/watch/:id" element={<WatchPage />} />
