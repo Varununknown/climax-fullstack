@@ -8,6 +8,8 @@ import html2canvas from 'html2canvas';
 interface QuizResponse {
   _id: string;
   userId: string;
+  userName?: string;
+  phoneNumber?: string;
   answers: { question: string; answer: string }[];
   score: number;
   submittedAt: string;
@@ -26,13 +28,23 @@ interface QuizResultsProps {
   contentTitle: string;
 }
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+const COLORS = {
+  primary: '#3b82f6',
+  success: '#10b981',
+  warning: '#f59e0b',
+  danger: '#ef4444',
+  purple: '#8b5cf6',
+  pink: '#ec4899',
+  indigo: '#6366f1',
+  cyan: '#06b6d4'
+};
 
 const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTitle }) => {
   const [data, setData] = useState<QuizResultsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [clearing, setClearing] = useState(false);
+  const [chartHover, setChartHover] = useState<string | null>(null);
 
   const loadResults = async () => {
     setLoading(true);
@@ -249,8 +261,8 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
       }
 
       const resp = response as any;
-      const userName = resp.userName || 'Anonymous';
-      const phone = resp.phoneNumber || 'N/A';
+      const userName = response.userName || resp.userName || 'Anonymous';
+      const phone = response.phoneNumber || resp.phoneNumber || 'N/A';
       const dateTime = new Date(response.submittedAt).toLocaleString();
       const answer = response.answers.map(a => a.answer).join(', ');
 
@@ -330,8 +342,8 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
     csv += `\n\nDetailed Responses\n`;
     csv += `User Name,Phone Number,Date/Time,Answers,Score\n`;
     data.responses.forEach((response) => {
-      const userName = (response as any).userName || 'Anonymous';
-      const phoneNumber = (response as any).phoneNumber || 'Not provided';
+      const userName = response.userName || (response as any).userName || 'Anonymous';
+      const phoneNumber = response.phoneNumber || (response as any).phoneNumber || 'Not provided';
       const dateTime = new Date(response.submittedAt).toLocaleString();
       const answersText = response.answers.map(a => a.answer).join(' | ');
       csv += `"${userName}","${phoneNumber}","${dateTime}","${answersText}",${response.score}\n`;
@@ -346,20 +358,70 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
   };
 
   return (
-    <div className="space-y-6">
-      {/* Stats Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">🎬 Fan Fest Participation: {contentTitle}</h3>
+    <div className="space-y-8 p-6 sm:p-8">
+      {/* Premium Stats Header */}
+      <div className="relative group">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 rounded-3xl blur-2xl opacity-75 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div className="relative bg-gradient-to-br from-white to-blue-50/50 border border-blue-100 rounded-3xl p-8 backdrop-blur-sm shadow-xl">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
+            <div className="flex-shrink-0">
+              <div className="relative group/icon">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-75 group-hover/icon:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                  <span className="text-3xl transform group-hover/icon:scale-110 transition-transform duration-300">📊</span>
+                </div>
+              </div>
+            </div>
+        <div className="flex-grow">
+          <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+            Fan Fest Analytics
+          </h2>
+          <p className="text-gray-500 text-sm sm:text-base">{contentTitle}</p>
+        </div>
+      </div>
         
-        <div className="grid grid-cols-4 gap-4 mb-4">
-          <div className="bg-white rounded-lg p-4 border border-blue-100">
-            <div className="text-sm text-gray-600">Total Responses</div>
-            <div className="text-2xl font-bold text-blue-600">{data.totalResponses}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Total Responses Card */}
+        <div className="relative group/stat">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover/stat:opacity-50 transition duration-300"></div>
+          <div className="relative bg-white/95 backdrop-blur rounded-2xl p-6 shadow-lg border border-blue-100/50 hover:border-transparent transition-all duration-300 group-hover/stat:shadow-2xl group-hover/stat:-translate-y-0.5">
+            <div className="flex items-start gap-4">
+              <div className="flex-grow">
+                <div className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-1">Total Responses</div>
+                <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  {data.totalResponses}
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <span className="text-xl">👥</span>
+              </div>
+            </div>
+            <div className="mt-4 pt-4 border-t border-blue-50">
+              <div className="text-xs text-gray-400">Updated {new Date().toLocaleTimeString()}</div>
+            </div>
           </div>
-          <div className="bg-white rounded-lg p-4 border border-green-100">
-            <div className="text-sm text-gray-600">Average Score</div>
-            <div className="text-2xl font-bold text-green-600">{data.averageScore}</div>
+        </div>
+
+        {/* Average Score Card */}
+        <div className="relative group/stat">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl blur opacity-25 group-hover/stat:opacity-50 transition duration-300"></div>
+          <div className="relative bg-white/95 backdrop-blur rounded-2xl p-6 shadow-lg border border-emerald-100/50 hover:border-transparent transition-all duration-300 group-hover/stat:shadow-2xl group-hover/stat:-translate-y-0.5">
+            <div className="flex items-start gap-4">
+              <div className="flex-grow">
+                <div className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-1">Average Score</div>
+                <div className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                  {data.averageScore}
+                </div>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                <span className="text-xl">📈</span>
+              </div>
+            </div>
+            <div className="mt-4 pt-4 border-t border-emerald-50">
+              <div className="text-xs text-gray-400">Based on {data.totalResponses} submissions</div>
+            </div>
           </div>
+        </div>
           <button
             onClick={loadResults}
             disabled={loading}
@@ -427,7 +489,12 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
                   <XAxis dataKey="label" angle={-45} textAnchor="end" height={100} />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" fill="#3b82f6" />
+                  <Bar 
+                    dataKey="count" 
+                    fill={COLORS.primary}
+                    radius={[4, 4, 0, 0]}
+                    className="transition-all duration-300 hover:opacity-80"
+                  />
                 </BarChart>
               </ResponsiveContainer>
 
@@ -445,7 +512,10 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
                     dataKey="count"
                   >
                     {answers.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={Object.values(COLORS)[index % Object.values(COLORS).length]} 
+                      />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -491,19 +561,44 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
       </div>
 
       {/* Individual Responses */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h4 className="font-semibold text-gray-800 mb-4">👥 Individual Responses ({data.responses.length})</h4>
-        
-        <div className="space-y-3 max-h-96 overflow-y-auto">
-          {data.responses.slice(0, 10).map((response, idx) => {
-            const resp = response as any;
-            return (
-              <div key={response._id || idx} className="border border-gray-100 rounded p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold text-gray-800">👤 {resp.userName || 'Anonymous'}</div>
-                    {resp.phoneNumber && (
-                      <div className="text-xs text-blue-600 font-medium">📱 {resp.phoneNumber}</div>
+      <div className="relative group/responses">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 rounded-3xl blur-2xl opacity-75 group-hover/responses:opacity-100 transition-opacity duration-500"></div>
+        <div className="relative bg-white/95 backdrop-blur rounded-3xl p-8 shadow-xl border border-purple-100/50">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
+                <span className="text-xl">👥</span>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                Individual Responses
+              </h3>
+              <p className="text-gray-500 text-sm mt-0.5">
+                Showing latest {Math.min(10, data.responses.length)} of {data.responses.length} submissions
+              </p>
+            </div>
+          </div>
+          
+          <div className="space-y-4 max-h-[32rem] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-purple-200 scrollbar-track-transparent">
+            {data.responses.slice(0, 10).map((response, idx) => {
+              const resp = response as any;
+              return (
+                <div 
+                  key={response._id || idx} 
+                  className="relative group/card"
+                >
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 rounded-2xl blur opacity-0 group-hover/card:opacity-100 transition-all duration-300"></div>
+                  <div className="relative bg-white rounded-2xl p-6 shadow-sm border border-purple-100/50 hover:border-transparent transition-all duration-300 group-hover/card:shadow-lg">
+                    <div className="flex justify-between items-start space-x-4">
+                      <div className="flex-1">
+                    <div className="text-sm font-semibold text-gray-800">
+                      👤 {response.userName || resp.userName || 'Anonymous'}
+                    </div>
+                    {(response.phoneNumber || resp.phoneNumber) && (
+                      <div className="text-xs text-blue-600 font-medium">
+                        📱 {response.phoneNumber || resp.phoneNumber}
+                      </div>
                     )}
                   </div>
                   <div className="text-xs text-gray-500 font-semibold">Score: {response.score}</div>
