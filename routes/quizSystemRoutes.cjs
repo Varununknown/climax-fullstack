@@ -108,7 +108,16 @@ router.post('/:contentId/submit', async (req, res) => {
     const { contentId } = req.params;
     const { answers, userId } = req.body;
     
+    console.log('📝 Quiz Submit Received:', {
+      contentId,
+      userId,
+      answersCount: answers?.length,
+      answers
+    });
+    
     const finalUserId = userId || req.user?.id || 'anonymous';
+    
+    console.log('👤 Using userId:', finalUserId);
     
     // Check if user already answered for this content
     const existingResponse = await SimpleQuizResponse.findOne({
@@ -117,6 +126,7 @@ router.post('/:contentId/submit', async (req, res) => {
     });
     
     if (existingResponse) {
+      console.log('⚠️ User already answered for this content');
       return res.json({
         success: false,
         message: "You have already answered this quiz for this content!",
@@ -134,6 +144,13 @@ router.post('/:contentId/submit', async (req, res) => {
     
     await response.save();
     
+    console.log('✅ Response saved successfully:', {
+      id: response._id,
+      contentId,
+      userId: finalUserId,
+      answersCount: answers?.length
+    });
+    
     res.json({
       success: true,
       message: "Thank you for your feedback!",
@@ -142,7 +159,7 @@ router.post('/:contentId/submit', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Quiz submit error:', error);
+    console.error('❌ Quiz submit error:', error);
     // Always return success
     res.json({
       success: true,
@@ -175,9 +192,13 @@ router.get('/admin/responses/:contentId', async (req, res) => {
   try {
     const { contentId } = req.params;
     
+    console.log('📊 Fetching responses for contentId:', contentId);
+    
     const responses = await SimpleQuizResponse.find({ contentId })
       .sort({ submittedAt: -1 })
       .lean();
+    
+    console.log(`📈 Found ${responses.length} responses for content ${contentId}`);
     
     // Calculate statistics
     const totalResponses = responses.length;
@@ -190,6 +211,8 @@ router.get('/admin/responses/:contentId', async (req, res) => {
       });
     });
     
+    console.log('📋 Answer frequency:', answerFrequency);
+    
     res.json({
       success: true,
       data: {
@@ -201,7 +224,7 @@ router.get('/admin/responses/:contentId', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get responses error:', error);
+    console.error('❌ Get responses error:', error);
     res.json({
       success: true,
       data: {
