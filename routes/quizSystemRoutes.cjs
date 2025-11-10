@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const router = express.Router();
 
 // Simple Quiz Schema - completely separate from existing participation
-const QuizSchema = new mongoose.Schema({
+const SimpleQuizSchema = new mongoose.Schema({
   contentId: { type: String, required: true },
   questions: [{ 
     question: String, 
@@ -13,10 +13,10 @@ const QuizSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const Quiz = mongoose.model('Quiz', QuizSchema);
+const SimpleQuiz = mongoose.model('SimpleQuiz', SimpleQuizSchema);
 
 // User Response Schema
-const QuizResponseSchema = new mongoose.Schema({
+const SimpleQuizResponseSchema = new mongoose.Schema({
   contentId: String,
   userId: String,
   answers: [{ question: String, answer: String }],
@@ -24,18 +24,18 @@ const QuizResponseSchema = new mongoose.Schema({
   submittedAt: { type: Date, default: Date.now }
 });
 
-const QuizResponse = mongoose.model('QuizResponse', QuizResponseSchema);
+const SimpleQuizResponse = mongoose.model('SimpleQuizResponse', SimpleQuizResponseSchema);
 
 // GET quiz for content
 router.get('/:contentId', async (req, res) => {
   try {
     const { contentId } = req.params;
     
-    let quiz = await Quiz.findOne({ contentId });
+    let quiz = await SimpleQuiz.findOne({ contentId });
     
     // If no quiz exists, create a sample one
     if (!quiz) {
-      quiz = new Quiz({
+      quiz = new SimpleQuiz({
         contentId,
         questions: [
           {
@@ -84,7 +84,7 @@ router.post('/:contentId/submit', async (req, res) => {
     const { answers } = req.body;
     
     // Always save the response
-    const response = new QuizResponse({
+    const response = new SimpleQuizResponse({
       contentId,
       userId: req.user?.id || 'anonymous',
       answers: answers || [],
@@ -115,7 +115,7 @@ router.post('/admin/:contentId', async (req, res) => {
     const { contentId } = req.params;
     const { questions } = req.body;
     
-    await Quiz.findOneAndUpdate(
+    await SimpleQuiz.findOneAndUpdate(
       { contentId },
       { contentId, questions },
       { upsert: true, new: true }
