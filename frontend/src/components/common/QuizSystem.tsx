@@ -99,32 +99,36 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
     setLoading(false);
   };
 
-  // Show premium already answered message
+  // Show professional completion message
   if (userHasAnswered && !checkingStatus) {
     return (
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50"></div>
-        <div className="relative bg-white/60 border border-emerald-200/60 rounded-2xl p-8 sm:p-12 text-center backdrop-blur-sm shadow-xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"></div>
+        <div className="relative bg-white/10 border border-white/20 rounded-2xl p-8 sm:p-12 text-center backdrop-blur-2xl">
           <div className="mb-6">
             <div className="relative inline-block">
-              <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full blur-lg opacity-40"></div>
-              <div className="relative inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full text-white shadow-xl">
-                <span className="text-3xl">✓</span>
+              <div className="absolute -inset-1 bg-gradient-to-r from-green-500/20 to-emerald-600/20 rounded-full blur"></div>
+              <div className="relative inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full text-white shadow-lg border border-white/20">
+                <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
               </div>
             </div>
           </div>
-          <h3 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-700 mb-4">
-            Premium Participation Complete
+          <h3 className="text-2xl font-bold text-white mb-4">
+            Participation Complete
           </h3>
-          <p className="text-emerald-700 mb-2 text-lg">
-            Thank you for your valuable premium feedback on
+          <p className="text-slate-300 mb-2">
+            Thank you for your valuable feedback on
           </p>
-          <p className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-600 mb-6">"{contentTitle}"</p>
-          <div className="pt-6 border-t border-emerald-200/60">
-            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-emerald-100 to-teal-100 border border-emerald-300/50 rounded-xl">
-              <span className="text-2xl">🏆</span>
-              <p className="text-sm sm:text-base text-emerald-700 font-medium">
-                Stay tuned for new premium surveys and exclusive rewards!
+          <p className="text-lg font-semibold text-blue-200 mb-6">"{contentTitle}"</p>
+          <div className="pt-6 border-t border-white/10">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg backdrop-blur-sm">
+              <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+              </svg>
+              <p className="text-sm text-blue-300">
+                Watch for new surveys and recognition opportunities
               </p>
             </div>
           </div>
@@ -133,57 +137,56 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
     );
   }
 
-  // Show premium success state
+  // Show professional success state
   if (submitted) {
     return (
       <div className="relative overflow-hidden">
-        {/* Premium Success Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"></div>
         
-        <div className="relative bg-white/70 border border-emerald-200/60 rounded-2xl p-8 sm:p-12 lg:p-16 text-center backdrop-blur-sm shadow-2xl">
-          {/* Premium Success Icon */}
+        <div className="relative bg-white/10 border border-white/20 rounded-2xl p-8 sm:p-12 text-center backdrop-blur-2xl shadow-2xl">
           <div className="mb-8">
             <div className="relative inline-block">
-              <div className="absolute -inset-4 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 rounded-full blur-2xl opacity-30 animate-pulse"></div>
-              <div className="relative inline-flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 rounded-full text-white shadow-2xl">
-                <span className="text-4xl sm:text-5xl">✓</span>
+              <div className="absolute -inset-2 bg-gradient-to-r from-green-500/20 to-emerald-600/20 rounded-full blur-lg"></div>
+              <div className="relative inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full text-white shadow-xl border border-white/20">
+                <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                </svg>
               </div>
             </div>
           </div>
           
-          <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 mb-6">
-            Premium Submission Complete!
+          <h3 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+            Submission Successful
           </h3>
           
-          <p className="text-lg sm:text-xl text-slate-700 mb-4 leading-relaxed">
-            Your premium feedback for 
+          <p className="text-slate-300 mb-2">
+            Your feedback for 
           </p>
-          <p className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600 mb-8">
+          <p className="text-lg font-semibold text-blue-200 mb-6">
             "{contentTitle}"
           </p>
-          <p className="text-base sm:text-lg text-slate-600 mb-8">
-            has been successfully recorded in our premium collection system.
+          <p className="text-sm text-slate-400 mb-8">
+            has been successfully recorded in our system.
           </p>
           
-          {/* Premium Rewards Section */}
+          {/* Recognition Program Section */}
           <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 rounded-xl blur opacity-20"></div>
-            <div className="relative bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 border border-amber-200/60 rounded-xl p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/10 to-orange-600/10 rounded-lg blur"></div>
+            <div className="relative bg-amber-500/5 border border-amber-500/20 rounded-lg p-6 backdrop-blur-sm">
+              <div className="flex items-center justify-center gap-4">
                 <div className="flex-shrink-0">
-                  <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-2xl">🏆</span>
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
                   </div>
                 </div>
-                <div className="text-center sm:text-left">
-                  <h4 className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-700 to-orange-700 mb-2">
-                    Exclusive Rewards Program
+                <div className="text-left">
+                  <h4 className="text-base font-semibold text-amber-200 mb-1">
+                    Recognition Program
                   </h4>
-                  <p className="text-sm sm:text-base text-amber-700 leading-relaxed">
-                    Premium participants will be contacted via the provided contact details. 
-                    <br className="hidden sm:block" />
-                    Thank you for joining our exclusive feedback community!
+                  <p className="text-sm text-amber-300">
+                    Outstanding contributors will be contacted via provided details. Thank you for your participation.
                   </p>
                 </div>
               </div>
@@ -195,51 +198,50 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   }
 
   return (
-    <div className="relative overflow-hidden min-h-screen">
-      {/* Stunning Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-900">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.3),transparent_50%)] animate-pulse"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(168,85,247,0.3),transparent_50%)] animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_10%,rgba(236,72,153,0.2),transparent_50%)] animate-pulse" style={{animationDelay: '2s'}}></div>
+    <div className="relative overflow-hidden">
+      {/* Professional Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(59,130,246,0.1),transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,rgba(79,70,229,0.1),transparent_50%)]"></div>
       </div>
       
-      {/* Premium Container with Stunning Effects */}
-      <div className="relative bg-gradient-to-br from-white/95 via-blue-50/90 to-indigo-50/95 border-2 border-white/30 rounded-3xl shadow-2xl shadow-indigo-500/25 backdrop-blur-xl">
-        {/* Magical Shimmer Effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-70 animate-shimmer rounded-3xl"></div>
-        <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-3xl blur-xl opacity-30 animate-pulse"></div>
+      {/* Professional Glass Container */}
+      <div className="relative bg-white/10 border border-white/20 rounded-2xl shadow-2xl backdrop-blur-2xl">
+        {/* Subtle Glass Reflection */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent rounded-2xl"></div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
         
-        {/* Spectacular Header */}
-        <div className="relative bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 border-b border-white/20 p-6 sm:p-8 lg:p-12 rounded-t-3xl overflow-hidden">
-          {/* Animated Header Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/15 to-pink-600/20"></div>
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.3),transparent_70%)] animate-pulse"></div>
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-gradient-to-br from-pink-500/30 to-purple-500/30 rounded-full blur-3xl animate-bounce" style={{animationDuration: '3s'}}></div>
-          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full blur-3xl animate-bounce" style={{animationDuration: '4s', animationDelay: '1s'}}></div>
+        {/* Professional Header */}
+        <div className="relative bg-gradient-to-r from-slate-800/80 via-blue-900/80 to-indigo-900/80 border-b border-white/10 p-8 sm:p-10 lg:p-12 rounded-t-2xl backdrop-blur-xl">
+          {/* Glass Effect Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent rounded-t-2xl"></div>
           
           <div className="relative z-10">
             <div className="flex items-center justify-center mb-8">
-              <div className="relative group">
-                <div className="absolute -inset-4 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-full blur-2xl opacity-50 group-hover:opacity-70 transition-opacity duration-500 animate-pulse"></div>
-                <div className="relative bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 rounded-full p-5 shadow-2xl shadow-purple-500/50 transform hover:scale-110 transition-transform duration-300 group-hover:shadow-purple-500/70">
-                  <span className="text-3xl">🎪</span>
+              <div className="relative">
+                <div className="absolute -inset-2 bg-gradient-to-r from-blue-500/20 to-indigo-600/20 rounded-xl blur-lg"></div>
+                <div className="relative bg-white/10 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
+                  <svg className="w-8 h-8 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                    <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm2.5 4a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100-2 1 1 0 000 2zm-1 4h2v-1a1 1 0 00-1-1h-1v2z" clipRule="evenodd"/>
+                  </svg>
                 </div>
               </div>
             </div>
             
             <div className="text-center mb-6">
-              <h2 className="text-3xl sm:text-4xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-pink-200 to-purple-200 mb-2 animate-pulse tracking-wider">
-                ✨ ULTIMATE FAN FEST ✨
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-indigo-200 to-slate-200 mb-4 tracking-wide">
+                Executive Feedback Collection
               </h2>
-              <div className="w-24 h-1 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 mx-auto rounded-full mb-6 animate-pulse"></div>
+              <div className="w-20 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent mx-auto mb-6"></div>
             </div>
             
             <div className="text-center">
-              <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 mb-4 animate-shimmer">
+              <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-blue-100 mb-4">
                 {contentTitle}
               </h3>
-              <p className="text-base sm:text-lg text-blue-100 max-w-3xl mx-auto leading-relaxed opacity-90">
-                🌟 Experience the most exclusive feedback collection system! Participate in premium content evaluation and unlock extraordinary rewards! 🏆
+              <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                Participate in our professional feedback system to contribute valuable insights and qualify for exclusive recognition programs.
               </p>
             </div>
           </div>
@@ -250,31 +252,28 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
           {questions.map((question, index) => (
             <div 
               key={question.id} 
-              className="relative group animate-fadeInUp"
-              style={{animationDelay: `${index * 0.3}s`}}
+              className="relative group"
             >
-              {/* Spectacular Question Card */}
-              <div className="absolute -inset-3 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-2xl opacity-20 group-hover:opacity-40 transition-all duration-700 blur-2xl animate-pulse"></div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 rounded-2xl opacity-30 group-hover:opacity-60 transition-all duration-500 blur-lg"></div>
-              <div className="relative bg-gradient-to-br from-white/98 via-blue-50/95 to-indigo-50/98 border-2 border-white/60 rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl hover:shadow-purple-500/30 transition-all duration-700 transform hover:scale-[1.03] hover:-translate-y-3 backdrop-blur-2xl group-hover:bg-gradient-to-br group-hover:from-blue-50/98 group-hover:via-indigo-50/95 group-hover:to-purple-50/98">
+              {/* Professional Glass Card */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/10 to-indigo-600/10 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative bg-white/10 border border-white/20 rounded-xl p-6 sm:p-8 shadow-xl backdrop-blur-xl hover:bg-white/15 transition-all duration-300 hover:border-white/30">
                 <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-                  {/* Spectacular Question Number Badge */}
+                  {/* Professional Question Badge */}
                   <div className="flex-shrink-0">
-                    <div className="relative group/badge">
-                      <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-2xl blur-lg opacity-40 group-hover/badge:opacity-70 transition-opacity duration-500 animate-pulse"></div>
-                      <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-xl blur opacity-60 animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                      <div className="relative w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 text-white rounded-2xl flex items-center justify-center font-black text-xl sm:text-2xl shadow-2xl shadow-purple-500/50 transform group-hover/badge:scale-110 group-hover/badge:rotate-12 transition-all duration-500 border-2 border-white/30">
-                        <span className="text-transparent bg-clip-text bg-gradient-to-br from-white to-blue-100">{index + 1}</span>
+                    <div className="relative">
+                      <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-indigo-600/20 rounded-lg blur"></div>
+                      <div className="relative w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-lg flex items-center justify-center font-bold text-lg shadow-lg border border-white/20 backdrop-blur-sm">
+                        {index + 1}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex-1 space-y-4 sm:space-y-6 w-full">
-                    {/* Spectacular Question Text */}
-                    <h4 className="text-xl sm:text-2xl lg:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-800 via-purple-700 to-pink-700 leading-relaxed mb-2 animate-shimmer">
-                      ✨ {question.question}
+                    {/* Professional Question Text */}
+                    <h4 className="text-lg sm:text-xl font-semibold text-white mb-4 leading-relaxed">
+                      {question.question}
                     </h4>
-                    <div className="w-20 h-1 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-full mb-4 animate-pulse"></div>
+                    <div className="w-16 h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent mb-6"></div>
                     
                     {/* Premium Options Grid */}
                     <div className="space-y-3 sm:space-y-4">
@@ -285,19 +284,19 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                             key={optionIndex}
                             className="relative block cursor-pointer group/option"
                           >
-                            {/* Magnificent Option Card */}
-                            <div className={`absolute -inset-1 rounded-2xl transition-all duration-500 ${
+                            {/* Professional Glass Option */}
+                            <div className={`absolute -inset-0.5 rounded-lg transition-all duration-300 ${
                               isSelected
-                                ? 'bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-600 blur-lg animate-pulse'
-                                : 'bg-gradient-to-r from-slate-200 to-slate-400 opacity-0 group-hover/option:opacity-60 group-hover/option:blur-md'
+                                ? 'bg-gradient-to-r from-blue-500/30 to-indigo-600/30 blur'
+                                : 'opacity-0 group-hover/option:opacity-100 group-hover/option:bg-gradient-to-r group-hover/option:from-blue-500/10 group-hover/option:to-indigo-600/10'
                             }`}></div>
                             
-                            <div className={`relative flex items-center gap-4 sm:gap-6 p-5 sm:p-6 lg:p-7 rounded-2xl border-2 transition-all duration-500 transform group-hover/option:scale-[1.02] ${
+                            <div className={`relative flex items-center gap-4 p-4 sm:p-5 rounded-lg border transition-all duration-300 ${
                               isSelected
-                                ? 'bg-gradient-to-br from-emerald-50/90 via-blue-50/90 to-purple-50/90 border-white/70 shadow-2xl shadow-blue-500/30 scale-[1.02]'
-                                : 'bg-white/90 border-white/50 hover:bg-blue-50/80 hover:border-blue-200/70 shadow-xl hover:shadow-2xl hover:shadow-blue-500/20'
-                            } backdrop-blur-xl`}>
-                              {/* Spectacular Radio Button */}
+                                ? 'bg-white/15 border-blue-400/50 shadow-lg backdrop-blur-sm'
+                                : 'bg-white/8 border-white/20 hover:bg-white/12 hover:border-white/30 backdrop-blur-sm'
+                            }`}>
+                              {/* Professional Radio Button */}
                               <div className="flex-shrink-0">
                                 <input
                                   type="radio"
@@ -307,45 +306,35 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                                   onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                                   className="sr-only"
                                 />
-                                <div className="relative">
-                                  <div className={`absolute -inset-1 rounded-full transition-all duration-500 ${
-                                    isSelected 
-                                      ? 'bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-600 blur-md animate-pulse' 
-                                      : 'opacity-0 group-hover/option:opacity-50 group-hover/option:bg-gradient-to-r group-hover/option:from-blue-300 group-hover/option:to-purple-400 group-hover/option:blur-sm'
-                                  }`}></div>
-                                  <div className={`relative w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-full border-3 transition-all duration-500 transform ${
-                                    isSelected
-                                      ? 'border-white bg-gradient-to-br from-emerald-500 via-blue-600 to-purple-700 shadow-2xl shadow-blue-500/50 scale-110'
-                                      : 'border-slate-300 hover:border-blue-400 bg-white hover:bg-blue-50 shadow-lg hover:shadow-xl hover:scale-105'
-                                  }`}>
-                                    {isSelected && (
-                                      <div className="w-full h-full flex items-center justify-center">
-                                        <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-white rounded-full shadow-md animate-pulse"></div>
-                                      </div>
-                                    )}
-                                  </div>
+                                <div className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
+                                  isSelected
+                                    ? 'border-blue-400 bg-blue-500 shadow-lg'
+                                    : 'border-white/40 bg-transparent hover:border-white/60'
+                                }`}>
+                                  {isSelected && (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                               
-                              {/* Spectacular Option Text */}
-                              <span className={`text-base sm:text-lg lg:text-xl font-bold flex-1 transition-all duration-500 ${
+                              {/* Professional Option Text */}
+                              <span className={`text-sm sm:text-base font-medium flex-1 transition-colors duration-200 ${
                                 isSelected 
-                                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 via-blue-800 to-purple-800 animate-pulse' 
-                                  : 'text-slate-800 group-hover/option:text-transparent group-hover/option:bg-clip-text group-hover/option:bg-gradient-to-r group-hover/option:from-blue-700 group-hover/option:to-purple-700'
+                                  ? 'text-blue-200' 
+                                  : 'text-slate-200 group-hover/option:text-white'
                               }`}>
-                                {isSelected ? '✨ ' : ''}
                                 {option}
-                                {isSelected ? ' ✨' : ''}
                               </span>
 
-                              {/* Spectacular Selection Indicator */}
+                              {/* Professional Selection Indicator */}
                               {isSelected && (
-                                <div className="ml-auto flex-shrink-0 animate-bounce">
-                                  <div className="relative">
-                                    <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-600 rounded-full blur-lg animate-pulse"></div>
-                                    <div className="relative w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-gradient-to-br from-emerald-500 via-blue-600 to-purple-700 rounded-full flex items-center justify-center shadow-2xl shadow-blue-500/50 transform rotate-12">
-                                      <span className="text-white text-lg font-black">✓</span>
-                                    </div>
+                                <div className="ml-auto flex-shrink-0">
+                                  <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                    </svg>
                                   </div>
                                 </div>
                               )}
@@ -361,49 +350,48 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
           ))}
         </div>
 
-        {/* Spectacular Phone Number Section */}
-        <div className="relative border-t-2 border-white/40">
-          {/* Magical Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 via-teal-500/15 to-cyan-600/20"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+        {/* Professional Contact Section */}
+        <div className="relative border-t border-white/10">
+          {/* Glass Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 via-blue-900/50 to-indigo-900/50"></div>
           
-          <div className="relative p-8 sm:p-10 lg:p-12">
-            <div className="flex flex-col sm:flex-row items-start gap-6 sm:gap-8">
+          <div className="relative p-8 sm:p-10">
+            <div className="flex flex-col sm:flex-row items-start gap-6">
               <div className="flex-shrink-0">
-                <div className="relative group/phone">
-                  <div className="absolute -inset-3 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500 rounded-2xl blur-2xl opacity-40 group-hover/phone:opacity-60 transition-opacity duration-500 animate-pulse"></div>
-                  <div className="absolute -inset-1 bg-gradient-to-r from-green-400 to-blue-500 rounded-xl blur opacity-50 animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                  <div className="relative w-16 h-16 sm:w-18 sm:h-18 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 rounded-2xl flex items-center justify-center shadow-2xl shadow-emerald-500/50 transform group-hover/phone:scale-110 group-hover/phone:rotate-12 transition-all duration-500 border-2 border-white/30">
-                    <span className="text-2xl animate-bounce">📞</span>
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-green-500/20 to-emerald-600/20 rounded-lg blur"></div>
+                  <div className="relative w-12 h-12 bg-white/10 border border-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                    <svg className="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                    </svg>
                   </div>
                 </div>
               </div>
-              <div className="flex-1 space-y-6 w-full">
+              <div className="flex-1 space-y-4 w-full">
                 <div>
-                  <label className="block text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-800 via-teal-700 to-cyan-800 mb-4 animate-shimmer">
-                    🌟 Ultimate Contact Details 
-                    <span className="text-base font-bold text-emerald-600 ml-3 animate-pulse">(🎁 Exclusive VIP Rewards)</span>
+                  <label className="block text-lg font-semibold text-white mb-2">
+                    Contact Information 
+                    <span className="text-sm font-normal text-green-400 ml-2">(Optional - Recognition Program)</span>
                   </label>
-                  <p className="text-base sm:text-lg text-slate-700 leading-relaxed">
-                    🚀 Join our exclusive VIP community! Provide your contact information to unlock premium rewards, early access, and spectacular prizes. 
-                    We maintain the highest confidentiality standards and contact only verified winners! ✨
+                  <p className="text-sm text-slate-300 leading-relaxed">
+                    Provide your contact details to participate in our recognition program for outstanding feedback contributors. 
+                    All information is kept strictly confidential.
                   </p>
                 </div>
                 
-                {/* Spectacular Input Field */}
-                <div className="relative group">
-                  <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-600 rounded-2xl opacity-0 group-focus-within:opacity-100 transition-all duration-700 blur-xl animate-pulse"></div>
-                  <div className="absolute -inset-1 bg-gradient-to-r from-green-300 via-blue-400 to-purple-500 rounded-xl opacity-0 group-focus-within:opacity-50 transition-all duration-500 blur-lg"></div>
+                {/* Professional Input Field */}
+                <div className="relative">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500/10 to-emerald-600/10 rounded-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 blur"></div>
                   <input
                     type="text"
-                    placeholder="🎯 Enter your VIP contact number (e.g., +91 9876543210) 🏆"
+                    placeholder="Enter your contact number (e.g., +1 234 567 8900)"
                     value={phoneNumber}
                     onChange={(e) => {
                       console.log('Phone input changed:', e.target.value);
                       setPhoneNumber(e.target.value);
                     }}
                     inputMode="numeric"
-                    className="relative w-full px-6 sm:px-8 py-5 sm:py-6 lg:py-7 bg-white/95 border-2 border-emerald-200/60 rounded-xl focus:outline-none focus:border-transparent focus:ring-4 focus:ring-emerald-500/30 text-slate-900 placeholder-slate-600 text-base sm:text-lg lg:text-xl font-medium transition-all duration-700 shadow-xl focus:shadow-2xl focus:shadow-emerald-500/30 backdrop-blur-xl transform focus:scale-[1.02] hover:shadow-lg"
+                    className="relative w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-green-400/50 focus:ring-2 focus:ring-green-400/20 text-white placeholder-slate-400 transition-all duration-200 backdrop-blur-sm"
                   />
                 </div>
               </div>
@@ -411,70 +399,55 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
           </div>
         </div>
 
-        {/* Premium Submit Section */}
-        <div className="relative border-t border-slate-200/60">
-          {/* Premium Background Glow */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 via-indigo-50/30 to-purple-50/50"></div>
+        {/* Professional Submit Section */}
+        <div className="relative border-t border-white/10">
+          {/* Glass Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 via-blue-900/50 to-indigo-900/50"></div>
           
-          <div className="relative p-6 sm:p-8 lg:p-10">
-            {/* Spectacular Submit Button */}
-            <div className="relative group">
-              <div className={`absolute -inset-2 rounded-2xl transition-all duration-700 ${
+          <div className="relative p-8 sm:p-10">
+            {/* Professional Submit Button */}
+            <div className="relative">
+              <div className={`absolute -inset-1 rounded-lg transition-all duration-300 ${
                 Object.keys(answers).length === 0 || loading
-                  ? 'bg-gradient-to-r from-slate-300 to-slate-400 opacity-30'
-                  : 'bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-600 opacity-60 group-hover:opacity-90 blur-xl animate-pulse'
+                  ? 'bg-slate-600/20'
+                  : 'bg-gradient-to-r from-blue-500/30 to-indigo-600/30 blur group-hover:from-blue-500/40 group-hover:to-indigo-600/40'
               }`}></div>
-              <div className={`absolute -inset-1 rounded-2xl transition-all duration-500 ${
-                Object.keys(answers).length === 0 || loading
-                  ? 'opacity-0'
-                  : 'bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 opacity-20 group-hover:opacity-40 blur-lg animate-pulse'
-              }`} style={{animationDelay: '0.5s'}}></div>
               
               <button
                 onClick={handleSubmit}
                 disabled={Object.keys(answers).length === 0 || loading}
-                className={`relative w-full py-5 sm:py-6 lg:py-7 px-8 sm:px-10 lg:px-12 rounded-2xl font-black text-lg sm:text-xl lg:text-2xl transition-all duration-700 transform ${
+                className={`relative w-full py-4 px-6 rounded-lg font-semibold text-base transition-all duration-300 ${
                   Object.keys(answers).length === 0 || loading
-                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-emerald-500 via-blue-600 to-purple-700 text-white hover:from-emerald-600 hover:via-blue-700 hover:to-purple-800 shadow-2xl hover:shadow-purple-500/50 hover:scale-[1.05] active:scale-[0.95] border-2 border-white/30'
-                } backdrop-blur-xl`}
+                    ? 'bg-slate-600/20 text-slate-400 cursor-not-allowed border border-slate-600/30'
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-700 hover:to-indigo-800 shadow-lg hover:shadow-xl border border-blue-500/50'
+                } backdrop-blur-sm`}
               >
                 {loading ? (
-                  <span className="flex items-center justify-center gap-4">
-                    <div className="relative">
-                      <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      <div className="absolute inset-0 w-6 h-6 border-3 border-transparent border-t-yellow-300 rounded-full animate-spin" style={{animationDirection: 'reverse', animationDuration: '0.8s'}}></div>
-                    </div>
-                    <span className="animate-pulse">🚀 Processing Ultimate Submission...</span>
+                  <span className="flex items-center justify-center gap-3">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Processing Submission...</span>
                   </span>
                 ) : (
-                  <span className="flex items-center justify-center gap-4">
-                    <div className="relative">
-                      <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full blur animate-pulse"></div>
-                      <div className="relative w-8 h-8 bg-white/20 rounded-full flex items-center justify-center border-2 border-white/40">
-                        <span className="text-white font-black text-lg">✓</span>
-                      </div>
-                    </div>
-                    <span className="animate-shimmer">🎯 Submit Ultimate Feedback 🏆</span>
+                  <span className="flex items-center justify-center gap-3">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                    </svg>
+                    <span>Submit Feedback</span>
                   </span>
                 )}
               </button>
             </div>
             
-            {/* Spectacular Help Text */}
+            {/* Professional Help Text */}
             {Object.keys(answers).length === 0 && (
-              <div className="mt-6 sm:mt-8 text-center animate-bounce">
-                <div className="relative inline-block">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 rounded-2xl blur opacity-40 animate-pulse"></div>
-                  <div className="relative inline-flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-amber-50 via-orange-50 to-red-50 border-2 border-amber-300/60 rounded-2xl shadow-xl backdrop-blur-sm">
-                    <div className="relative">
-                      <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full blur animate-pulse"></div>
-                      <span className="relative text-2xl animate-bounce">🎯</span>
-                    </div>
-                    <p className="text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-700 via-orange-700 to-red-700">
-                      ✨ Complete all questions to unlock ultimate submission! ✨
-                    </p>
-                  </div>
+              <div className="mt-6 text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg backdrop-blur-sm">
+                  <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                  </svg>
+                  <p className="text-sm text-amber-300">
+                    Please answer all questions to submit your feedback
+                  </p>
                 </div>
               </div>
             )}
