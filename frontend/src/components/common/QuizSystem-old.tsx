@@ -16,9 +16,9 @@ interface QuizSystemProps {
 const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   const { user } = useAuth();
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [quizHash, setQuizHash] = useState<string>('');
+  const [quizHash, setQuizHash] = useState<string>('');  // Track quiz version
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
-  const [phoneNumber, setPhoneNumber] = useState<string>('');
+  const [phoneNumber, setPhoneNumber] = useState<string>('');  // NEW: Phone number field
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userHasAnswered, setUserHasAnswered] = useState(false);
@@ -34,8 +34,8 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
       const response = await API.get(`/quiz-system/${contentId}`);
       if (response.data.success) {
         setQuestions(response.data.quiz);
-        setQuizHash(response.data.quizHash);
-        console.log('Quiz loaded with hash:', response.data.quizHash);
+        setQuizHash(response.data.quizHash);  // Store quiz version hash
+        console.log('📋 Quiz loaded with hash:', response.data.quizHash);
       }
     } catch (error) {
       console.log('Using default quiz');
@@ -54,7 +54,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
       const response = await API.get(`/quiz-system/check/${contentId}/${user.id}`);
       if (response.data.success) {
         setUserHasAnswered(response.data.hasResponded);
-        console.log('User answered check - hasResponded:', response.data.hasResponded);
+        console.log('✓ User answered check - hasResponded:', response.data.hasResponded);
       }
     } catch (error) {
       console.log('Could not check response status');
@@ -79,9 +79,9 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
       const response = await API.post(`/quiz-system/${contentId}/submit`, { 
         answers: submissionData,
         userId: user?.id,
-        quizHash: quizHash,
-        userName: user?.name || 'Anonymous',
-        phoneNumber: phoneNumber
+        quizHash: quizHash,  // Send quiz version with submission
+        userName: user?.name || 'Anonymous',  // NEW: Send user name
+        phoneNumber: phoneNumber  // NEW: Send optional phone number
       });
       
       if (response.data.success) {
@@ -92,6 +92,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         setSubmitted(true);
       }
     } catch (error) {
+      // Always show success to user
       setSubmitted(true);
       setUserHasAnswered(true);
     }
@@ -99,7 +100,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
     setLoading(false);
   };
 
-  // Show already answered message
+  // Show already answered message if user has responded to this version
   if (userHasAnswered && !checkingStatus) {
     return (
       <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
@@ -124,13 +125,12 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
     );
   }
 
-  // Show success state
   if (submitted) {
     return (
       <div className="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
         <div className="mb-6">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full text-white">
-            <span className="text-3xl">✓</span>
+            <span className="text-3xl">Success!</span>
           </div>
         </div>
         <h3 className="text-2xl font-bold text-green-900 mb-4">
@@ -141,7 +141,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         </p>
         <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
           <p className="text-sm text-yellow-700 flex items-center justify-center gap-2">
-            <span className="text-xl">🏆</span>
+            <span className="text-xl">Trophy</span>
             <span>Winners will be contacted via the phone number provided. Good luck!</span>
           </p>
         </div>
@@ -150,31 +150,24 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-      {/* Professional Header */}
-      <div className="bg-gray-50 border-b border-gray-200 p-6">
-        <div className="flex items-center justify-center mb-4">
-          <div className="bg-blue-500 rounded-full p-3">
-            <span className="text-2xl text-white">📋</span>
+    <div className="space-y-6 sm:space-y-8">
+      {/* Professional Form Header */}
+      <div className="text-center pb-6 border-b border-gray-200 mb-6">
+        <div className="inline-flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <span className="text-xl">📋</span>
           </div>
-        </div>
-        
-        <h2 className="text-2xl font-bold text-gray-900 text-center mb-3">
-          Fan Fest Quiz
-        </h2>
-        
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
-            {contentTitle}
+          <h3 className="text-2xl font-bold text-gray-900">
+            Feedback Survey
           </h3>
-          <p className="text-sm text-gray-600 max-w-md mx-auto">
-            Answer these questions about the content and win exciting prizes!
-          </p>
         </div>
+        <p className="text-gray-600 leading-relaxed max-w-lg mx-auto">
+          Share your valuable feedback. Top participants will receive <span className="font-semibold text-blue-600">exciting rewards</span>.
+        </p>
       </div>
 
       {/* Questions Section */}
-      <div className="p-6 space-y-6">
+      <div className="space-y-6">
         {questions.map((question, index) => (
           <div 
             key={question.id} 
@@ -188,66 +181,68 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                 </div>
               </div>
 
-              <div className="flex-1 space-y-4">
+              <div className="flex-1 space-y-4 w-full">
                 {/* Question Text */}
-                <h4 className="text-lg font-semibold text-gray-900">
+                <h4 className="text-lg font-semibold text-gray-900 leading-relaxed">
                   {question.question}
                 </h4>
                 
-                {/* Options */}
+                {/* Options Grid */}
                 <div className="space-y-3">
-                  {question.options.map((option, optionIndex) => {
-                    const isSelected = answers[question.id] === option;
-                    return (
-                      <label
-                        key={optionIndex}
-                        className="flex items-center gap-3 cursor-pointer"
-                      >
-                        <div className={`flex-1 flex items-center gap-3 p-3 rounded-lg border-2 transition-all duration-200 ${
-                          isSelected
-                            ? 'bg-blue-50 border-blue-500'
-                            : 'bg-white border-gray-200 hover:border-gray-300'
-                        }`}>
-                          {/* Radio Button */}
-                          <div className="flex-shrink-0">
-                            <input
-                              type="radio"
-                              name={question.id}
-                              value={option}
-                              checked={isSelected}
-                              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                              className="sr-only"
-                            />
-                            <div className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
-                              isSelected
-                                ? 'border-blue-500 bg-blue-500'
-                                : 'border-gray-300 hover:border-gray-400'
-                            }`}>
-                              {isSelected && (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <div className="w-2 h-2 bg-white rounded-full"></div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {/* Option Text */}
-                          <span className={`text-sm font-medium flex-1 ${
-                            isSelected ? 'text-blue-900' : 'text-gray-700'
+                    {question.options.map((option, optionIndex) => {
+                      const isSelected = answers[question.id] === option;
+                      return (
+                        <label
+                          key={optionIndex}
+                          className="relative flex items-center gap-3 sm:gap-4 cursor-pointer group/option"
+                        >
+                          {/* Professional Option Card */}
+                          <div className={`flex-1 flex items-center gap-3 p-3 rounded-lg border-2 transition-all duration-200 ${
+                            isSelected
+                              ? 'bg-blue-50 border-blue-500'
+                              : 'bg-white border-gray-200 hover:border-gray-300'
                           }`}>
-                            {option}
-                          </span>
-
-                          {/* Selection Indicator */}
-                          {isSelected && (
-                            <div className="ml-auto flex-shrink-0">
-                              <span className="text-blue-600">✓</span>
+                            {/* Professional Radio Button */}
+                            <div className="flex-shrink-0">
+                              <input
+                                type="radio"
+                                name={question.id}
+                                value={option}
+                                checked={isSelected}
+                                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                                className="sr-only"
+                              />
+                              <div className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
+                                isSelected
+                                  ? 'border-blue-500 bg-blue-500'
+                                  : 'border-gray-300 hover:border-gray-400'
+                              }`}>
+                                {isSelected && (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      </label>
-                    );
-                  })}
+                            
+                            {/* Option Text */}
+                            <span className={`text-sm font-medium flex-1 ${
+                              isSelected ? 'text-blue-900' : 'text-gray-700'
+                            }`}>
+                              {option}
+                            </span>
+
+                            {/* Selection Indicator */}
+                            {isSelected && (
+                              <div className="ml-auto flex-shrink-0">
+                                <span className="text-blue-600">✓</span>
+                              </div>
+                            )}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -255,8 +250,8 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         ))}
       </div>
 
-      {/* Phone Number Field */}
-      <div className="p-6 border-t border-gray-200 bg-gray-50">
+      {/* Professional Phone Number Field */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -268,8 +263,8 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
               <label className="block text-base font-semibold text-gray-900 mb-2">
                 Contact Number <span className="text-green-600 text-sm font-medium">(Optional - for prizes)</span>
               </label>
-              <p className="text-sm text-gray-600">
-                Enter your phone number to be eligible for exciting rewards. We'll only contact winners.
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Enter your phone number to be eligible for exciting rewards. We'll only contact winners—your information remains confidential.
               </p>
             </div>
             <input
@@ -287,8 +282,8 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         </div>
       </div>
 
-      {/* Submit Button */}
-      <div className="p-6 border-t border-gray-200">
+      {/* Professional Submit Button */}
+      <div className="pt-6">
         <button
           onClick={handleSubmit}
           disabled={Object.keys(answers).length === 0 || loading}
