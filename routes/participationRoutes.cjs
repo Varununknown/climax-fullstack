@@ -380,8 +380,21 @@ router.post('/user/:contentId/submit', async (req, res) => {
       answersData: answers
     });
 
-    if (!userId || !mongoose.Types.ObjectId.isValid(contentId)) {
-      console.log('❌ Invalid parameters:', { userId: !!userId, validContentId: mongoose.Types.ObjectId.isValid(contentId) });
+    // Detailed validation logging
+    const userIdValid = !!userId;
+    const contentIdValid = mongoose.Types.ObjectId.isValid(contentId);
+    console.log('🔍 Validation checks:', {
+      userId,
+      userIdValid,
+      contentId,
+      contentIdValid,
+      answersType: typeof answers,
+      answersIsArray: Array.isArray(answers),
+      answersLength: answers?.length
+    });
+
+    if (!userId || !contentIdValid) {
+      console.log('❌ Invalid parameters:', { userId: userIdValid, validContentId: contentIdValid });
       return res.status(400).json({ success: false, message: 'Invalid parameters' });
     }
 
