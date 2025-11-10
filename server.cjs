@@ -14,10 +14,11 @@ const contentRoutes = require('./routes/contentRoutes.cjs');
 const paymentRoutes = require('./routes/paymentRoutes.cjs');
 const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs'); // ✅ NEW
 const payuRoutes = require('./routes/payuRoutes.cjs'); // ✅ PayU Gateway
-const participationRoutes = require('./routes/participationRoutes.cjs'); // ✅ Fans Fest
-const quizRoutes = require('./routes/quizRoutes.cjs'); // ✅ Quiz System
-const simpleParticipationRoutes = require('./routes/simpleParticipation.cjs'); // ✅ SIMPLE FIX
-const quizSystemRoutes = require('./routes/quizSystemRoutes.cjs'); // ✅ NEW QUIZ SYSTEM
+// DISABLED: Old participation/quiz routes - keeping for backward compatibility but not mounted
+// const participationRoutes = require('./routes/participationRoutes.cjs'); // ✅ DISABLED
+// const quizRoutes = require('./routes/quizRoutes.cjs'); // ✅ DISABLED
+// const simpleParticipationRoutes = require('./routes/simpleParticipation.cjs'); // ✅ DISABLED
+const quizSystemRoutes = require('./routes/quizSystemRoutes.cjs'); // ✅ NEW QUIZ SYSTEM (ACTIVE)
 
 const app = express();
 
@@ -361,11 +362,12 @@ app.use('/api/auth', googleAuthRoutes);  // <-- Add Google auth routes here
 app.use('/api/payments', paymentRoutes); // ✅ This now handles /api/payments/check properly
 app.use('/api/payment-settings', paymentSettingsRoutes); // ✅ NEW
 app.use('/api/payu', payuRoutes); // ✅ PayU Gateway
-app.use('/api/participation', participationRoutes); // ✅ Fans Fest - CRITICAL FIX
-app.use('/api/participation/simple', simpleParticipationRoutes); // ✅ SIMPLE WORKING FIX
-app.use('/api/quiz', quizRoutes); // ✅ Quiz System
-app.use('/api/quiz-system', quizSystemRoutes); // ✅ NEW INDEPENDENT QUIZ SYSTEM
-console.log('✅ All routes registered including participation, quiz, and quiz-system');
+// DISABLED: Old participation/quiz routes - using new quiz-system only
+// app.use('/api/participation', participationRoutes); // ✅ DISABLED - Old Fans Fest
+// app.use('/api/participation/simple', simpleParticipationRoutes); // ✅ DISABLED - Old simple fix
+// app.use('/api/quiz', quizRoutes); // ✅ DISABLED - Old Quiz System
+app.use('/api/quiz-system', quizSystemRoutes); // ✅ NEW INDEPENDENT QUIZ SYSTEM (ACTIVE)
+console.log('✅ All routes registered - using new quiz-system only');
 
 // Video proxy endpoint for better loading performance
 app.get('/api/video/:id', async (req, res) => {
