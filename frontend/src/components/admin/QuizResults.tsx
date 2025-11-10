@@ -3,7 +3,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import API from '../../services/api';
 import { RefreshCw, Download, Trash2, FileText } from 'lucide-react';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 interface QuizResponse {
   _id: string;
@@ -44,7 +43,6 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [clearing, setClearing] = useState(false);
-  const [chartHover, setChartHover] = useState<string | null>(null);
 
   const loadResults = async () => {
     setLoading(true);
@@ -207,7 +205,7 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
 
     statBoxes.forEach((stat, idx) => {
       const xPos = 15 + (idx * (statsBoxWidth + 6));
-      pdf.setFillColor(...stat.color);
+      pdf.setFillColor(stat.color[0], stat.color[1], stat.color[2]);
       pdf.roundedRect(xPos, yPosition, statsBoxWidth, statsBoxHeight, 2, 2, 'F');
       pdf.setTextColor(255, 255, 255);
       pdf.setFont('Helvetica', 'bold');
@@ -234,7 +232,6 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
     pdf.setFontSize(10);
     
     const col1 = 15, col2 = 50, col3 = 95, col4 = 140, col5 = 180;
-    const colWidths = [col2 - col1, col3 - col2, col4 - col3, col5 - col4, pageWidth - 15 - col5];
     
     pdf.rect(col1, yPosition, col2 - col1, 8, 'F');
     pdf.rect(col2, yPosition, col3 - col2, 8, 'F');
@@ -593,24 +590,25 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
                   <div className="relative bg-white rounded-2xl p-6 shadow-sm border border-purple-100/50 hover:border-transparent transition-all duration-300 group-hover/card:shadow-lg">
                     <div className="flex justify-between items-start space-x-4">
                       <div className="flex-1">
-                    <div className="text-sm font-semibold text-gray-800">
-                      👤 {response.userName || resp.userName || 'Anonymous'}
-                    </div>
-                    {(response.phoneNumber || resp.phoneNumber) && (
-                      <div className="text-xs text-blue-600 font-medium">
-                        📱 {response.phoneNumber || resp.phoneNumber}
+                        <div className="text-sm font-semibold text-gray-800">
+                          👤 {response.userName || resp.userName || 'Anonymous'}
+                        </div>
+                        {(response.phoneNumber || resp.phoneNumber) && (
+                          <div className="text-xs text-blue-600 font-medium">
+                            📱 {response.phoneNumber || resp.phoneNumber}
+                          </div>
+                        )}
                       </div>
-                    )}
+                      <div className="text-xs text-gray-500 font-semibold">Score: {response.score}</div>
+                    </div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      📅 {new Date(response.submittedAt).toLocaleDateString()} 🕐 {new Date(response.submittedAt).toLocaleTimeString()}
+                    </div>
+                    <div className="mt-2 text-sm text-gray-700 bg-white p-2 rounded border border-gray-200">
+                      <strong>Answers:</strong> {response.answers.map(a => `${a.answer}`).join(', ')}
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500 font-semibold">Score: {response.score}</div>
                 </div>
-                <div className="text-xs text-gray-600 mb-2">
-                  📅 {new Date(response.submittedAt).toLocaleDateString()} 🕐 {new Date(response.submittedAt).toLocaleTimeString()}
-                </div>
-                <div className="mt-2 text-sm text-gray-700 bg-white p-2 rounded border border-gray-200">
-                  <strong>Answers:</strong> {response.answers.map(a => `${a.answer}`).join(', ')}
-                </div>
-              </div>
             );
           })}
         </div>
