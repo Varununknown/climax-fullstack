@@ -86,7 +86,7 @@ export const QuizPage: React.FC = () => {
             <ArrowLeft size={20} />
             <span>Back</span>
           </button>
-          <h1 className="text-xl font-bold">{content.title} - Quiz</h1>
+          <h1 className="text-xl font-bold">FAN FEST: {content.title}</h1>
           <div className="w-20" /> {/* Spacer for centering */}
         </div>
       </div>

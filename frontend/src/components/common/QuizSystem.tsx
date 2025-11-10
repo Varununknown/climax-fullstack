@@ -106,10 +106,10 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
         <div className="text-blue-600 text-2xl mb-2">✓</div>
         <h3 className="text-lg font-semibold text-blue-800 mb-2">
-          Already Answered
+          Already Participated
         </h3>
         <p className="text-blue-600">
-          Thank you! You've already submitted your feedback for "{contentTitle}". You can answer again if the quiz is updated with new questions.
+          Thank you! You've already submitted your feedback for "{contentTitle}". You can participate again if the Fan Fest questions are updated with new challenges.
         </p>
       </div>
     );
@@ -132,7 +132,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6">
       <h3 className="text-xl font-bold text-gray-800 mb-4">
-        📋 Quick Survey: {contentTitle}
+        🎬 FAN FEST: {contentTitle}
       </h3>
       
       <div className="space-y-6">

@@ -176,7 +176,7 @@ const QuizEditor: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">✏️ Quiz Editor</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">🎬 Fan Fest Editor</h1>
           <p className="text-gray-400">Create custom questions for each content</p>
         </div>
 

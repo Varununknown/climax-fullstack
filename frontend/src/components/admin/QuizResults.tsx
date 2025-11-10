@@ -100,8 +100,8 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
   if (!data || data.totalResponses === 0) {
     return (
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-2">📊 Quiz Results</h3>
-        <p className="text-blue-700">No responses yet for "{contentTitle}"</p>
+        <h3 className="text-lg font-semibold text-blue-900 mb-2">🎬 Fan Fest Results</h3>
+        <p className="text-blue-700">No participations yet for "{contentTitle}"</p>
       </div>
     );
   }
@@ -349,7 +349,7 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
     <div className="space-y-6">
       {/* Stats Header */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Quiz Results: {contentTitle}</h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-4">🎬 Fan Fest Participation: {contentTitle}</h3>
         
         <div className="grid grid-cols-4 gap-4 mb-4">
           <div className="bg-white rounded-lg p-4 border border-blue-100">

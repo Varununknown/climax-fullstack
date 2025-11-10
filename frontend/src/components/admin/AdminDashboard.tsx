@@ -71,7 +71,7 @@ export const AdminDashboard: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">📊 Quiz System Results</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">🎬 Fan Fest Participation Results</h2>
               
               {/* Content Selector */}
               <div className="mb-6">
@@ -133,8 +133,8 @@ export const AdminDashboard: React.FC = () => {
               { id: 'users', label: 'Users' },
               { id: 'payments', label: 'Payments' },
               { id: 'analytics', label: 'Analytics' },
-              { id: 'quiz-editor', label: 'Quiz Editor' },
-              { id: 'quiz-results', label: 'Quiz Results' }
+              { id: 'quiz-editor', label: 'Fan Fest Editor' },
+              { id: 'quiz-results', label: 'Fan Fest Results' }
             ].map((item) => (
               <button
                 key={item.id}
