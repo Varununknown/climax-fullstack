@@ -10,17 +10,33 @@ const User = require('../models/User.cjs');
 // Middleware to check if user is authenticated
 const requireAuth = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
+  console.log('🔐 Auth check - Token received:', token ? 'YES' : 'NO');
+  
   if (!token) {
+    console.log('❌ No token provided');
     return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
   
   try {
     const jwt = require('jsonwebtoken');
+    console.log('🔐 Attempting to verify JWT with secret...');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('✅ JWT decoded successfully:', { id: decoded.id, role: decoded.role });
     req.user = decoded; // Set user data from token
     next();
   } catch (err) {
     console.error('❌ JWT verification failed:', err.message);
+    console.error('❌ Token that failed:', token.substring(0, 50) + '...');
+    
+    // Temporary: Try to decode without verification for debugging
+    try {
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.decode(token);
+      console.log('🔍 Token payload (unverified):', decoded);
+    } catch (decodeErr) {
+      console.log('❌ Token not even decodable:', decodeErr.message);
+    }
+    
     return res.status(401).json({ success: false, message: 'Invalid token' });
   }
 };
