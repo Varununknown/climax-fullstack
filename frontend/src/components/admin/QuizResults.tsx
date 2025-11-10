@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import API from '../../services/api';
-import { RefreshCw, Download } from 'lucide-react';
+import { RefreshCw, Download, Trash2 } from 'lucide-react';
 
 interface QuizResponse {
   _id: string;
@@ -30,6 +30,7 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
   const [data, setData] = useState<QuizResultsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [clearing, setClearing] = useState(false);
 
   const loadResults = async () => {
     setLoading(true);
@@ -44,6 +45,28 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
     }
     
     setLoading(false);
+  };
+
+  const clearAllAnswers = async () => {
+    if (!window.confirm(`🗑️ Are you sure? This will permanently delete ALL answers for "${contentTitle}" (${data?.totalResponses} responses). This cannot be undone!`)) {
+      return;
+    }
+
+    setClearing(true);
+    try {
+      const response = await API.post(`/quiz-system/admin/clear/${contentId}`, {});
+      if (response.data.success) {
+        alert('✅ All answers cleared successfully! Memory freed.');
+        setData(null);
+        loadResults(); // Reload to show empty state
+      } else {
+        alert('❌ Failed to clear answers: ' + response.data.message);
+      }
+    } catch (err) {
+      console.error('Failed to clear answers:', err);
+      alert('❌ Error clearing answers');
+    }
+    setClearing(false);
   };
 
   useEffect(() => {
@@ -157,6 +180,20 @@ const QuizResultsComponent: React.FC<QuizResultsProps> = ({ contentId, contentTi
         >
           <Download size={18} />
           <span>Download CSV</span>
+        </button>
+
+        <button
+          onClick={clearAllAnswers}
+          disabled={clearing || data.totalResponses === 0}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors font-medium ${
+            clearing || data.totalResponses === 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-red-600 hover:bg-red-700 text-white'
+          }`}
+          title="Permanently delete all answers for this content"
+        >
+          <Trash2 size={18} />
+          <span>{clearing ? 'Clearing...' : 'Clear All Answers'}</span>
         </button>
       </div>
 

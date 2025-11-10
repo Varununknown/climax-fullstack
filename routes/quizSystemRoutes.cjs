@@ -227,6 +227,12 @@ router.post('/admin/:contentId', async (req, res) => {
       { upsert: true, new: true }
     );
     
+    // AUTO-DELETE: If questions are cleared (empty array), delete all responses for this content
+    if (!questions || questions.length === 0) {
+      const deleteResult = await SimpleQuizResponse.deleteMany({ contentId });
+      console.log(`🗑️ Auto-deleted ${deleteResult.deletedCount} responses for content ${contentId} (questions cleared)`);
+    }
+    
     console.log('✅ Quiz updated with new version:', {
       contentId,
       newHash,
@@ -326,6 +332,31 @@ router.get('/admin/summary/all', async (req, res) => {
     res.json({
       success: true,
       data: { totalResponses: 0, contentStats: [] }
+    });
+  }
+});
+
+// ✅ NEW: Clear all answers for a content (ADMIN)
+router.post('/admin/clear/:contentId', async (req, res) => {
+  try {
+    const { contentId } = req.params;
+    
+    console.log('🗑️ Clearing all answers for contentId:', contentId);
+    
+    const result = await SimpleQuizResponse.deleteMany({ contentId });
+    
+    console.log(`✅ Deleted ${result.deletedCount} responses for content ${contentId}`);
+    
+    res.json({
+      success: true,
+      message: `Cleared ${result.deletedCount} answers`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    console.error('❌ Clear answers error:', error);
+    res.json({
+      success: false,
+      message: 'Failed to clear answers: ' + error.message
     });
   }
 });
