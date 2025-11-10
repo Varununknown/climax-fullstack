@@ -13,8 +13,16 @@ const requireAuth = (req, res, next) => {
   if (!token) {
     return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
-  // Token validation happens in server.cjs
-  next();
+  
+  try {
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // Set user data from token
+    next();
+  } catch (err) {
+    console.error('❌ JWT verification failed:', err.message);
+    return res.status(401).json({ success: false, message: 'Invalid token' });
+  }
 };
 
 // Middleware to check if user is admin
@@ -348,7 +356,16 @@ router.post('/user/:contentId/submit', requireAuth, async (req, res) => {
     const { answers } = req.body;
     const userId = req.user?.id || req.headers['x-user-id'];
 
+    console.log('📤 Submission received:', {
+      contentId,
+      userId,
+      userFromToken: req.user,
+      answersCount: answers?.length,
+      answersData: answers
+    });
+
     if (!userId || !mongoose.Types.ObjectId.isValid(contentId)) {
+      console.log('❌ Invalid parameters:', { userId: !!userId, validContentId: mongoose.Types.ObjectId.isValid(contentId) });
       return res.status(400).json({ success: false, message: 'Invalid parameters' });
     }
 
@@ -360,6 +377,7 @@ router.post('/user/:contentId/submit', requireAuth, async (req, res) => {
 
     // Validate answers
     if (!Array.isArray(answers) || answers.length === 0) {
+      console.log('❌ Invalid answers format:', { isArray: Array.isArray(answers), length: answers?.length });
       return res.status(400).json({ success: false, message: 'Answers required' });
     }
 
