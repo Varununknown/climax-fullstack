@@ -363,6 +363,7 @@ app.use('/api/payments', paymentRoutes); // ✅ This now handles /api/payments/c
 app.use('/api/payment-settings', paymentSettingsRoutes); // ✅ NEW
 app.use('/api/payu', payuRoutes); // ✅ PayU Gateway
 // DISABLED: Old participation/quiz routes - using new quiz-system only
+app.use('/api/contents', contentRoutes); // ✅ MAIN CONTENT ROUTES (with POST, PUT, DELETE)
 // app.use('/api/participation', participationRoutes); // ✅ DISABLED - Old Fans Fest
 // app.use('/api/participation/simple', simpleParticipationRoutes); // ✅ DISABLED - Old simple fix
 // app.use('/api/quiz', quizRoutes); // ✅ DISABLED - Old Quiz System
