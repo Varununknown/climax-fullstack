@@ -79,18 +79,42 @@ const AddContentModal: React.FC<AddContentModalProps> = ({ onClose, onSuccess })
         isActive: true
       };
 
-      console.log('📝 Adding content with data:', contentData);
-      await addContent(contentData);
+      console.log('📝 AddContentForm: Submitting content data:', contentData);
+      const result = await addContent(contentData);
       
+      console.log('✅ AddContentForm: Content added, result:', result);
       setSuccess('✅ Content added successfully!');
+      
       setTimeout(() => {
+        console.log('📤 AddContentForm: Calling onSuccess and onClose');
         onSuccess?.();
         onClose();
       }, 1500);
     } catch (err: any) {
-      console.error('❌ Error adding content:', err);
-      const errorMsg = err.response?.data?.error || err.message || 'Failed to add content';
-      setError(`❌ Error: ${errorMsg}`);
+      console.error('❌ AddContentForm: Error adding content:', err);
+      console.error('Error details:', {
+        type: err?.constructor?.name,
+        message: err?.message,
+        status: err?.response?.status,
+        responseData: err?.response?.data
+      });
+      
+      const statusCode = err?.response?.status;
+      const backendError = err?.response?.data?.error;
+      const errorMsg = backendError || err.message || 'Failed to add content';
+      
+      // Build user-friendly error message
+      if (statusCode === 400) {
+        setError(`❌ Validation Error: ${errorMsg}`);
+      } else if (statusCode === 401 || statusCode === 403) {
+        setError('❌ Access Denied: You don\'t have permission to add content');
+      } else if (statusCode === 500) {
+        setError('❌ Server Error: Please try again later or contact support');
+      } else if (err?.message?.includes('Network') || err?.message?.includes('timeout')) {
+        setError('❌ Network Error: Cannot reach the server. Check your connection.');
+      } else {
+        setError(`❌ Error: ${errorMsg}`);
+      }
     } finally {
       setLoading(false);
     }

@@ -95,14 +95,32 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
         throw new Error('Category is required');
       }
       
+      console.log('📡 Sending POST request to /contents...');
       const res = await API.post('/contents', data);
-      console.log('✅ ContentContext: Content added successfully:', res.data);
+      
+      console.log('✅ ContentContext: Content added successfully');
+      console.log('📦 Response data:', res.data);
+      console.log('📦 Response status:', res.status);
+      
+      if (!res.data || !res.data._id) {
+        console.error('❌ Invalid response format - missing _id:', res.data);
+        throw new Error('Server returned invalid content data (missing _id)');
+      }
+      
       setContents((prev) => [res.data, ...prev]);
+      console.log('✅ Updated contents list with new item');
       return res.data;
     } catch (err: any) {
       console.error('❌ ContentContext: Error adding content:', err);
+      console.error('Error type:', err.constructor.name);
+      console.error('Response status:', err?.response?.status);
+      console.error('Response data:', err?.response?.data);
+      console.error('Message:', err?.message);
+      
       const errorMsg = err.response?.data?.error || err.message || 'Failed to add content';
-      throw new Error(errorMsg);
+      const fullError = new Error(errorMsg);
+      (fullError as any).originalError = err;
+      throw fullError;
     }
   };
 
@@ -110,6 +128,7 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
     try {
       console.log('🔄 ContentContext: Updating content:', id);
       console.log('📊 Update payload:', contentData);
+      console.log('📊 Payload keys:', Object.keys(contentData));
       
       // Validation
       if (contentData.title !== undefined && !contentData.title?.trim()) {
@@ -122,12 +141,30 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
         throw new Error('Category is required');
       }
       
-      const res = await API.put(`/contents/${id}`, contentData);
-      console.log('✅ ContentContext: Content updated successfully:', res.data);
+      const url = `/contents/${id}`;
+      console.log('📡 Sending PUT request to:', url);
+      
+      const res = await API.put(url, contentData);
+      
+      console.log('✅ ContentContext: Content updated successfully');
+      console.log('📦 Response data:', res.data);
+      console.log('📦 Response status:', res.status);
+      
+      if (!res.data || !res.data._id) {
+        console.error('❌ Invalid response format - missing _id:', res.data);
+        throw new Error('Server returned invalid content data (missing _id)');
+      }
+      
       setContents((prev) => prev.map(c => (c._id === id ? res.data : c)));
+      console.log('✅ Updated contents list with modified item');
       return res.data;
     } catch (err: any) { 
       console.error('❌ ContentContext: Update failed:', err);
+      console.error('Error type:', err.constructor.name);
+      console.error('Response status:', err?.response?.status);
+      console.error('Response data:', err?.response?.data);
+      console.error('Message:', err?.message);
+      
       const status = err?.response?.status;
       const statusText = err?.response?.statusText;
       const backendError = err?.response?.data?.error;
@@ -148,11 +185,18 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const deleteContent = async (id: string) => {
     try {
       console.log('🗑️ ContentContext: Deleting content:', id);
-      await API.delete(`/contents/${id}`);
+      const url = `/contents/${id}`;
+      console.log('📡 Sending DELETE request to:', url);
+      
+      await API.delete(url);
+      
       console.log('✅ ContentContext: Content deleted successfully');
       setContents((prev) => prev.filter(c => c._id !== id));
+      console.log('✅ Updated contents list, removed deleted item');
     } catch (err: any) { 
       console.error('❌ ContentContext: Delete failed:', err);
+      console.error('Response status:', err?.response?.status);
+      console.error('Response data:', err?.response?.data);
       const errorMsg = err.response?.data?.error || err.message || 'Failed to delete content';
       throw new Error(errorMsg);
     }

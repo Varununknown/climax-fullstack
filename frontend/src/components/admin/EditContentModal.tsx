@@ -123,18 +123,17 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
         
         // Build user-friendly error message
         if (status === 404) {
-          const contentId = content._id || content.id;
-          setError(`❌ Content not found on server!\n\nThis content (ID: ${contentId}) exists locally but not on the production database.\n\nPossible solutions:\n1. Start local backend server\n2. Add this content to production database\n3. Use content that exists on production`);
+          setError(`❌ Content not found on server (ID: ${contentId})\n\nThis may mean:\n1. The content was deleted\n2. The backend database is different\n3. Connection issue\n\nTry refreshing the page.`);
         } else if (status === 401 || status === 403) {
-          setError(`❌ Access Denied\n\nYou don't have permission to update this content. Please check your authentication and try again.`);
-        } else if (status >= 400 && status < 500) {
-          setError(`⚠️ Client Error (${status})\n\n${backendError || errorMsg}\n\nCheck console for details.`);
+          setError(`❌ Access Denied\n\nYou don't have permission to update this content.`);
+        } else if (status === 400) {
+          setError(`⚠️ Validation Error\n\n${backendError || errorMsg}`);
         } else if (status >= 500) {
           setError(`⚠️ Server Error (${status})\n\nThe server encountered an error. Please try again later.`);
         } else if (errorMsg.includes('Network') || errorMsg.includes('timeout')) {
-          setError(`⚠️ Network Error\n\nCannot reach the server. Please check:\n1. Internet connection\n2. Backend server is running\n3. Backend URL is correct`);
+          setError(`⚠️ Network Error\n\nCannot reach the server.`);
         } else {
-          setError(`⚠️ Update Failed\n\n${backendError || errorMsg}\n\nCheck console for more details.`);
+          setError(`⚠️ Update Failed\n\n${backendError || errorMsg}`);
         }
       }
     } catch (error: any) {
