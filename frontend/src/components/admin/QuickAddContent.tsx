@@ -9,7 +9,7 @@ interface FormData {
   type: string;
   duration: number;
   videoUrl: string;
-  thumbnailUrl: string;
+  thumbnail: string;
   genre: string;
   climaxTimestamp: number;
   rating: number;
@@ -44,7 +44,7 @@ const QuickAddContent: React.FC<QuickAddContentProps> = ({ isOpen, onClose, onSu
     type: 'movie',
     duration: 120,
     videoUrl: '',
-    thumbnailUrl: '',
+    thumbnail: '',
     genre: '',
     climaxTimestamp: 0,
     rating: 8.0,
@@ -111,7 +111,7 @@ const QuickAddContent: React.FC<QuickAddContentProps> = ({ isOpen, onClose, onSu
         type: 'movie',
         duration: 120,
         videoUrl: '',
-        thumbnailUrl: '',
+        thumbnail: '',
         genre: '',
         climaxTimestamp: 0,
         rating: 8.0,
@@ -321,8 +321,8 @@ const QuickAddContent: React.FC<QuickAddContentProps> = ({ isOpen, onClose, onSu
             </label>
             <input
               type="url"
-              value={formData.thumbnailUrl}
-              onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
+              value={formData.thumbnail}
+              onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
               placeholder="https://example.com/thumbnail.jpg"
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors"
             />
