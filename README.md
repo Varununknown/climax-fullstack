@@ -2,6 +2,20 @@
 
 A modern OTT (Over-The-Top) streaming platform with a unique "climax-moment" monetization model. Users can watch content for free up to the climax point, then pay to unlock the remaining content.
 
+## 📚 **IMPORTANT: Documentation for Content Management** ⭐
+
+### **🟢 START HERE** (Forms are now fully functional!)
+- **[FORMS_INDEX.md](./FORMS_INDEX.md)** - Complete reference guide for all form documentation
+- **[FORMS_FIX_SUMMARY.md](./FORMS_FIX_SUMMARY.md)** - What was fixed and how to use new logging
+- **[TEST_FORMS_GUIDE.md](./TEST_FORMS_GUIDE.md)** - How to test add/edit/delete forms (5 min)
+
+### **🔴 CRITICAL FOR PRODUCTION**
+- **[PRODUCTION_STATUS.md](./PRODUCTION_STATUS.md)** - Complete deployment checklist
+- **[MONGODB_IP_WHITELIST_FIX.md](./MONGODB_IP_WHITELIST_FIX.md)** - Required for production!
+
+### **🔵 FOR DEBUGGING**
+- **[FORM_SUBMISSION_DEBUG.md](./FORM_SUBMISSION_DEBUG.md)** - Detailed debugging guide with console logs
+
 ## 🏗️ **Monorepo Structure**
 
 ```
