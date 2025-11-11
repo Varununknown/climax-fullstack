@@ -9,6 +9,7 @@ import { PendingPayments } from './PendingPayments';
 import { ImageFixer } from './ImageFixer';
 import QuizResults from './QuizResults';
 import QuizEditor from './QuizEditor';
+import QuickAddContent from './QuickAddContent';
 import API from '../../services/api';
 
 interface Content {
@@ -21,6 +22,7 @@ export const AdminDashboard: React.FC = () => {
   const [selectedContentId, setSelectedContentId] = useState<string>('');
   const [selectedContentTitle, setSelectedContentTitle] = useState<string>('');
   const [allContents, setAllContents] = useState<Content[]>([]);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
 
   // Load all contents when on quiz-results page
   useEffect(() => {
@@ -119,10 +121,25 @@ export const AdminDashboard: React.FC = () => {
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-          <p className="text-gray-400 mt-2">Manage your StreamFlix platform</p>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+            <p className="text-gray-400 mt-2">Manage your StreamFlix platform</p>
+          </div>
+          <button
+            onClick={() => setShowQuickAdd(true)}
+            className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors"
+          >
+            ⚡ Quick Add Content
+          </button>
         </div>
+
+        {/* Quick Add Modal */}
+        <QuickAddContent
+          isOpen={showQuickAdd}
+          onClose={() => setShowQuickAdd(false)}
+          onSuccess={() => loadContents()}
+        />
 
         {/* Admin Navigation */}
         <div className="mb-8">
