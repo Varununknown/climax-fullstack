@@ -10,6 +10,7 @@ import { ImageFixer } from './ImageFixer';
 import QuizResults from './QuizResults';
 import QuizEditor from './QuizEditor';
 import QuickAddContent from './QuickAddContent';
+import { BannerManagement } from './BannerManagement';
 import API from '../../services/api';
 
 interface Content {
@@ -69,6 +70,8 @@ export const AdminDashboard: React.FC = () => {
         );
       case 'quiz-editor':
         return <QuizEditor />;
+      case 'banners':
+        return <BannerManagement />;
       case 'quiz-results':
         return (
           <div className="space-y-6">
@@ -151,7 +154,8 @@ export const AdminDashboard: React.FC = () => {
               { id: 'payments', label: 'Payments' },
               { id: 'analytics', label: 'Analytics' },
               { id: 'quiz-editor', label: 'Fan Fest Editor' },
-              { id: 'quiz-results', label: 'Fan Fest Results' }
+              { id: 'quiz-results', label: 'Fan Fest Results' },
+              { id: 'banners', label: 'Banners' }
             ].map((item) => (
               <button
                 key={item.id}

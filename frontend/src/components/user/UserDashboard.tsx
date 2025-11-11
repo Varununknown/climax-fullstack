@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '../common/Header';
 import { ContentGrid } from './ContentGrid';
 import { CategoryFilter } from './CategoryFilter';
@@ -6,13 +6,31 @@ import { HeroSection } from './HeroSection';
 import { useContent } from '../../context/ContentContext';
 import BottomNav from './BottomNav';
 import ProfilePage from './ProfilePage'; // relative to components/user
+import API from '../../services/api';
 
 export const UserDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [banners, setBanners] = useState<any[]>([]);
 
   const { contents, categories } = useContent();
+
+  // Fetch banners from API
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const response = await API.get('/banners');
+        if (response.data && Array.isArray(response.data)) {
+          setBanners(response.data);
+        }
+      } catch (error) {
+        console.warn('⚠️  Could not fetch banners:', error);
+        // Silently fail - app will work without banners
+      }
+    };
+    fetchBanners();
+  }, []);
 
   // Handle search input
   const handleSearch = (query: string) => {
@@ -124,37 +142,39 @@ export const UserDashboard: React.FC = () => {
                 <div className="flex-1 h-px bg-gray-600 max-w-32"></div>
               </div>
               
-              <div className="grid grid-cols-2 gap-3 md:gap-6 mb-8 md:mb-12">
-                <div 
-                  onClick={() => {
-                    setSelectedCategory('latest');
-                    setCurrentPage('browse');
-                  }}
-                  className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer group shadow-2xl relative overflow-hidden"
-                >
-                  <img src="/logo1.jpg" alt="Latest Releases" className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-50 group-hover:opacity-70 transition-opacity" />
-                  <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-white text-sm md:text-xl font-semibold mb-1">Latest Releases</h3>
+              {banners.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3 md:gap-6 mb-8 md:mb-12">
+                  {banners.map((banner) => (
+                    <div 
+                      key={banner._id}
+                      onClick={() => {
+                        if (banner.link) {
+                          window.location.href = banner.link;
+                        }
+                      }}
+                      className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer group shadow-2xl relative overflow-hidden"
+                    >
+                      <img 
+                        src={banner.imageUrl} 
+                        alt={banner.title} 
+                        className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-50 group-hover:opacity-70 transition-opacity" 
+                      />
+                      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-white text-sm md:text-xl font-semibold mb-1">{banner.title}</h3>
+                          {banner.description && (
+                            <p className="text-gray-300 text-xs md:text-sm">{banner.description}</p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-
-                <div 
-                  onClick={() => {
-                    setSelectedCategory('upcoming');
-                    setCurrentPage('browse');
-                  }}
-                  className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer group shadow-2xl relative overflow-hidden"
-                >
-                  <img src="/logo2.jpg" alt="Upcoming Movies" className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-50 group-hover:opacity-70 transition-opacity" />
-                  <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-white text-sm md:text-xl font-semibold mb-1">Upcoming movies</h3>
-                    </div>
-                  </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3 md:gap-6 mb-8 md:mb-12">
+                  {/* Empty state - show nothing or placeholder */}
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Enjoy in Your Own Language Section */}
