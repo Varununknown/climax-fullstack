@@ -17,6 +17,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ onClose, onSuc
     thumbnail: '',
     videoUrl: '',
     category: '',
+    language: '',
     type: 'movie' as 'movie' | 'series' | 'show',
     duration: 0,
     climaxTimestamp: '',
@@ -38,9 +39,10 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ onClose, onSuc
       !formData.thumbnail ||
       !formData.videoUrl ||
       !formData.category ||
+      !formData.language ||
       !formData.climaxTimestamp
     ) {
-      alert('Please fill in all required fields');
+      alert('Please fill in all required fields (including Language)');
       return;
     }
 
@@ -160,6 +162,29 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({ onClose, onSuc
               {categories.map(cat => (
                 <option key={cat.id} value={cat.name}>{cat.name}</option>
               ))}
+            </select>
+          </div>
+
+          {/* Language */}
+          <div>
+            <label className="block text-sm text-white mb-1">Language *</label>
+            <select
+              className="w-full bg-gray-800 text-white rounded px-3 py-2"
+              value={formData.language}
+              onChange={(e) => setFormData(prev => ({ ...prev, language: e.target.value }))}
+              required
+            >
+              <option value="">-- Select Language --</option>
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Tamil">Tamil</option>
+              <option value="Telugu">Telugu</option>
+              <option value="Malayalam">Malayalam</option>
+              <option value="Kannada">Kannada</option>
+              <option value="Bengali">Bengali</option>
+              <option value="Marathi">Marathi</option>
+              <option value="Gujarati">Gujarati</option>
+              <option value="Punjabi">Punjabi</option>
             </select>
           </div>
 
