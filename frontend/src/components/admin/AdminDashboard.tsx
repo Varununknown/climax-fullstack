@@ -11,6 +11,7 @@ import QuizResults from './QuizResults';
 import QuizEditor from './QuizEditor';
 import QuickAddContent from './QuickAddContent';
 import { BannerManagement } from './BannerManagement';
+import { ExploreManagement } from './ExploreManagement';
 import API from '../../services/api';
 
 interface Content {
@@ -72,6 +73,8 @@ export const AdminDashboard: React.FC = () => {
         return <QuizEditor />;
       case 'banners':
         return <BannerManagement />;
+      case 'explore':
+        return <ExploreManagement />;
       case 'quiz-results':
         return (
           <div className="space-y-6">
@@ -155,7 +158,8 @@ export const AdminDashboard: React.FC = () => {
               { id: 'analytics', label: 'Analytics' },
               { id: 'quiz-editor', label: 'Fan Fest Editor' },
               { id: 'quiz-results', label: 'Fan Fest Results' },
-              { id: 'banners', label: 'Banners' }
+              { id: 'banners', label: 'Banners' },
+              { id: 'explore', label: 'Explore Section' }
             ].map((item) => (
               <button
                 key={item.id}
