@@ -12,6 +12,12 @@ const contentSchema = new mongoose.Schema({
   premiumPrice: { type: Number, required: true },
   genre: { type: [String], default: [] },
   rating: { type: Number, default: 0 },
+  language: { 
+    type: String, 
+    required: true,
+    enum: ['English', 'Hindi', 'Tamil', 'Telugu', 'Malayalam', 'Kannada', 'Bengali', 'Marathi', 'Gujarati', 'Punjabi'],
+    default: 'English'
+  }, // ✅ Language field with all 10 languages
   isActive: { type: Boolean, default: true },
   createdAt: {
     type: Date,
