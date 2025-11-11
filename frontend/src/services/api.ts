@@ -22,9 +22,16 @@ const API = axios.create({
 console.log(isLocalDevelopment ? '🔧 DEV MODE: Using localhost backend' : '🚀 PROD MODE: Using production backend');
 console.log('📍 Backend URL:', backendUrl);
 
-// Add request interceptor to include auth token
+// Add request interceptor to include auth token and sanitize URLs
 API.interceptors.request.use(
   (config) => {
+    // Sanitize URL - remove any unwanted indices or parameters
+    if (config.url) {
+      // Remove :1, :0, or other numeric indices that might be appended
+      config.url = config.url.replace(/:\d+(?=[/?]|$)/g, '');
+      console.log('📝 Request URL sanitized:', config.url);
+    }
+    
     // Get token from localStorage (check both possible keys)
     const token = localStorage.getItem('streamflix_token') || localStorage.getItem('token');
     if (token) {

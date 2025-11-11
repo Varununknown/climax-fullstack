@@ -58,6 +58,12 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
       // Extract ID safely - ensure it's a clean string (not object-like)
       let contentId = content._id || content.id;
       
+      // Debug: Show content object structure
+      console.log('📦 Content object keys:', Object.keys(content));
+      console.log('📦 Content object:', content);
+      console.log('Raw _id value:', content._id, 'Type:', typeof content._id);
+      console.log('Raw id value:', content.id, 'Type:', typeof content.id);
+      
       // Ensure we have a string ID and remove any unwanted properties/indices
       if (typeof contentId === 'object') {
         console.warn('⚠️ Content ID is an object, attempting to extract string value');
@@ -66,6 +72,12 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
       
       contentId = String(contentId).trim();
       
+      // Double-check - remove any :number patterns
+      if (contentId.includes(':')) {
+        console.warn('⚠️ Found colon in ID, cleaning it up');
+        contentId = contentId.split(':')[0];
+      }
+      
       if (!contentId || contentId === '') {
         console.error('❌ No valid content ID found!', { content, contentId });
         setError('❌ Cannot update: Content ID is missing or invalid');
@@ -73,6 +85,8 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
       }
       
       console.log('🔍 Extracted ID for update:', contentId);
+      console.log('🔍 ID length:', contentId.length);
+      console.log('🔍 ID matches MongoDB format:', /^[0-9a-f]{24}$/i.test(contentId));
 
       const payload = {
         ...formData,
