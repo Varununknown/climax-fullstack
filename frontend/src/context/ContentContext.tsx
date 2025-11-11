@@ -38,12 +38,24 @@ const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) 
   useEffect(() => {
     const fetchContents = async () => {
       try {
-        console.log('🎬 ContentContext: Fetching contents...');
+        console.log('🎬 ContentContext: Fetching contents from /api/contents...');
         const res = await API.get('/contents');
         console.log('🎬 ContentContext: Contents received:', res.data);
-        setContents(res.data);
+        console.log('🎬 Number of contents:', res.data?.length || 0);
+        
+        if (!res.data || res.data.length === 0) {
+          console.warn('⚠️  WARNING: No contents in database! You may need to run the seed endpoint.');
+          console.warn('⚠️  Run this in browser console:');
+          console.warn('⚠️  fetch("https://climax-fullstack.onrender.com/api/contents/seed", {method:"POST", headers:{"Content-Type":"application/json"}}).then(r => r.json()).then(d => {console.log("Seeded:", d); location.reload();});');
+        }
+        
+        setContents(res.data || []);
       } catch (err) {
         console.error('❌ ContentContext: Error loading contents:', err);
+        console.error('❌ Make sure:');
+        console.error('❌ 1. Backend is running');
+        console.error('❌ 2. Database is seeded with sample content');
+        console.error('❌ 3. Network request can reach the API');
         setContents([]);
       }
     };

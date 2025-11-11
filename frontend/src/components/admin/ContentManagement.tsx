@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Eye, EyeOff, Search, Filter } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Search, Filter, Database } from 'lucide-react';
 import { useContent } from '../../context/ContentContext';
 import { AddContentModal } from './AddContentModal';
 import { EditContentModal } from './EditContentModal';
 import { ImageFixer } from './ImageFixer';
+import API from '../../services/api';
 
 export const ContentManagement: React.FC = () => {
   const { contents, deleteContent, updateContent } = useContent(); // ✅ Removed setContents
@@ -12,6 +13,38 @@ export const ContentManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [seedingDatabase, setSeedingDatabase] = useState(false);
+  const [seedStatus, setSeedStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
+
+  const handleSeedDatabase = async () => {
+    setSeedingDatabase(true);
+    setSeedStatus({ type: null, message: '' });
+    
+    try {
+      console.log('🌱 Seeding database from UI...');
+      const res = await API.post('/contents/seed');
+      console.log('✅ Seed response:', res.data);
+      
+      setSeedStatus({
+        type: 'success',
+        message: `✅ Database seeded successfully! ${res.data.count || 0} items added.`
+      });
+      
+      // Reload the page to fetch the newly seeded content
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err: any) {
+      console.error('❌ Seed error:', err);
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to seed database';
+      setSeedStatus({
+        type: 'error',
+        message: `❌ Seed failed: ${errorMsg}`
+      });
+    } finally {
+      setSeedingDatabase(false);
+    }
+  };
 
   const filteredContents = contents.filter(content => {
     const matchesSearch = content.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -43,15 +76,40 @@ export const ContentManagement: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold text-white">Content Management</h2>
           <p className="text-gray-400">Manage movies, series, and shows</p>
+          {contents.length === 0 && (
+            <p className="text-yellow-400 text-sm mt-2">⚠️ No content found. Please seed the database first.</p>
+          )}
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Add Content</span>
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          {contents.length === 0 && (
+            <button
+              onClick={handleSeedDatabase}
+              disabled={seedingDatabase}
+              className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              <Database className="w-5 h-5" />
+              <span>{seedingDatabase ? 'Seeding...' : 'Seed Database'}</span>
+            </button>
+          )}
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add Content</span>
+          </button>
+        </div>
       </div>
+
+      {/* Seed Status Message */}
+      {seedStatus.type && (
+        <div className={`p-4 rounded-lg border ${seedStatus.type === 'success' 
+          ? 'bg-green-900/20 border-green-600 text-green-400' 
+          : 'bg-red-900/20 border-red-600 text-red-400'}`}
+        >
+          {seedStatus.message}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
