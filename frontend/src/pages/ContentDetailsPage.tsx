@@ -110,7 +110,7 @@ export const ContentDetailsPage: React.FC = () => {
         <div className="flex items-center justify-between px-4 sm:px-6 py-4">
           <div className="flex items-center space-x-4 sm:space-x-8">
             <div className="flex items-center space-x-3">
-              <div className="text-transparent bg-gradient-to-r from-white to-gray-300 bg-clip-text font-bold text-2xl sm:text-3xl tracking-widest font-mono">CLIMAX</div>
+              <div className="text-white font-semibold text-2xl sm:text-3xl tracking-wide drop-shadow-md" style={{ fontFamily: "'Montserrat', sans-serif" }}>Climax</div>
             </div>
             <nav className="hidden md:flex space-x-6 lg:space-x-8 text-sm lg:text-base">
               <a href="/" className="text-white/90 hover:text-white transition-colors font-medium">Home</a>
