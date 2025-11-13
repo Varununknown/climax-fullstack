@@ -180,11 +180,10 @@ export const ContentDetailsPage: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Share and Plus buttons with labels */}
+                {/* Share icon and Add to List button */}
                 <div className="flex gap-4 mt-4 items-center">
-                  <button onClick={handleShare} className="flex items-center gap-2 bg-gradient-to-br from-white/40 via-white/20 to-gray-400/20 backdrop-blur-lg hover:from-white/50 hover:via-white/30 hover:to-gray-400/30 text-white px-4 py-2.5 rounded-full shadow-lg hover:shadow-white/40 transition-all transform hover:scale-105 border border-white/30 hover:border-white/40 text-sm font-medium">
-                    <Share size={18} />
-                    <span>Share</span>
+                  <button onClick={handleShare} className="bg-gradient-to-br from-white/40 via-white/20 to-gray-400/20 backdrop-blur-lg hover:from-white/50 hover:via-white/30 hover:to-gray-400/30 text-white p-3 rounded-full shadow-lg hover:shadow-white/40 transition-all transform hover:scale-110 border border-white/30 hover:border-white/40">
+                    <Share size={20} />
                   </button>
 
                   <button className="flex items-center gap-2 bg-gradient-to-br from-white/40 via-white/20 to-gray-400/20 backdrop-blur-lg hover:from-white/50 hover:via-white/30 hover:to-gray-400/30 text-white px-4 py-2.5 rounded-full shadow-lg hover:shadow-white/40 transition-all transform hover:scale-105 border border-white/30 hover:border-white/40 text-sm font-medium">
