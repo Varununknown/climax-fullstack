@@ -190,22 +190,22 @@ export const ContentDetailsPage: React.FC = () => {
           {activeTab === 'synopsis' && (
             <div>
               <h3 className="text-lg font-semibold mb-4">More Details</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-400">Genre:</span>
-                  <span className="ml-2 text-white">{content.genre?.join(', ')}</span>
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 text-sm">
+                <div className="bg-gray-900/40 p-3 rounded-lg">
+                  <span className="text-gray-400 text-xs uppercase font-semibold">Genre</span>
+                  <p className="text-white text-sm sm:text-base mt-1">{content.genre?.join(', ')}</p>
                 </div>
-                <div>
-                  <span className="text-gray-400">Duration:</span>
-                  <span className="ml-2 text-white">{durationText}</span>
+                <div className="bg-gray-900/40 p-3 rounded-lg">
+                  <span className="text-gray-400 text-xs uppercase font-semibold">Duration</span>
+                  <p className="text-white text-sm sm:text-base mt-1">{durationText}</p>
                 </div>
-                <div>
-                  <span className="text-gray-400">Rating:</span>
-                  <span className="ml-2 text-white">UA 16+</span>
+                <div className="bg-gray-900/40 p-3 rounded-lg">
+                  <span className="text-gray-400 text-xs uppercase font-semibold">Rating</span>
+                  <p className="text-white text-sm sm:text-base mt-1">UA 16+</p>
                 </div>
-                <div>
-                  <span className="text-gray-400">Year:</span>
-                  <span className="ml-2 text-white">{new Date().getFullYear()}</span>
+                <div className="bg-gray-900/40 p-3 rounded-lg">
+                  <span className="text-gray-400 text-xs uppercase font-semibold">Year</span>
+                  <p className="text-white text-sm sm:text-base mt-1">{new Date().getFullYear()}</p>
                 </div>
               </div>
             </div>
