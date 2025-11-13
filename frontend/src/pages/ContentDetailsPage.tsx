@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Plus, Share } from 'lucide-react';
+import { ArrowLeft, Play, Plus, Share, X } from 'lucide-react';
 import API from '../services/api';
 import { Content } from '../types';
 
@@ -21,6 +21,7 @@ export const ContentDetailsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'synopsis' | 'videos'>('synopsis');
   const [scrolled, setScrolled] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -120,7 +121,7 @@ export const ContentDetailsPage: React.FC = () => {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="bg-gradient-to-r from-gray-900 via-purple-700 to-gray-800 hover:from-gray-800 hover:via-purple-600 hover:to-gray-700 px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-base font-medium transition-all shadow-lg border border-purple-500/30 whitespace-nowrap">
+            <button onClick={() => setShowJoinModal(true)} className="bg-gradient-to-r from-gray-900 via-purple-700 to-gray-800 hover:from-gray-800 hover:via-purple-600 hover:to-gray-700 px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg text-xs sm:text-base font-medium transition-all shadow-lg border border-purple-500/30 whitespace-nowrap">
               Join Climax
             </button>
           </div>
@@ -255,6 +256,85 @@ export const ContentDetailsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Join Climax Modal */}
+      {showJoinModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-950 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/30 shadow-2xl">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-slate-900 via-purple-900/20 to-slate-900 border-b border-purple-500/20 p-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white">Unlock the Climax</h2>
+              <button onClick={() => setShowJoinModal(false)} className="text-gray-400 hover:text-white transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 sm:p-8">
+              {/* Business Logic Section */}
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                  🎬 The Climax Stamp
+                </h3>
+                <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                  When your curiosity peaks and you're ready to unlock the most exciting content, our exclusive <span className="font-semibold text-purple-300">Climax Stamp</span> system activates payment for premium viewing. Only when it gets exciting do you pay—not for standard details.
+                </p>
+                <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
+                  <p className="text-gray-200 text-sm">
+                    <span className="font-semibold text-purple-300">How it works:</span> Watch standard content for free. When you want the premium experience, your curiosity triggers the payment gateway, unlocking exclusive excitement.
+                  </p>
+                </div>
+              </div>
+
+              {/* Promotional Images Section */}
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-white mb-4">Exclusive Offers</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Image 1 - ₹2 Offer */}
+                  <div className="rounded-lg overflow-hidden border border-cyan-500/30 hover:border-cyan-500/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20">
+                    <img 
+                      src="https://images.unsplash.com/photo-1578375050105-d654d765486c?w=500&h=500&fit=crop" 
+                      alt="Unlock Climax for just ₹2" 
+                      className="w-full h-auto object-cover aspect-square"
+                    />
+                    <div className="bg-slate-900/60 p-3 backdrop-blur-sm">
+                      <p className="text-cyan-300 text-xs font-semibold text-center">UNLOCK FOR JUST ₹2</p>
+                    </div>
+                  </div>
+
+                  {/* Image 2 - Excitement Offer */}
+                  <div className="rounded-lg overflow-hidden border border-orange-500/30 hover:border-orange-500/60 transition-all hover:shadow-lg hover:shadow-orange-500/20">
+                    <img 
+                      src="https://images.unsplash.com/photo-1514306688772-afc86c7caa23?w=500&h=500&fit=crop" 
+                      alt="Only pay when it gets exciting" 
+                      className="w-full h-auto object-cover aspect-square"
+                    />
+                    <div className="bg-slate-900/60 p-3 backdrop-blur-sm">
+                      <p className="text-orange-300 text-xs font-semibold text-center">ONLY PAY WHEN EXCITING</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA Section */}
+              <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/20 rounded-lg p-6 mb-6">
+                <h4 className="text-white font-semibold mb-3">Ready to Join?</h4>
+                <p className="text-gray-300 text-sm mb-4">
+                  Get premium access to exclusive content and unlock the full Climax experience.
+                </p>
+                <button className="w-full bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 hover:from-purple-500 hover:via-blue-500 hover:to-pink-500 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
+                  Join Climax Now
+                </button>
+              </div>
+
+              {/* Close Button */}
+              <button onClick={() => setShowJoinModal(false)} className="w-full bg-slate-800/50 hover:bg-slate-700/50 text-gray-300 hover:text-white py-2 px-4 rounded-lg transition-all font-medium">
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
