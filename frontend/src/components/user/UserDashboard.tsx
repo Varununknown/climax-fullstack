@@ -13,8 +13,24 @@ export const UserDashboard: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [banners, setBanners] = useState<any[]>([]);
+  const [exploreEnabled, setExploreEnabled] = useState(true);
 
   const { contents, categories } = useContent();
+
+  // Fetch settings
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await API.get('/settings');
+        setExploreEnabled(response.data?.exploreEnabled ?? true);
+      } catch (error) {
+        console.warn('⚠️  Could not fetch settings:', error);
+        // Default to true if fetch fails
+        setExploreEnabled(true);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   // Fetch banners from API
   useEffect(() => {
@@ -134,7 +150,8 @@ export const UserDashboard: React.FC = () => {
           <ProfilePage />  // ✅ Render ProfilePage here
         ) : currentPage === 'home' && !searchQuery ? (
           <div className="space-y-8">
-            {/* EXPLORE Section */}
+            {/* EXPLORE Section - Conditional Rendering */}
+            {exploreEnabled && (
             <div>
               <div className="flex items-center justify-center mb-4 md:mb-8">
                 <div className="flex-1 h-px bg-gray-600 max-w-32"></div>
@@ -176,6 +193,7 @@ export const UserDashboard: React.FC = () => {
                 </div>
               )}
             </div>
+            )}
 
             {/* Enjoy in Your Own Language Section */}
             <div>
