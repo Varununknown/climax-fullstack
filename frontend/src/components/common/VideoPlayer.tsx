@@ -316,6 +316,7 @@ export const VideoPlayer: React.FC = () => {
         autoPlay
         playsInline
         onClick={togglePlayPause}
+        crossOrigin="anonymous"
       />
 
       {/* Header */}
