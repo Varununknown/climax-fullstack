@@ -290,24 +290,26 @@ export const ContentDetailsPage: React.FC = () => {
               <div className="mb-8">
                 <h3 className="text-lg font-semibold text-white mb-4">Exclusive Offers</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Image 1 - ₹2 Offer */}
+                  {/* Image 1 - Logo 3 */}
                   <div className="rounded-lg overflow-hidden border border-cyan-500/30 hover:border-cyan-500/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20">
                     <img 
-                      src="https://images.unsplash.com/photo-1578375050105-d654d765486c?w=500&h=500&fit=crop" 
+                      src="/logo3.jpg" 
                       alt="Unlock Climax for just ₹2" 
                       className="w-full h-auto object-cover aspect-square"
+                      onError={(e) => { e.currentTarget.src = '/images/logo3.jpg'; }}
                     />
                     <div className="bg-slate-900/60 p-3 backdrop-blur-sm">
                       <p className="text-cyan-300 text-xs font-semibold text-center">UNLOCK FOR JUST ₹2</p>
                     </div>
                   </div>
 
-                  {/* Image 2 - Excitement Offer */}
+                  {/* Image 2 - Logo 5 */}
                   <div className="rounded-lg overflow-hidden border border-orange-500/30 hover:border-orange-500/60 transition-all hover:shadow-lg hover:shadow-orange-500/20">
                     <img 
-                      src="https://images.unsplash.com/photo-1514306688772-afc86c7caa23?w=500&h=500&fit=crop" 
+                      src="/logo5.jpg" 
                       alt="Only pay when it gets exciting" 
                       className="w-full h-auto object-cover aspect-square"
+                      onError={(e) => { e.currentTarget.src = '/images/logo5.jpg'; }}
                     />
                     <div className="bg-slate-900/60 p-3 backdrop-blur-sm">
                       <p className="text-orange-300 text-xs font-semibold text-center">ONLY PAY WHEN EXCITING</p>
@@ -322,7 +324,7 @@ export const ContentDetailsPage: React.FC = () => {
                 <p className="text-gray-300 text-sm mb-4">
                   Get premium access to exclusive content and unlock the full Climax experience.
                 </p>
-                <button className="w-full bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 hover:from-purple-500 hover:via-blue-500 hover:to-pink-500 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
+                <button onClick={() => { setShowJoinModal(false); handleWatch(); }} className="w-full bg-gradient-to-r from-black via-purple-600 to-white hover:from-gray-900 hover:via-purple-500 hover:to-gray-100 text-white hover:text-black font-bold py-3 px-4 rounded-lg transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
                   Join Climax Now
                 </button>
               </div>
