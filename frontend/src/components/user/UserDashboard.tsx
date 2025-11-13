@@ -160,7 +160,7 @@ export const UserDashboard: React.FC = () => {
               </div>
               
               {banners.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8 md:mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-8 md:mb-12">
                   {banners.map((banner) => (
                     <div 
                       key={banner._id}
