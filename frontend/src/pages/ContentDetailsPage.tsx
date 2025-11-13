@@ -187,31 +187,24 @@ export const ContentDetailsPage: React.FC = () => {
 
         <div className="pt-6">
           {activeTab === 'synopsis' && (
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-              <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-semibold mb-3">Synopsis</h2>
-                <p className="text-gray-300 leading-relaxed mb-6">{content.description}</p>
-                
-                <div className="border-t border-gray-800 pt-6">
-                  <h3 className="text-lg font-semibold mb-4">More Details</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-400">Genre:</span>
-                      <span className="ml-2 text-white">{content.genre?.join(', ')}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Duration:</span>
-                      <span className="ml-2 text-white">{durationText}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Rating:</span>
-                      <span className="ml-2 text-white">UA 16+</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Year:</span>
-                      <span className="ml-2 text-white">{new Date().getFullYear()}</span>
-                    </div>
-                  </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-4">More Details</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-400">Genre:</span>
+                  <span className="ml-2 text-white">{content.genre?.join(', ')}</span>
+                </div>
+                <div>
+                  <span className="text-gray-400">Duration:</span>
+                  <span className="ml-2 text-white">{durationText}</span>
+                </div>
+                <div>
+                  <span className="text-gray-400">Rating:</span>
+                  <span className="ml-2 text-white">UA 16+</span>
+                </div>
+                <div>
+                  <span className="text-gray-400">Year:</span>
+                  <span className="ml-2 text-white">{new Date().getFullYear()}</span>
                 </div>
               </div>
             </div>
