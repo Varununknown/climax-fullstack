@@ -77,7 +77,7 @@ export const ContentManagement: React.FC = () => {
           <h2 className="text-2xl font-bold text-white">Content Management</h2>
           <p className="text-gray-400">Manage movies, series, and shows</p>
           {contents.length === 0 && (
-            <p className="text-yellow-400 text-sm mt-2">⚠️ No content found. Please seed the database first.</p>
+            <p className="text-yellow-400 text-sm mt-2">💡 No content in database. Add your first content using the button below to get started.</p>
           )}
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
@@ -237,7 +237,10 @@ export const ContentManagement: React.FC = () => {
           </table>
         </div>
         {filteredContents.length === 0 && (
-          <div className="text-center py-12 text-gray-400">No content found matching your criteria.</div>
+          <div className="text-center py-12">
+            <p className="text-gray-400 font-medium">No content found matching your criteria</p>
+            <p className="text-gray-500 text-sm mt-1">Try adjusting your search or filters to find content.</p>
+          </div>
         )}
       </div>
 
