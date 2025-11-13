@@ -137,7 +137,7 @@ export const ContentDetailsPage: React.FC = () => {
 
       {/* Top Poster */}
       <div className="relative">
-        <div className="h-64 sm:h-72 md:h-96 lg:h-[420px] bg-cover bg-center" style={{backgroundImage:`linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.95)), url(${content.thumbnail})`}}/>
+        <div className="h-64 sm:h-72 md:h-96 lg:h-[420px] bg-cover bg-center bg-no-repeat" style={{backgroundImage:`linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.8)), url(${content.thumbnail})`, backgroundAttachment: 'fixed'}}/>
       </div>
 
       {/* Content Section - Below Background */}
@@ -184,33 +184,6 @@ export const ContentDetailsPage: React.FC = () => {
 
             {/* Description - Full width below */}
             <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">{content.description}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Live Events Section - Moved back up */}
-      <div className="px-4 sm:px-6 py-6">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-lg sm:text-xl font-bold mb-4">Live Events</h2>
-          <div className="grid grid-cols-1 gap-4">
-            <div className="bg-gradient-to-r from-purple-900/40 to-pink-900/40 rounded-lg overflow-hidden border border-purple-500/30 hover:border-purple-400/60 transition-all">
-              <div className="flex flex-col sm:flex-row">
-                <img src={content.thumbnail} alt="Live Event" className="w-full sm:w-40 h-32 sm:h-40 object-cover" />
-                <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-base sm:text-lg font-semibold text-white mb-2">Fan Fest</h3>
-                    <p className="text-gray-300 text-xs sm:text-sm mb-2">Join us for an exclusive live event with the cast and crew</p>
-                    <div className="flex gap-3 text-xs sm:text-sm text-gray-400">
-                      <span>📅 Today at 8:00 PM</span>
-                      <span>👥 2.5K Watching</span>
-                    </div>
-                  </div>
-                  <button onClick={handleParticipate} className="mt-3 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white rounded-lg py-2 px-4 font-semibold shadow-lg hover:scale-[1.02] transition-all border border-orange-400/30 w-full sm:w-auto text-center text-xs sm:text-sm">
-                    Participate Now
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -270,6 +243,33 @@ export const ContentDetailsPage: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Live Events Section - Moved to bottom */}
+      <div className="px-4 sm:px-6 py-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-lg sm:text-xl font-bold mb-4">Live Events</h2>
+          <div className="grid grid-cols-1 gap-4">
+            <div className="bg-gradient-to-r from-purple-900/40 to-pink-900/40 rounded-lg overflow-hidden border border-purple-500/30 hover:border-purple-400/60 transition-all">
+              <div className="flex flex-col sm:flex-row">
+                <img src={content.thumbnail} alt="Live Event" className="w-full sm:w-40 h-32 sm:h-40 object-cover" />
+                <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-base sm:text-lg font-semibold text-white mb-2">Fan Fest</h3>
+                    <p className="text-gray-300 text-xs sm:text-sm mb-2">Join us for an exclusive live event with the cast and crew</p>
+                    <div className="flex gap-3 text-xs sm:text-sm text-gray-400">
+                      <span>📅 Today at 8:00 PM</span>
+                      <span>👥 2.5K Watching</span>
+                    </div>
+                  </div>
+                  <button onClick={handleParticipate} className="mt-3 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white rounded-lg py-2 px-4 font-semibold shadow-lg hover:scale-[1.02] transition-all border border-orange-400/30 w-full sm:w-auto text-center text-xs sm:text-sm">
+                    Participate Now
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
