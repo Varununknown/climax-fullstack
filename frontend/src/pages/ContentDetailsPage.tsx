@@ -19,7 +19,7 @@ export const ContentDetailsPage: React.FC = () => {
   const [content, setContent] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'synopsis'|'cast'|'videos'>('synopsis');
+  const [activeTab, setActiveTab] = useState<'videos'>('videos');
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -177,7 +177,7 @@ export const ContentDetailsPage: React.FC = () => {
       <div className="mx-auto px-4 sm:px-6 py-6 max-w-5xl">
         <div className="border-b border-gray-800">
           <nav className="flex gap-4 sm:gap-6 text-sm overflow-x-auto">
-            {['synopsis','cast','videos'].map(tab => (
+            {['videos'].map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab as any)} className={`py-3 pb-4 whitespace-nowrap transition-all ${activeTab===tab? 'text-white border-b-2 border-purple-500':'text-gray-400 hover:text-white'}`}>
                 {tab.charAt(0).toUpperCase()+tab.slice(1)}
               </button>
@@ -186,53 +186,6 @@ export const ContentDetailsPage: React.FC = () => {
         </div>
 
         <div className="pt-6">
-          {activeTab === 'synopsis' && (
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-              <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-semibold mb-3">Synopsis</h2>
-                <p className="text-gray-300 leading-relaxed mb-6">{content.description}</p>
-                
-                <div className="border-t border-gray-800 pt-6">
-                  <h3 className="text-lg font-semibold mb-4">More Details</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-400">Genre:</span>
-                      <span className="ml-2 text-white">{content.genre?.join(', ')}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Duration:</span>
-                      <span className="ml-2 text-white">{durationText}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Rating:</span>
-                      <span className="ml-2 text-white">UA 16+</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Year:</span>
-                      <span className="ml-2 text-white">{new Date().getFullYear()}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'cast' && (
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Cast & Crew</h2>
-              <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-4">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="w-20 sm:w-28 text-center flex-shrink-0">
-                    <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full overflow-hidden mx-auto mb-2">
-                      <img src={content.thumbnail} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="text-xs sm:text-sm">Actor {i}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {activeTab === 'videos' && (
             <div>
               <h2 className="text-lg sm:text-xl font-semibold mb-4">Videos</h2>
@@ -263,7 +216,7 @@ export const ContentDetailsPage: React.FC = () => {
               <img src={content.thumbnail} alt="Live Event" className="w-full sm:w-48 h-32 sm:h-40 object-cover" />
               <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Live Q&A Session</h3>
+                  <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Fan Fest</h3>
                   <p className="text-gray-300 text-sm sm:text-base mb-3">Join us for an exclusive live event with the cast and crew</p>
                   <div className="flex gap-3 text-xs sm:text-sm text-gray-400">
                     <span>📅 Today at 8:00 PM</span>
