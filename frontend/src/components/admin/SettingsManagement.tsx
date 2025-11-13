@@ -17,13 +17,20 @@ export const SettingsManagement: React.FC = () => {
     try {
       setLoading(true);
       const response = await API.get('/settings');
+      // Handle both array and object responses
+      const data = Array.isArray(response.data) ? {} : (response.data || {});
       setSettings({
-        exploreEnabled: response.data?.exploreEnabled ?? true
+        exploreEnabled: data.exploreEnabled ?? true
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading settings:', error);
-      // Default to true if not found
+      // Default to true if endpoint fails or returns 404
       setSettings({ exploreEnabled: true });
+      // Show a small message that we're using defaults
+      if (error?.response?.status === 404) {
+        setMessage({ type: 'error', text: '⚠️ Using default settings. Save to initialize.' });
+        setTimeout(() => setMessage(null), 3000);
+      }
     } finally {
       setLoading(false);
     }
@@ -43,7 +50,7 @@ export const SettingsManagement: React.FC = () => {
         settingValue: settings.exploreEnabled
       });
       
-      if (response.data?.success) {
+      if (response.data?.success || response.status === 200) {
         setMessage({ type: 'success', text: '✅ Settings saved successfully!' });
         setTimeout(() => setMessage(null), 3000);
       } else {
