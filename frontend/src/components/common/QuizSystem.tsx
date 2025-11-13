@@ -219,9 +219,8 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
           <div className="relative z-10">
             <div className="flex items-center justify-center mb-8">
               <div className="relative">
-                <div className="absolute -inset-2 bg-gradient-to-r from-violet-600/20 to-purple-600/20 rounded-xl blur-lg"></div>
-                <div className="relative bg-white/10 border border-white/20 rounded-xl p-4 backdrop-blur-sm">
-                  <svg className="w-8 h-8 text-violet-300" fill="currentColor" viewBox="0 0 20 20">
+                <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-3">
+                  <svg className="w-6 h-6 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                     <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm2.5 4a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100-2 1 1 0 000 2zm-1 4h2v-1a1 1 0 00-1-1h-1v2z" clipRule="evenodd"/>
                   </svg>
@@ -397,18 +396,14 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         </div>
 
         {/* Submit Section */}
-        <div className="relative border-t border-white/10">
-          {/* Glass Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 via-blue-900/50 to-indigo-900/50"></div>
+        <div className="relative border-t border-slate-700/50">
+          {/* Background */}
+          <div className="absolute inset-0 bg-slate-800/20"></div>
           
           <div className="relative p-6 sm:p-8 md:p-10">
             {/* Submit Button - Big and Responsive */}
             <div className="relative w-full">
-              <div className={`absolute -inset-1 rounded-xl transition-all duration-300 ${
-                Object.keys(answers).length === 0 || loading
-                  ? 'bg-slate-600/20'
-                  : 'bg-gradient-to-r from-blue-500/30 to-indigo-600/30 blur group-hover:from-blue-500/40 group-hover:to-indigo-600/40'
-              }`}></div>
+              {/* No gradient background, keep it simple */}
               
               <button
                 onClick={handleSubmit}

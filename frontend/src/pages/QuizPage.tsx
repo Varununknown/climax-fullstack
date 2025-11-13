@@ -89,56 +89,38 @@ export const QuizPage: React.FC = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Professional Gradient Background - Black to Violet */}
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-slate-950 to-violet-950"></div>
-      <div className="fixed inset-0 bg-gradient-to-r from-transparent via-slate-900/30 to-transparent"></div>
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(139,92,246,0.08),transparent_50%)]"></div>
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(168,85,247,0.05),transparent_50%)]"></div>
+      {/* Subtle Dark Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900"></div>
+      <div className="fixed inset-0 bg-gradient-to-r from-transparent via-slate-900/20 to-transparent"></div>
 
-      {/* Professional Glass Header */}
-      <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/10 border-b border-white/20 shadow-2xl">
+      {/* Simple Glass Header */}
+      <div className="sticky top-0 z-50 backdrop-blur-sm bg-slate-900/40 border-b border-white/10 shadow-lg">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(-1)}
-              className="group flex items-center gap-3 text-slate-300 hover:text-white transition-all duration-300"
+              className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
             >
-              <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-white/10 to-white/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
-                <div className="relative p-2 sm:p-3 rounded-lg bg-white/10 group-hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/20">
-                  <ArrowLeft size={20} />
-                </div>
-              </div>
+              <ArrowLeft size={20} />
               <span className="font-semibold hidden sm:block">Back</span>
             </button>
             
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full blur opacity-40"></div>
-                <div className="relative px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full text-xs sm:text-sm font-bold shadow-lg">
-                  Premium Experience
-                </div>
-              </div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
-                Fan Fest
-              </h1>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              Fan Fest
+            </h1>
             <div className="w-16 sm:w-20" />
           </div>
         </div>
       </div>
 
-      {/* Premium Main Content */}
+      {/* Main Content */}
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Hero Section - Clean and Simple */}
+        {/* Hero Section - Clean and Subtle */}
         <div className="mb-8 sm:mb-12">
-          <div className="relative group">
-            {/* Card Background */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-500"></div>
-            
-            <div className="relative bg-white/10 border border-white/20 rounded-2xl shadow-2xl backdrop-blur-sm p-6 sm:p-8 lg:p-12">
+          <div className="relative">
+            <div className="relative bg-slate-800/40 border border-slate-700/50 rounded-xl p-6 sm:p-8 lg:p-10">
               {/* Title */}
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 text-center">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3 text-center">
                 {content.title}
               </h2>
               
@@ -151,8 +133,8 @@ export const QuizPage: React.FC = () => {
 
               {/* Image - Simple Display */}
               {content.thumbnail && (
-                <div className="mb-8 sm:mb-12 flex justify-center">
-                  <div className="relative w-full max-w-2xl overflow-hidden rounded-xl border border-white/20 shadow-xl">
+                <div className="mb-8 sm:mb-10 flex justify-center">
+                  <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-slate-700/50">
                     <img
                       src={content.thumbnail}
                       alt={content.title}
