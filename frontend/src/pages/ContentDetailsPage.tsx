@@ -180,13 +180,13 @@ export const ContentDetailsPage: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Share and Plus buttons - Inline */}
-                <div className="flex gap-3 mt-3">
-                  <button onClick={handleShare} className="bg-gradient-to-r from-white/20 to-black/20 backdrop-blur-md hover:from-white/30 hover:to-black/30 text-white p-3 rounded-full shadow-lg hover:shadow-white/50 transition-all transform hover:scale-110 border border-white/20 hover:border-white/30">
+                {/* Share and Plus buttons - Centered wrap */}
+                <div className="flex gap-3 mt-4 justify-center sm:justify-start flex-wrap">
+                  <button onClick={handleShare} className="bg-gradient-to-br from-white/40 via-white/20 to-gray-400/20 backdrop-blur-lg hover:from-white/50 hover:via-white/30 hover:to-gray-400/30 text-white p-3 rounded-full shadow-lg hover:shadow-white/40 transition-all transform hover:scale-110 border border-white/30 hover:border-white/40">
                     <Share size={20} />
                   </button>
 
-                  <button className="bg-gradient-to-r from-white/20 to-black/20 backdrop-blur-md hover:from-white/30 hover:to-black/30 text-white p-3 rounded-full shadow-lg hover:shadow-white/50 transition-all transform hover:scale-110 border border-white/20 hover:border-white/30">
+                  <button className="bg-gradient-to-br from-white/40 via-white/20 to-gray-400/20 backdrop-blur-lg hover:from-white/50 hover:via-white/30 hover:to-gray-400/30 text-white p-3 rounded-full shadow-lg hover:shadow-white/40 transition-all transform hover:scale-110 border border-white/30 hover:border-white/40">
                     <Plus size={20} />
                   </button>
                 </div>
