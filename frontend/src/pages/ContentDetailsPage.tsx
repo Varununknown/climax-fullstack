@@ -168,7 +168,7 @@ export const ContentDetailsPage: React.FC = () => {
                 </div>
 
                 {/* Watch Now Button - Side by side on mobile, stacked on desktop */}
-                <div className="flex flex-row sm:flex-col gap-2 mb-2">
+                <div className="flex flex-row sm:flex-col gap-2 mb-2 sm:w-1/2">
                   <button onClick={handleWatch} className="flex-1 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 text-white rounded-lg py-2 px-2 sm:px-6 flex items-center justify-center gap-2 shadow-lg hover:shadow-red-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-red-400/30 hover:border-red-300/50">
                     <Play size={16} />
                     <span>Watch Now</span>
