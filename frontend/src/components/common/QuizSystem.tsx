@@ -230,9 +230,6 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
             </div>
             
             <div className="text-center mb-6">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-indigo-200 to-slate-200 mb-4 tracking-wide">
-                Executive Feedback Collection
-              </h2>
               <div className="w-20 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent mx-auto mb-6"></div>
             </div>
             
@@ -241,13 +238,13 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                 {contentTitle}
               </h3>
               <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                Participate in our professional feedback system to contribute valuable insights and qualify for exclusive recognition programs.
+                Share your thoughts about this content in our Fan Fest
               </p>
             </div>
           </div>
         </div>
 
-        {/* Premium Questions Section */}
+        {/* Questions Section */}
         <div className="relative p-6 sm:p-8 lg:p-10 space-y-6 sm:space-y-8">
           {questions.map((question, index) => (
             <div 
@@ -399,15 +396,15 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
           </div>
         </div>
 
-        {/* Professional Submit Section */}
+        {/* Submit Section */}
         <div className="relative border-t border-white/10">
           {/* Glass Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 via-blue-900/50 to-indigo-900/50"></div>
           
-          <div className="relative p-8 sm:p-10">
-            {/* Professional Submit Button */}
-            <div className="relative">
-              <div className={`absolute -inset-1 rounded-lg transition-all duration-300 ${
+          <div className="relative p-6 sm:p-8 md:p-10">
+            {/* Submit Button - Big and Responsive */}
+            <div className="relative w-full">
+              <div className={`absolute -inset-1 rounded-xl transition-all duration-300 ${
                 Object.keys(answers).length === 0 || loading
                   ? 'bg-slate-600/20'
                   : 'bg-gradient-to-r from-blue-500/30 to-indigo-600/30 blur group-hover:from-blue-500/40 group-hover:to-indigo-600/40'
@@ -416,7 +413,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
               <button
                 onClick={handleSubmit}
                 disabled={Object.keys(answers).length === 0 || loading}
-                className={`relative w-full py-4 px-6 rounded-lg font-semibold text-base transition-all duration-300 ${
+                className={`relative w-full py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-xl font-bold text-base sm:text-lg md:text-xl transition-all duration-300 ${
                   Object.keys(answers).length === 0 || loading
                     ? 'bg-slate-600/20 text-slate-400 cursor-not-allowed border border-slate-600/30'
                     : 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-700 hover:to-indigo-800 shadow-lg hover:shadow-xl border border-blue-500/50'
@@ -429,24 +426,24 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-3">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                     </svg>
-                    <span>Submit Feedback</span>
+                    <span>Submit</span>
                   </span>
                 )}
               </button>
             </div>
             
-            {/* Professional Help Text */}
+            {/* Help Text */}
             {Object.keys(answers).length === 0 && (
-              <div className="mt-6 text-center">
+              <div className="mt-4 sm:mt-6 text-center">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg backdrop-blur-sm">
                   <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
                   </svg>
                   <p className="text-sm text-amber-300">
-                    Please answer all questions to submit your feedback
+                    Answer all questions to submit
                   </p>
                 </div>
               </div>
