@@ -144,7 +144,7 @@ export const ContentDetailsPage: React.FC = () => {
       <div className="relative -mt-20 sm:-mt-32 md:-mt-40 lg:-mt-48 z-10 pt-2 sm:pt-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* Mobile Layout: Image + Button side by side */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4">
             {/* Image and Content Row */}
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 sm:gap-6 pb-4 sm:pb-6">
               {/* Image */}
@@ -155,7 +155,7 @@ export const ContentDetailsPage: React.FC = () => {
                 {/* Title */}
                 <h1 className="text-lg sm:text-2xl md:text-3xl font-bold leading-tight mb-2">{content.title}</h1>
 
-                {/* Meta Information */}
+                {/* Meta Information - Right below Title */}
                 <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-300 mb-3">
                   <span className="px-2 py-1 bg-gray-800 rounded text-xs">{new Date().getFullYear()}</span>
                   <span className="bg-gray-800 px-2 py-1 rounded text-xs">UA 16+</span>
@@ -164,7 +164,7 @@ export const ContentDetailsPage: React.FC = () => {
                 </div>
 
                 {/* Watch Now Button - Smaller */}
-                <button onClick={handleWatch} className="w-full sm:w-auto bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 text-white rounded-lg py-2 px-4 sm:px-6 flex items-center justify-center sm:justify-start gap-2 shadow-lg hover:shadow-red-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-red-400/30 hover:border-red-300/50 mb-3">
+                <button onClick={handleWatch} className="w-full sm:w-auto bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 text-white rounded-lg py-2 px-4 sm:px-6 flex items-center justify-center sm:justify-start gap-2 shadow-lg hover:shadow-red-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-red-400/30 hover:border-red-300/50 mb-2">
                   <Play size={16} />
                   <span>Watch Now</span>
                 </button>
