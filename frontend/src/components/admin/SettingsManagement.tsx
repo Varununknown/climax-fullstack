@@ -10,9 +10,18 @@ export const SettingsManagement: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
-    // Don't load settings on mount - start with defaults
-    // Settings will be saved when user clicks "Save Settings"
-    setSettings({ exploreEnabled: true });
+    // Load settings from localStorage on mount
+    try {
+      const saved = localStorage.getItem('exploreEnabled');
+      if (saved !== null) {
+        setSettings({ exploreEnabled: JSON.parse(saved) });
+      } else {
+        setSettings({ exploreEnabled: true });
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not load settings from localStorage:', error);
+      setSettings({ exploreEnabled: true });
+    }
   }, []);
 
   const handleToggle = (key: string) => {
