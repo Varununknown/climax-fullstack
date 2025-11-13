@@ -34,18 +34,20 @@ export const SettingsManagement: React.FC = () => {
   const handleSave = async () => {
     try {
       setLoading(true);
-      // Try to save to backend, but don't fail if it doesn't work
+      
+      // Always save to localStorage first
+      localStorage.setItem('exploreEnabled', JSON.stringify(settings.exploreEnabled));
+      
+      // Try to save to backend as well (optional)
       try {
         await API.post('/settings/exploreEnabled', {
           settingValue: settings.exploreEnabled
         });
       } catch (apiError) {
-        console.warn('⚠️ Settings API not available, using local storage instead');
-        // Fallback to localStorage
-        localStorage.setItem('exploreEnabled', JSON.stringify(settings.exploreEnabled));
+        console.warn('⚠️ Settings API not available, but saved to localStorage');
       }
       
-      // Show success message regardless
+      // Show success message
       setMessage({ type: 'success', text: '✅ Settings saved!' });
       setTimeout(() => setMessage(null), 3000);
     } catch (error: any) {
