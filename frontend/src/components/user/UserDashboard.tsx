@@ -17,20 +17,30 @@ export const UserDashboard: React.FC = () => {
 
   const { contents, categories } = useContent();
 
-  // Fetch settings from localStorage
+  // Fetch settings from backend database (global settings)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('exploreEnabled');
-      if (saved !== null) {
-        setExploreEnabled(JSON.parse(saved));
-      } else {
-        setExploreEnabled(true);
+    const loadSettings = async () => {
+      try {
+        const response = await API.get('/settings');
+        const data = response.data || {};
+        setExploreEnabled(data.exploreEnabled ?? true);
+        console.log('✅ Dashboard: Explore setting from backend:', data.exploreEnabled);
+      } catch (error: any) {
+        console.warn('⚠️ Could not load from backend, using localStorage:', error?.message);
+        // Fallback to localStorage
+        try {
+          const saved = localStorage.getItem('exploreEnabled');
+          if (saved !== null) {
+            setExploreEnabled(JSON.parse(saved));
+          } else {
+            setExploreEnabled(true);
+          }
+        } catch (e) {
+          setExploreEnabled(true);
+        }
       }
-    } catch (error) {
-      console.warn('⚠️  Could not load settings:', error);
-      // Default to true if fetch fails
-      setExploreEnabled(true);
-    }
+    };
+    loadSettings();
   }, []);
 
   // Fetch banners from API

@@ -10,19 +10,36 @@ export const SettingsManagement: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
-    // Load settings from localStorage on mount
+    // Load settings from backend database (global settings for all users)
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
     try {
-      const saved = localStorage.getItem('exploreEnabled');
-      if (saved !== null) {
-        setSettings({ exploreEnabled: JSON.parse(saved) });
-      } else {
+      setLoading(true);
+      const response = await API.get('/settings');
+      const data = response.data || {};
+      setSettings({
+        exploreEnabled: data.exploreEnabled ?? true
+      });
+      console.log('✅ Settings loaded from backend:', data);
+    } catch (error: any) {
+      console.warn('⚠️ Could not load from backend, using localStorage:', error?.message);
+      // Fallback to localStorage
+      try {
+        const saved = localStorage.getItem('exploreEnabled');
+        if (saved !== null) {
+          setSettings({ exploreEnabled: JSON.parse(saved) });
+        } else {
+          setSettings({ exploreEnabled: true });
+        }
+      } catch (e) {
         setSettings({ exploreEnabled: true });
       }
-    } catch (error) {
-      console.warn('⚠️ Could not load settings from localStorage:', error);
-      setSettings({ exploreEnabled: true });
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
 
   const handleToggle = (key: string) => {
     setSettings(prev => ({
@@ -34,18 +51,21 @@ export const SettingsManagement: React.FC = () => {
   const handleSave = async () => {
     try {
       setLoading(true);
+      let savedToBackend = false;
       
-      // Always save to localStorage first
-      localStorage.setItem('exploreEnabled', JSON.stringify(settings.exploreEnabled));
-      
-      // Try to save to backend as well (optional)
+      // Try to save to backend database (global settings)
       try {
         await API.post('/settings/exploreEnabled', {
           settingValue: settings.exploreEnabled
         });
-      } catch (apiError) {
-        console.warn('⚠️ Settings API not available, but saved to localStorage');
+        savedToBackend = true;
+        console.log('✅ Settings saved to backend database');
+      } catch (apiError: any) {
+        console.warn('⚠️ Backend save failed, using localStorage as fallback');
       }
+      
+      // Always save to localStorage as backup
+      localStorage.setItem('exploreEnabled', JSON.stringify(settings.exploreEnabled));
       
       // Show success message
       setMessage({ type: 'success', text: '✅ Settings saved!' });
