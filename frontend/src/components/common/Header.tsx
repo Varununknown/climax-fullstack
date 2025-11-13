@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
 
   return (
     <>
-      <header className="bg-transparent backdrop-blur-xl border-b border-white/10 sticky top-0 z-50 shadow-lg transition-all duration-300">
+      <header className="bg-transparent border-b border-white/10 sticky top-0 z-50 shadow-sm transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -79,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
                   <a
                     key={item.id}
                     href={item.href}
-                    className={`flex items-center space-x-2 text-sm font-medium transition-all duration-200 ${
+                    className={`flex items-center space-x-2 text-sm font-medium transition-colors duration-200 ${
                       currentPage === item.id
                         ? 'text-blue-400 border-b-2 border-blue-400 pb-4 shadow-blue-400/50'
                         : 'text-gray-300 hover:text-blue-400 hover:drop-shadow-[0_0_8px_rgba(0,0,255,0.5)]'
@@ -182,15 +182,15 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
 
       {/* Cast to Android TV Modal */}
       {isCastOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-gradient-to-br from-slate-900 to-slate-950 rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-blue-500/30 shadow-2xl scrollbar-hide">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-950 rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-blue-500/30 shadow-lg scrollbar-hide">
             {/* Modal Header */}
             <div className="sticky top-0 bg-gradient-to-r from-slate-900 via-blue-900/20 to-slate-900 border-b border-blue-500/20 p-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <Tv2 className="w-6 h-6 text-blue-400" />
                 Cast to Android TV
               </h2>
-              <button onClick={() => setIsCastOpen(false)} className="text-gray-400 hover:text-white transition-colors">
+              <button onClick={() => setIsCastOpen(false)} className="text-gray-400 hover:text-white transition-colors duration-150">
                 <X size={24} />
               </button>
             </div>

@@ -169,12 +169,12 @@ export const UserDashboard: React.FC = () => {
                           window.location.href = banner.link;
                         }
                       }}
-                      className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer group shadow-2xl relative overflow-hidden"
+                      className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-transform duration-200 cursor-pointer group shadow-lg relative overflow-hidden"
                     >
                       <img 
                         src={banner.imageUrl} 
                         alt={banner.title} 
-                        className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-50 group-hover:opacity-70 transition-opacity" 
+                        className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-50 group-hover:opacity-70 transition-opacity duration-200" 
                       />
                       <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
                         <div className="flex-1">
@@ -209,7 +209,7 @@ export const UserDashboard: React.FC = () => {
                     <button
                       key={language}
                       onClick={() => handleCategorySelect(language)}
-                      className="px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-gray-800/40 to-gray-700/40 backdrop-blur-md border border-gray-600/30 text-gray-300 rounded-lg text-xs md:text-sm hover:border-gray-400/50 hover:text-white hover:from-gray-700/50 hover:to-gray-600/50 transition-all whitespace-nowrap shadow-lg"
+                      className="px-3 py-1.5 md:px-4 md:py-2 bg-gradient-to-r from-gray-800/40 to-gray-700/40 border border-gray-600/30 text-gray-300 rounded-lg text-xs md:text-sm hover:border-gray-400/50 hover:text-white hover:from-gray-700/50 hover:to-gray-600/50 transition-colors duration-150 whitespace-nowrap shadow-sm"
                     >
                       {language}
                     </button>
@@ -246,6 +246,16 @@ export const UserDashboard: React.FC = () => {
         onNavigate={handleNavigate} // updated
         onSearch={handleSearch}
       />
+
+      {/* Performance Optimization */}
+      <style>{`
+        * {
+          scroll-behavior: smooth;
+        }
+        body, html {
+          scroll-behavior: smooth;
+        }
+      `}</style>
     </div>
   );
 };
