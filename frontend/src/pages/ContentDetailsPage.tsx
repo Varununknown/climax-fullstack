@@ -137,7 +137,7 @@ export const ContentDetailsPage: React.FC = () => {
 
       {/* Top Poster */}
       <div className="relative">
-        <div className="h-64 sm:h-72 md:h-96 lg:h-[420px] bg-cover bg-center bg-no-repeat" style={{backgroundImage:`linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.3)), url(${content.thumbnail})`}}/>
+        <div className="h-64 sm:h-72 md:h-96 lg:h-[420px] bg-cover bg-center" style={{backgroundImage:`linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.95)), url(${content.thumbnail})`}}/>
       </div>
 
       {/* Content Section - Below Background */}
