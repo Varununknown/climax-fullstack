@@ -22,6 +22,7 @@ export const ContentDetailsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'synopsis' | 'videos'>('synopsis');
   const [scrolled, setScrolled] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showClimaxModal, setShowClimaxModal] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -167,10 +168,17 @@ export const ContentDetailsPage: React.FC = () => {
                 </div>
 
                 {/* Watch Now Button - Smaller */}
-                <button onClick={handleWatch} className="w-full sm:w-auto bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 text-white rounded-lg py-2 px-4 sm:px-6 flex items-center justify-center sm:justify-start gap-2 shadow-lg hover:shadow-red-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-red-400/30 hover:border-red-300/50 mb-2">
-                  <Play size={16} />
-                  <span>Watch Now</span>
-                </button>
+                <div className="flex gap-2 mb-2">
+                  <button onClick={handleWatch} className="flex-1 sm:flex-none bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 text-white rounded-lg py-2 px-4 sm:px-6 flex items-center justify-center gap-2 shadow-lg hover:shadow-red-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-red-400/30 hover:border-red-300/50">
+                    <Play size={16} />
+                    <span>Watch Now</span>
+                  </button>
+
+                  {/* Climax Button - Half width */}
+                  <button onClick={() => setShowClimaxModal(true)} className="flex-1 sm:flex-none bg-gradient-to-r from-purple-700 via-purple-600 to-pink-600 hover:from-purple-800 hover:via-purple-700 hover:to-pink-700 text-white rounded-lg py-2 px-3 sm:px-4 flex items-center justify-center gap-1 shadow-lg hover:shadow-purple-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-purple-400/30 hover:border-purple-300/50">
+                    <span>⚡ Climax</span>
+                  </button>
+                </div>
 
                 {/* Share and Plus buttons - Inline */}
                 <div className="flex gap-2">
@@ -273,6 +281,98 @@ export const ContentDetailsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Join Climax Modal */}
+      {showClimaxModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-950 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/50 shadow-2xl shadow-purple-500/20">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-purple-900/80 via-pink-900/40 to-purple-900/80 border-b border-purple-500/30 p-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">⚡ The Climax Moment</h2>
+              <button onClick={() => setShowClimaxModal(false)} className="text-gray-400 hover:text-white transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-4 sm:p-6 space-y-4">
+              {/* Logo Display */}
+              <div className="rounded-lg overflow-hidden border border-purple-500/30 bg-black/40 p-2">
+                <img 
+                  src="/logo4.jpg" 
+                  alt="Climax Moment" 
+                  className="w-full h-auto object-cover rounded"
+                  onError={(e) => { e.currentTarget.src = '/images/logo4.jpg'; }}
+                />
+              </div>
+
+              {/* Payment Trigger Timestamp */}
+              {content?.paymentTriggerTimestamp && (
+                <div className="bg-gradient-to-r from-red-900/40 to-orange-900/40 border border-red-500/40 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-red-400 text-sm font-semibold">⏱️ Payment Triggers At</span>
+                  </div>
+                  <p className="text-white font-bold text-lg">{Math.floor(content.paymentTriggerTimestamp / 60)}:{String(Math.floor(content.paymentTriggerTimestamp % 60)).padStart(2, '0')}</p>
+                </div>
+              )}
+
+              {/* Content Details Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gradient-to-br from-blue-900/30 to-cyan-900/30 border border-blue-500/30 rounded-lg p-3">
+                  <p className="text-blue-300 text-xs uppercase font-semibold mb-1">📺 Genre</p>
+                  <p className="text-white text-sm font-medium">{content?.genre?.slice(0,2).join(', ')}</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border border-green-500/30 rounded-lg p-3">
+                  <p className="text-green-300 text-xs uppercase font-semibold mb-1">⏱️ Duration</p>
+                  <p className="text-white text-sm font-medium">{durationText}</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-yellow-900/30 to-amber-900/30 border border-yellow-500/30 rounded-lg p-3">
+                  <p className="text-yellow-300 text-xs uppercase font-semibold mb-1">📅 Year</p>
+                  <p className="text-white text-sm font-medium">{new Date().getFullYear()}</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-lg p-3">
+                  <p className="text-purple-300 text-xs uppercase font-semibold mb-1">⭐ Rating</p>
+                  <p className="text-white text-sm font-medium">UA 16+</p>
+                </div>
+              </div>
+
+              {/* Features Toggle Section */}
+              <div className="bg-slate-900/50 border border-slate-700/50 rounded-lg p-3 space-y-2">
+                <p className="text-gray-300 text-xs uppercase font-semibold">✨ Features</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2 text-xs text-gray-300">
+                    <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+                    4K Quality
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-300">
+                    <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                    Dolby Atmos
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-300">
+                    <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                    HDR Support
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-300">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    Theatrical
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <button 
+                onClick={() => { setShowClimaxModal(false); handleWatch(); }}
+                className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-700 hover:via-pink-700 hover:to-red-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-purple-500/50 transition-all transform hover:scale-[1.02]"
+              >
+                Experience the Climax
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Join Climax Modal */}
       {showJoinModal && (
