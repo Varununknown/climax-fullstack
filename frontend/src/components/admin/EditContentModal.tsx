@@ -16,6 +16,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
     climaxTimestamp: content.climaxTimestamp?.toString() || '',
     duration: content.duration || 0,
     language: content.language || '', // Ensure language field is initialized
+    fanFestSponsor: content.fanFestSponsor || { name: '', logo: '', tagline: '', description: '' }
   });
 
   const [newGenre, setNewGenre] = useState('');
@@ -30,6 +31,7 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
       climaxTimestamp: content.climaxTimestamp?.toString() || '',
       duration: content.duration || 0,
       language: content.language || '',
+      fanFestSponsor: content.fanFestSponsor || { name: '', logo: '', tagline: '', description: '' }
     });
   }, [content]);
 
@@ -399,6 +401,75 @@ export const EditContentModal: React.FC<EditContentModalProps> = ({ content, onC
                   </button>
                 </span>
               ))}
+            </div>
+          </div>
+
+          {/* Fan Fest Sponsorship Section */}
+          <div className="border-t border-gray-700 pt-6">
+            <h3 className="text-lg font-bold text-white mb-4">🎬 Fan Fest Sponsorship (Optional)</h3>
+            
+            <div className="space-y-4 bg-gray-800/50 rounded-lg p-4">
+              <div>
+                <label className="block text-sm text-white mb-1">Sponsor Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Premium Brand Co."
+                  className="w-full bg-gray-800 text-white rounded px-3 py-2"
+                  value={formData.fanFestSponsor?.name || ''}
+                  onChange={(e) => setFormData((prev: any) => ({
+                    ...prev,
+                    fanFestSponsor: { ...prev.fanFestSponsor, name: e.target.value }
+                  }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-white mb-1">Sponsor Logo URL</label>
+                <input
+                  type="url"
+                  placeholder="https://example.com/logo.png"
+                  className="w-full bg-gray-800 text-white rounded px-3 py-2"
+                  value={formData.fanFestSponsor?.logo || ''}
+                  onChange={(e) => setFormData((prev: any) => ({
+                    ...prev,
+                    fanFestSponsor: { ...prev.fanFestSponsor, logo: e.target.value }
+                  }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-white mb-1">Sponsor Tagline/Offer</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Exclusive rewards for winners!"
+                  className="w-full bg-gray-800 text-white rounded px-3 py-2"
+                  value={formData.fanFestSponsor?.tagline || ''}
+                  onChange={(e) => setFormData((prev: any) => ({
+                    ...prev,
+                    fanFestSponsor: { ...prev.fanFestSponsor, tagline: e.target.value }
+                  }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-white mb-1">Sponsor Description</label>
+                <textarea
+                  placeholder="Brief description about the sponsor and their offer..."
+                  className="w-full bg-gray-800 text-white rounded px-3 py-2"
+                  rows={3}
+                  value={formData.fanFestSponsor?.description || ''}
+                  onChange={(e) => setFormData((prev: any) => ({
+                    ...prev,
+                    fanFestSponsor: { ...prev.fanFestSponsor, description: e.target.value }
+                  }))}
+                />
+              </div>
+
+              <div className="bg-gray-700/50 rounded p-3">
+                <p className="text-xs text-gray-400">
+                  💡 Tip: Add sponsor details to display elegant theater-style sponsorship cards on the Fan Fest page. Leave empty to skip.
+                </p>
+              </div>
             </div>
           </div>
 
