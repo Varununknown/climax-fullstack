@@ -10,26 +10,10 @@ export const SettingsManagement: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
-    loadSettings();
+    // Don't load settings on mount - start with defaults
+    // Settings will be saved when user clicks "Save Settings"
+    setSettings({ exploreEnabled: true });
   }, []);
-
-  const loadSettings = async () => {
-    try {
-      setLoading(true);
-      const response = await API.get('/settings');
-      // Handle both array and object responses
-      const data = Array.isArray(response.data) ? {} : (response.data || {});
-      setSettings({
-        exploreEnabled: data.exploreEnabled ?? true
-      });
-    } catch (error: any) {
-      console.warn('⚠️ Settings not loaded, using defaults:', error?.message);
-      // Silently default to true - no error message shown to user
-      setSettings({ exploreEnabled: true });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleToggle = (key: string) => {
     setSettings(prev => ({
