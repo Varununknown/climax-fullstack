@@ -169,13 +169,13 @@ export const ContentDetailsPage: React.FC = () => {
 
                 {/* Watch Now Button - Desktop full width, mobile stacked */}
                 <div className="flex flex-col sm:flex-row gap-2 mb-2">
-                  <button onClick={handleWatch} className="flex-1 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 text-white rounded-lg py-2 px-4 flex items-center justify-center gap-2 shadow-lg hover:shadow-red-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-red-400/30 hover:border-red-300/50">
+                  <button onClick={handleWatch} className="flex-1 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 text-white rounded-lg py-2 px-4 sm:px-6 flex items-center justify-center gap-2 shadow-lg hover:shadow-red-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-red-400/30 hover:border-red-300/50">
                     <Play size={16} />
                     <span>Watch Now</span>
                   </button>
 
                   {/* Climax Button - Same style as Join Climax header button */}
-                  <button onClick={() => setShowClimaxModal(true)} className="flex-1 bg-gradient-to-r from-gray-900/30 via-purple-700/30 to-gray-800/30 backdrop-blur-md hover:from-gray-800/40 hover:via-purple-600/40 hover:to-gray-700/40 text-white rounded-lg py-3 px-3 flex items-center justify-center gap-1 shadow-lg hover:shadow-purple-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-purple-500/30 hover:border-purple-400/50">
+                  <button onClick={() => setShowClimaxModal(true)} className="flex-1 bg-gradient-to-r from-gray-900/30 via-purple-700/30 to-gray-800/30 backdrop-blur-md hover:from-gray-800/40 hover:via-purple-600/40 hover:to-gray-700/40 text-white rounded-lg py-3 px-3 sm:px-4 flex items-center justify-center gap-1 shadow-lg hover:shadow-purple-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-purple-500/30 hover:border-purple-400/50">
                     <span>⚡ Climax</span>
                   </button>
                 </div>
