@@ -1008,6 +1008,7 @@ export const PremiumVideoPlayer: React.FC = () => {
           muted={false}
           preload="auto"
           onClick={togglePlayPause}
+          crossOrigin="anonymous"
           onError={(e) => {
             console.error('🚫 Video loading error:', e);
             console.error('🚫 Failed URL:', currentVideoUrl || content.videoUrl);
