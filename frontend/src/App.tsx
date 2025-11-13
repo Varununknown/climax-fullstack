@@ -9,6 +9,7 @@ import { AdminDashboard } from "./components/admin/AdminDashboard";
 import WatchPage from "./pages/WatchPage";
 import { ContentDetailsPage } from "./pages/ContentDetailsPage";
 import { QuizPage } from "./pages/QuizPage";
+import { ServerStatusAlert } from "./components/common/ServerStatusAlert";
 
 // ✅ New placeholder pages for navigation
 import MoviesPage from "./components/user/MoviesPage";
@@ -89,6 +90,7 @@ function App() {
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || "placeholder"}>
+      <ServerStatusAlert />
       <ContentProvider>
         <AuthProvider>
           <AppRoutes />

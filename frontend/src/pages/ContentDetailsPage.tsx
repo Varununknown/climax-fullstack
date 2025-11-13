@@ -143,40 +143,46 @@ export const ContentDetailsPage: React.FC = () => {
       {/* Content Section - Below Background */}
       <div className="relative -mt-20 sm:-mt-32 md:-mt-40 lg:-mt-48 z-10 pt-2 sm:pt-0">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 sm:gap-6 pb-4 sm:pb-6">
-            <img src={content.thumbnail} alt={content.title} className="w-32 sm:w-36 md:w-48 lg:w-56 rounded-lg shadow-2xl object-cover flex-shrink-0" />
+          {/* Mobile Layout: Image + Button side by side */}
+          <div className="flex flex-col gap-6">
+            {/* Image and Button Row (Mobile) / Image and Content Column (Desktop) */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 sm:gap-6 pb-4 sm:pb-6">
+              {/* Image */}
+              <img src={content.thumbnail} alt={content.title} className="w-32 sm:w-36 md:w-48 lg:w-56 rounded-lg shadow-2xl object-cover flex-shrink-0" />
 
-            <div className="flex-1 min-w-0">
-              {/* Title Only */}
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-2">{content.title}</h1>
+              {/* Content and Button */}
+              <div className="flex-1 min-w-0 w-full sm:w-auto">
+                {/* Title Only */}
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-2">{content.title}</h1>
 
-              {/* Meta Information */}
-              <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-300 mb-4">
-                <span className="px-2 py-1 bg-gray-800 rounded text-xs">{new Date().getFullYear()}</span>
-                <span className="bg-gray-800 px-2 py-1 rounded text-xs">UA 16+</span>
-                <span className="text-xs">{durationText}</span>
-                <span className="hidden sm:inline text-xs">{content.genre?.slice(0,3).join(' • ')}</span>
+                {/* Meta Information */}
+                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-300 mb-4">
+                  <span className="px-2 py-1 bg-gray-800 rounded text-xs">{new Date().getFullYear()}</span>
+                  <span className="bg-gray-800 px-2 py-1 rounded text-xs">UA 16+</span>
+                  <span className="text-xs">{durationText}</span>
+                  <span className="hidden sm:inline text-xs">{content.genre?.slice(0,3).join(' • ')}</span>
+                </div>
+
+                {/* Watch Now Button - Right side on mobile, below title on desktop */}
+                <button onClick={handleWatch} className="w-full sm:w-auto bg-gradient-to-r from-purple-700 via-purple-600 to-purple-500 hover:from-purple-600 hover:via-purple-500 hover:to-purple-400 text-white rounded-lg py-3 px-6 sm:px-8 flex items-center justify-center sm:justify-start gap-2 shadow-lg hover:shadow-purple-600/50 font-bold text-sm sm:text-base transition-all transform hover:scale-105 border border-purple-400/30 hover:border-purple-300/50">
+                  <Play size={18} />
+                  <span>Watch Now</span>
+                </button>
               </div>
+            </div>
 
-              {/* Description - visible on all screen sizes */}
-              <p className="text-gray-300 mb-4 text-sm sm:text-base leading-relaxed">{content.description}</p>
+            {/* Description - Full width below */}
+            <p className="text-gray-300 text-sm sm:text-base leading-relaxed">{content.description}</p>
 
-              {/* Watch Now Button */}
-              <button onClick={handleWatch} className="w-full sm:w-auto bg-gradient-to-r from-purple-700 via-purple-600 to-purple-500 hover:from-purple-600 hover:via-purple-500 hover:to-purple-400 text-white rounded-lg py-3 px-6 sm:px-8 flex items-center justify-center sm:justify-start gap-2 shadow-lg hover:shadow-purple-600/50 font-bold text-sm sm:text-base transition-all transform hover:scale-105 border border-purple-400/30 hover:border-purple-300/50 mb-4">
-                <Play size={18} />
-                <span>Watch Now</span>
+            {/* Share and Plus buttons */}
+            <div className="flex gap-2 sm:gap-3">
+              <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all transform hover:scale-110">
+                <Share size={16} className="sm:size-5" />
               </button>
 
-              {/* Share and Plus buttons */}
-              <div className="flex gap-2 sm:gap-3">
-                <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all transform hover:scale-110">
-                  <Share size={16} className="sm:size-5" />
-                </button>
-
-                <button className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all transform hover:scale-110">
-                  <Plus size={16} className="sm:size-5" />
-                </button>
-              </div>
+              <button className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all transform hover:scale-110">
+                <Plus size={16} className="sm:size-5" />
+              </button>
             </div>
           </div>
         </div>
