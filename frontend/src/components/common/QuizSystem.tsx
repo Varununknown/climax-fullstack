@@ -248,18 +248,14 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
           {questions.map((question, index) => (
             <div 
               key={question.id} 
-              className="relative group"
+              className="relative"
             >
-              {/* Question Card Gradient Background */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-indigo-600/20 rounded-xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative bg-slate-800/40 border border-slate-700/50 rounded-xl p-6 sm:p-8 shadow-lg backdrop-blur-xl hover:bg-gradient-to-br hover:from-slate-800/60 hover:to-slate-800/40 hover:border-blue-400/40 transition-all duration-300">
+              <div className="relative bg-slate-800/40 border border-slate-700/60 rounded-lg p-6 sm:p-7 backdrop-blur-sm hover:border-slate-700/80 transition-all duration-200">
                 <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
-                  {/* Question Badge */}
+                  {/* Question Number Badge */}
                   <div className="flex-shrink-0">
-                    <div className="relative">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-lg flex items-center justify-center font-bold text-lg shadow-lg border border-blue-400/50">
-                        {index + 1}
-                      </div>
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-md flex items-center justify-center font-bold text-lg shadow-md">
+                      {index + 1}
                     </div>
                   </div>
 
@@ -279,17 +275,10 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                             key={optionIndex}
                             className="relative block cursor-pointer group/option"
                           >
-                            {/* Option Background Gradient */}
-                            <div className={`absolute -inset-0.5 rounded-lg transition-all duration-300 ${
+                            <div className={`relative flex items-center gap-4 p-4 sm:p-5 rounded-lg border-2 transition-all duration-200 ${
                               isSelected
-                                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 blur opacity-60'
-                                : 'opacity-0 group-hover/option:opacity-100 group-hover/option:bg-gradient-to-r group-hover/option:from-blue-400/40 group-hover/option:to-indigo-500/40 blur-sm'
-                            }`}></div>
-                            
-                            <div className={`relative flex items-center gap-4 p-4 sm:p-5 rounded-lg border transition-all duration-300 ${
-                              isSelected
-                                ? 'bg-gradient-to-r from-blue-500/20 to-indigo-600/20 border-blue-400/60 shadow-lg backdrop-blur-sm'
-                                : 'bg-slate-800/40 border-slate-700/50 hover:bg-gradient-to-r hover:from-blue-500/15 hover:to-indigo-500/15 hover:border-blue-400/40 backdrop-blur-sm'
+                                ? 'bg-gradient-to-r from-blue-600/25 to-indigo-600/25 border-blue-500 shadow-md'
+                                : 'bg-slate-800/30 border-slate-700/60 group-hover/option:bg-gradient-to-r group-hover/option:from-blue-500/15 group-hover/option:to-indigo-500/15 group-hover/option:border-blue-400/80 group-hover/option:shadow-md'
                             }`}>
                               {/* Professional Radio Button */}
                               <div className="flex-shrink-0">
@@ -396,36 +385,26 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
 
         {/* Submit Section */}
         <div className="relative border-t border-slate-700/50">
-          {/* Background */}
-          <div className="absolute inset-0 bg-slate-800/20"></div>
-          
           <div className="relative p-6 sm:p-8 md:p-10">
-            {/* Submit Button - Big and Responsive */}
+            {/* Submit Button */}
             <div className="relative w-full">
-              {/* Gradient Background for Button */}
-              <div className={`absolute -inset-1 rounded-xl transition-all duration-300 ${
-                Object.keys(answers).length === 0 || loading
-                  ? 'opacity-0'
-                  : 'opacity-100 bg-gradient-to-r from-blue-500/30 to-indigo-600/30 blur-sm'
-              }`}></div>
-              
               <button
                 onClick={handleSubmit}
                 disabled={Object.keys(answers).length === 0 || loading}
-                className={`relative w-full py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-xl font-bold text-base sm:text-lg md:text-xl transition-all duration-300 ${
+                className={`relative w-full py-3 sm:py-4 md:py-5 px-6 sm:px-8 rounded-lg font-bold text-base sm:text-lg transition-all duration-200 ${
                   Object.keys(answers).length === 0 || loading
-                    ? 'bg-slate-600/30 text-slate-400 cursor-not-allowed border border-slate-600/40'
-                    : 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:from-blue-500 hover:to-indigo-600 shadow-lg hover:shadow-2xl border border-blue-400/60 hover:scale-105'
-                } backdrop-blur-sm`}
+                    ? 'bg-slate-700/40 text-slate-400 cursor-not-allowed border border-slate-700/50'
+                    : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-500 hover:to-blue-600 shadow-lg hover:shadow-xl border border-blue-500/70'
+                }`}
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-3">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span>Processing Submission...</span>
+                    <span>Submitting...</span>
                   </span>
                 ) : (
-                  <span className="flex items-center justify-center gap-3">
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                     </svg>
                     <span>Submit</span>
