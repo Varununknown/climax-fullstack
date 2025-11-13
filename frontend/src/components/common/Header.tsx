@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
 
   return (
     <>
-      <header className="bg-transparent border-b border-white/10 sticky top-0 z-50 shadow-sm transition-colors duration-200">
+      <header className="bg-transparent backdrop-blur-xl border-b border-white/10 sticky top-0 z-50 shadow-lg transition-all duration-300">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
