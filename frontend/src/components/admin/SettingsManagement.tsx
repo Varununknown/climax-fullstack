@@ -23,14 +23,9 @@ export const SettingsManagement: React.FC = () => {
         exploreEnabled: data.exploreEnabled ?? true
       });
     } catch (error: any) {
-      console.error('Error loading settings:', error);
-      // Default to true if endpoint fails or returns 404
+      console.warn('⚠️ Settings not loaded, using defaults:', error?.message);
+      // Silently default to true - no error message shown to user
       setSettings({ exploreEnabled: true });
-      // Show a small message that we're using defaults
-      if (error?.response?.status === 404) {
-        setMessage({ type: 'error', text: '⚠️ Using default settings. Save to initialize.' });
-        setTimeout(() => setMessage(null), 3000);
-      }
     } finally {
       setLoading(false);
     }
@@ -50,14 +45,15 @@ export const SettingsManagement: React.FC = () => {
         settingValue: settings.exploreEnabled
       });
       
-      if (response.data?.success || response.status === 200) {
+      // Accept any 2xx status or success flag
+      if (response.status >= 200 && response.status < 300) {
         setMessage({ type: 'success', text: '✅ Settings saved successfully!' });
         setTimeout(() => setMessage(null), 3000);
       } else {
         setMessage({ type: 'error', text: 'Failed to save settings' });
       }
     } catch (error: any) {
-      console.error('Error saving settings:', error);
+      console.error('Error saving settings:', error?.message);
       const errorMsg = error?.response?.data?.error || error?.message || 'Failed to save settings';
       setMessage({ type: 'error', text: `❌ ${errorMsg}` });
     } finally {
