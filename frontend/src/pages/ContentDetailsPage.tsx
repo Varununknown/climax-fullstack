@@ -167,8 +167,8 @@ export const ContentDetailsPage: React.FC = () => {
                   <span className="hidden sm:inline text-xs">{content.genre?.slice(0,2).join(' • ')}</span>
                 </div>
 
-                {/* Watch Now Button - Both buttons side by side on mobile and desktop */}
-                <div className="flex flex-row gap-2 mb-2">
+                {/* Watch Now Button - Side by side on mobile, stacked on desktop */}
+                <div className="flex flex-row sm:flex-col gap-2 mb-2">
                   <button onClick={handleWatch} className="flex-1 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 text-white rounded-lg py-2 px-2 sm:px-6 flex items-center justify-center gap-2 shadow-lg hover:shadow-red-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-red-400/30 hover:border-red-300/50">
                     <Play size={16} />
                     <span>Watch Now</span>
@@ -213,7 +213,7 @@ export const ContentDetailsPage: React.FC = () => {
             {activeTab === 'synopsis' && (
               <div>
                 <h3 className="text-base font-semibold mb-3">More Details</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 text-sm">
                   <div className="bg-gray-900/40 p-3 rounded-lg">
                     <span className="text-gray-400 text-xs uppercase font-semibold">Genre</span>
                     <p className="text-white text-xs sm:text-sm mt-1">{content.genre?.join(', ')}</p>
