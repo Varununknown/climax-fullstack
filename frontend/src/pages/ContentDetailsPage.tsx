@@ -155,7 +155,7 @@ export const ContentDetailsPage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <button onClick={handleWatch} className="bg-gradient-to-r from-purple-600 via-blue-500 to-cyan-400 hover:from-purple-500 hover:via-blue-400 hover:to-cyan-300 text-white rounded-full py-3 sm:py-4 px-6 sm:px-8 flex items-center gap-2 sm:gap-3 shadow-2xl hover:shadow-purple-500/50 font-bold text-sm sm:text-lg transition-all border border-purple-400/40 hover:border-purple-300/60 hover:scale-[1.03]">
+              <button onClick={handleWatch} className="bg-gradient-to-r from-purple-700 via-purple-600 to-pink-500 hover:from-purple-600 hover:via-purple-500 hover:to-pink-400 text-white rounded-full py-3 sm:py-4 px-6 sm:px-8 flex items-center gap-2 sm:gap-3 shadow-2xl hover:shadow-purple-600/60 font-bold text-sm sm:text-lg transition-all border border-purple-400/40 hover:border-purple-300/60 hover:scale-[1.03]">
                 <Play size={18} className="sm:size-6" />
                 <span>Watch Now</span>
               </button>
