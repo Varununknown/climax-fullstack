@@ -289,7 +289,7 @@ export const ContentDetailsPage: React.FC = () => {
               {/* Promotional Images Section */}
               <div className="mb-8">
                 <h3 className="text-lg font-semibold text-white mb-4">Exclusive Offers</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-4">
                   {/* Image 1 - Logo 3 */}
                   <div className="rounded-lg overflow-hidden border border-cyan-500/30 hover:border-cyan-500/60 transition-all hover:shadow-lg hover:shadow-cyan-500/20">
                     <img 
@@ -298,8 +298,8 @@ export const ContentDetailsPage: React.FC = () => {
                       className="w-full h-auto object-cover aspect-square"
                       onError={(e) => { e.currentTarget.src = '/images/logo3.jpg'; }}
                     />
-                    <div className="bg-slate-900/60 p-3 backdrop-blur-sm">
-                      <p className="text-cyan-300 text-xs font-semibold text-center">UNLOCK FOR JUST ₹2</p>
+                    <div className="bg-slate-900/60 p-2 sm:p-3 backdrop-blur-sm">
+                      <p className="text-cyan-300 text-xs sm:text-sm font-semibold text-center">UNLOCK FOR ₹2</p>
                     </div>
                   </div>
 
@@ -311,8 +311,8 @@ export const ContentDetailsPage: React.FC = () => {
                       className="w-full h-auto object-cover aspect-square"
                       onError={(e) => { e.currentTarget.src = '/images/logo5.jpg'; }}
                     />
-                    <div className="bg-slate-900/60 p-3 backdrop-blur-sm">
-                      <p className="text-orange-300 text-xs font-semibold text-center">ONLY PAY WHEN EXCITING</p>
+                    <div className="bg-slate-900/60 p-2 sm:p-3 backdrop-blur-sm">
+                      <p className="text-orange-300 text-xs sm:text-sm font-semibold text-center">PAY WHEN EXCITING</p>
                     </div>
                   </div>
                 </div>
