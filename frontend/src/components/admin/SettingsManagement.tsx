@@ -39,14 +39,20 @@ export const SettingsManagement: React.FC = () => {
   const handleSave = async () => {
     try {
       setLoading(true);
-      await API.post('/settings/exploreEnabled', {
+      const response = await API.post('/settings/exploreEnabled', {
         settingValue: settings.exploreEnabled
       });
-      setMessage({ type: 'success', text: 'Settings saved successfully!' });
-      setTimeout(() => setMessage(null), 3000);
-    } catch (error) {
+      
+      if (response.data?.success) {
+        setMessage({ type: 'success', text: '✅ Settings saved successfully!' });
+        setTimeout(() => setMessage(null), 3000);
+      } else {
+        setMessage({ type: 'error', text: 'Failed to save settings' });
+      }
+    } catch (error: any) {
       console.error('Error saving settings:', error);
-      setMessage({ type: 'error', text: 'Failed to save settings' });
+      const errorMsg = error?.response?.data?.error || error?.message || 'Failed to save settings';
+      setMessage({ type: 'error', text: `❌ ${errorMsg}` });
     } finally {
       setLoading(false);
     }
