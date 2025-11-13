@@ -334,19 +334,19 @@ export const ContentDetailsPage: React.FC = () => {
                 <p className="text-gray-300 text-xs uppercase font-semibold">✨ Features</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="flex items-center gap-2 text-xs text-gray-300">
-                    <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+                    <span className="w-2 h-2 rounded-full bg-black animate-pulse"></span>
                     4K Quality
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-300">
-                    <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                    <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
                     Dolby Atmos
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-300">
-                    <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse"></span>
+                    <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
                     HDR Support
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-300">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></span>
                     Theatrical
                   </div>
                 </div>
