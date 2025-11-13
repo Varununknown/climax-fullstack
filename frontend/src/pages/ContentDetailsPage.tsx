@@ -288,7 +288,7 @@ export const ContentDetailsPage: React.FC = () => {
           <div className="bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-950 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/50 shadow-2xl shadow-purple-500/20 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900/20" style={{ scrollBehavior: 'smooth' }}>
             {/* Modal Header */}
             <div className="sticky top-0 bg-gradient-to-r from-purple-900/80 via-pink-900/40 to-purple-900/80 border-b border-purple-500/30 p-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">⚡ The Climax Moment @ {content?.paymentTriggerTimestamp ? `${Math.floor(content.paymentTriggerTimestamp / 60)}:${String(Math.floor(content.paymentTriggerTimestamp % 60)).padStart(2, '0')}` : '00:00'}</h2>
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">⚡ The Climax Moment @ {content?.climaxTimestamp ? `${Math.floor(content.climaxTimestamp / 60)}:${String(Math.floor(content.climaxTimestamp % 60)).padStart(2, '0')}` : '00:00'}</h2>
               <button onClick={() => setShowClimaxModal(false)} className="text-gray-400 hover:text-white transition-colors">
                 <X size={24} />
               </button>
