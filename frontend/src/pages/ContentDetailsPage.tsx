@@ -181,13 +181,13 @@ export const ContentDetailsPage: React.FC = () => {
                 </div>
 
                 {/* Share and Plus buttons - Inline */}
-                <div className="flex gap-2">
-                  <button onClick={handleShare} className="bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-full shadow-lg transition-all transform hover:scale-110 text-xs">
-                    <Share size={14} />
+                <div className="flex gap-3 mt-3">
+                  <button onClick={handleShare} className="bg-gradient-to-r from-white/20 to-black/20 backdrop-blur-md hover:from-white/30 hover:to-black/30 text-white p-3 rounded-full shadow-lg hover:shadow-white/50 transition-all transform hover:scale-110 border border-white/20 hover:border-white/30">
+                    <Share size={20} />
                   </button>
 
-                  <button className="bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-full shadow-lg transition-all transform hover:scale-110 text-xs">
-                    <Plus size={14} />
+                  <button className="bg-gradient-to-r from-white/20 to-black/20 backdrop-blur-md hover:from-white/30 hover:to-black/30 text-white p-3 rounded-full shadow-lg hover:shadow-white/50 transition-all transform hover:scale-110 border border-white/20 hover:border-white/30">
+                    <Plus size={20} />
                   </button>
                 </div>
               </div>
