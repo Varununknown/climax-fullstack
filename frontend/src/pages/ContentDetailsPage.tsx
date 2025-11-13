@@ -174,8 +174,8 @@ export const ContentDetailsPage: React.FC = () => {
                     <span>Watch Now</span>
                   </button>
 
-                  {/* Climax Button - Half width */}
-                  <button onClick={() => setShowClimaxModal(true)} className="flex-1 sm:flex-none bg-gradient-to-r from-purple-700 via-purple-600 to-pink-600 hover:from-purple-800 hover:via-purple-700 hover:to-pink-700 text-white rounded-lg py-2 px-3 sm:px-4 flex items-center justify-center gap-1 shadow-lg hover:shadow-purple-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-purple-400/30 hover:border-purple-300/50">
+                  {/* Climax Button - Same style as Join Climax header button */}
+                  <button onClick={() => setShowClimaxModal(true)} className="flex-1 sm:flex-none bg-gradient-to-r from-gray-900 via-purple-700 to-gray-800 hover:from-gray-800 hover:via-purple-600 hover:to-gray-700 text-white rounded-lg py-2 px-3 sm:px-4 flex items-center justify-center gap-1 shadow-lg hover:shadow-purple-500/50 font-semibold text-xs sm:text-sm transition-all transform hover:scale-105 border border-purple-500/30 hover:border-purple-400/50">
                     <span>⚡ Climax</span>
                   </button>
                 </div>
