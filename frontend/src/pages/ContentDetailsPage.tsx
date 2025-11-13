@@ -154,19 +154,24 @@ export const ContentDetailsPage: React.FC = () => {
               <span className="hidden sm:inline text-xs">{content.genre?.slice(0,3).join(' • ')}</span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <button onClick={handleWatch} className="bg-gradient-to-r from-purple-700 via-purple-600 to-pink-500 hover:from-purple-600 hover:via-purple-500 hover:to-pink-400 text-white rounded-full py-3 sm:py-4 px-6 sm:px-8 flex items-center gap-2 sm:gap-3 shadow-2xl hover:shadow-purple-600/60 font-bold text-sm sm:text-lg transition-all border border-purple-400/40 hover:border-purple-300/60 hover:scale-[1.03]">
+            {/* Mobile Layout - Watch Now Right, Share/Plus Below */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              {/* Watch Now Button - Right on mobile, Left on desktop */}
+              <button onClick={handleWatch} className="order-1 sm:order-none bg-gradient-to-b from-purple-700 via-purple-600 to-pink-500 hover:from-purple-600 hover:via-purple-500 hover:to-pink-400 text-white rounded-full py-3 sm:py-4 px-6 sm:px-8 flex items-center gap-2 sm:gap-3 shadow-2xl hover:shadow-purple-600/60 font-bold text-sm sm:text-lg transition-all border border-purple-400/40 hover:border-purple-300/60 hover:scale-[1.03]">
                 <Play size={18} className="sm:size-6" />
                 <span>Watch Now</span>
               </button>
 
-              <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all">
-                <Share size={16} className="sm:size-5" />
-              </button>
+              {/* Share and Plus buttons - horizontal on desktop, vertical below on mobile */}
+              <div className="flex gap-2 sm:gap-3 order-2 sm:order-none">
+                <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all">
+                  <Share size={16} className="sm:size-5" />
+                </button>
 
-              <button className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all">
-                <Plus size={16} className="sm:size-5" />
-              </button>
+                <button className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all">
+                  <Plus size={16} className="sm:size-5" />
+                </button>
+              </div>
             </div>
 
             <p className="text-gray-300 mt-3 sm:mt-4 text-sm sm:text-base leading-relaxed hidden sm:block">{content.description}</p>
