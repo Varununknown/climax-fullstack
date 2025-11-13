@@ -143,83 +143,123 @@ export const ContentDetailsPage: React.FC = () => {
       {/* Content Section - Below Background */}
       <div className="relative -mt-20 sm:-mt-32 md:-mt-40 lg:-mt-48 z-10 pt-2 sm:pt-0">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          {/* Mobile Layout: Image + Button side by side */}
-          <div className="flex flex-col gap-6">
-            {/* Image and Button Row (Mobile) / Image and Content Column (Desktop) */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 sm:gap-6 pb-4 sm:pb-6">
-              {/* Image */}
-              <img src={content.thumbnail} alt={content.title} className="w-32 sm:w-36 md:w-48 lg:w-56 rounded-lg shadow-2xl object-cover flex-shrink-0" />
+          {/* Main Content Container */}
+          <div className="flex flex-col gap-8">
+            {/* Top Section: Poster + Title + Meta + CTA */}
+            <div className="flex flex-col sm:flex-row gap-6 items-start">
+              {/* Poster Image */}
+              <div className="flex-shrink-0">
+                <img 
+                  src={content.thumbnail} 
+                  alt={content.title} 
+                  className="w-40 sm:w-44 md:w-52 rounded-xl shadow-2xl object-cover aspect-[3/4]" 
+                />
+              </div>
 
-              {/* Content and Button */}
-              <div className="flex-1 min-w-0 w-full sm:w-auto">
-                {/* Title Only */}
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-2">{content.title}</h1>
+              {/* Title, Meta & CTA Section */}
+              <div className="flex-1">
+                {/* Title */}
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
+                  {content.title}
+                </h1>
 
-                {/* Meta Information */}
-                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-300 mb-4">
-                  <span className="px-2 py-1 bg-gray-800 rounded text-xs">{new Date().getFullYear()}</span>
-                  <span className="bg-gray-800 px-2 py-1 rounded text-xs">UA 16+</span>
-                  <span className="text-xs">{durationText}</span>
-                  <span className="hidden sm:inline text-xs">{content.genre?.slice(0,3).join(' • ')}</span>
+                {/* Meta Tags - Professional Row */}
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                  <span className="inline-block px-3 py-1 bg-gray-700 text-gray-100 text-xs font-semibold rounded-full">{new Date().getFullYear()}</span>
+                  <span className="inline-block px-3 py-1 bg-orange-600/20 text-orange-300 text-xs font-semibold rounded-full border border-orange-500/30">UA 16+</span>
+                  <span className="inline-block px-3 py-1 bg-gray-700 text-gray-100 text-xs font-semibold rounded-full">{durationText}</span>
+                  <span className="hidden sm:inline-block px-3 py-1 bg-gray-700 text-gray-100 text-xs font-semibold rounded-full">{content.genre?.slice(0,2).join(' • ')}</span>
                 </div>
 
-                {/* Watch Now Button - Right side on mobile, below title on desktop */}
-                <button onClick={handleWatch} className="w-full sm:w-auto bg-gradient-to-r from-purple-700 via-purple-600 to-purple-500 hover:from-purple-600 hover:via-purple-500 hover:to-purple-400 text-white rounded-lg py-3 px-6 sm:px-8 flex items-center justify-center sm:justify-start gap-2 shadow-lg hover:shadow-purple-600/50 font-bold text-sm sm:text-base transition-all transform hover:scale-105 border border-purple-400/30 hover:border-purple-300/50">
-                  <Play size={18} />
-                  <span>Watch Now</span>
-                </button>
+                {/* Watch Now CTA Button - Large and Prominent */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                  <button 
+                    onClick={handleWatch} 
+                    className="w-full sm:w-auto bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 text-white font-bold py-3 px-8 rounded-lg flex items-center justify-center gap-3 shadow-xl hover:shadow-red-500/50 transition-all transform hover:scale-105 border border-red-400/30"
+                  >
+                    <Play size={20} />
+                    <span className="text-base sm:text-lg">Watch Now</span>
+                  </button>
+                  
+                  <button 
+                    className="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg flex items-center justify-center gap-2 shadow-lg transition-all border border-gray-600/50"
+                  >
+                    <Plus size={20} />
+                    <span>Watchlist</span>
+                  </button>
+                </div>
+
+                {/* Action Buttons - Share & More */}
+                <div className="flex gap-2 sm:gap-3">
+                  <button 
+                    onClick={handleShare} 
+                    className="flex items-center justify-center w-12 h-12 bg-gray-800 hover:bg-gray-700 text-white rounded-full shadow-lg transition-all hover:scale-110 border border-gray-600/50"
+                    title="Share"
+                  >
+                    <Share size={18} />
+                  </button>
+
+                  <button 
+                    className="flex items-center justify-center w-12 h-12 bg-gray-800 hover:bg-gray-700 text-white rounded-full shadow-lg transition-all hover:scale-110 border border-gray-600/50"
+                    title="More Options"
+                  >
+                    <span className="text-xl">⋮</span>
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Description - Full width below */}
-            <p className="text-gray-300 text-sm sm:text-base leading-relaxed">{content.description}</p>
-
-            {/* Share and Plus buttons */}
-            <div className="flex gap-2 sm:gap-3">
-              <button onClick={handleShare} className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all transform hover:scale-110">
-                <Share size={16} className="sm:size-5" />
-              </button>
-
-              <button className="bg-gradient-to-r from-slate-700 to-slate-600 hover:from-slate-600 hover:to-slate-500 text-white p-2 sm:p-3 rounded-full shadow-lg transition-all transform hover:scale-110">
-                <Plus size={16} className="sm:size-5" />
-              </button>
+            {/* Description Section */}
+            <div className="border-t border-gray-700 pt-6">
+              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Overview</h3>
+              <p className="text-gray-200 text-sm sm:text-base leading-relaxed max-w-3xl">
+                {content.description}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Tabs + Content */}
-      <div className="mx-auto px-4 sm:px-6 py-6 max-w-5xl">
+      <div className="mx-auto px-4 sm:px-6 py-12 max-w-5xl">
         <div className="border-b border-gray-800">
-          <nav className="flex gap-4 sm:gap-6 text-sm overflow-x-auto">
+          <nav className="flex gap-8 text-sm font-medium">
             {['synopsis', 'videos'].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab as any)} className={`py-3 pb-4 whitespace-nowrap transition-all ${activeTab===tab? 'text-white border-b-2 border-purple-500':'text-gray-400 hover:text-white'}`}>
-                {tab.charAt(0).toUpperCase()+tab.slice(1)}
+              <button 
+                key={tab} 
+                onClick={() => setActiveTab(tab as any)} 
+                className={`py-4 px-1 transition-all border-b-2 ${
+                  activeTab === tab 
+                    ? 'text-white border-b-red-500' 
+                    : 'text-gray-400 border-b-transparent hover:text-gray-200'
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
               </button>
             ))}
           </nav>
         </div>
 
-        <div className="pt-6">
+        <div className="pt-8">
           {activeTab === 'synopsis' && (
             <div>
-              <h3 className="text-lg font-semibold mb-4">More Details</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 text-sm">
-                <div className="bg-gray-900/40 p-3 rounded-lg">
-                  <span className="text-gray-400 text-xs uppercase font-semibold">Genre</span>
-                  <p className="text-white text-sm sm:text-base mt-1">{content.genre?.join(', ')}</p>
+              <h3 className="text-xl font-bold text-white mb-6">Details</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800/50">
+                  <p className="text-gray-400 text-xs uppercase font-semibold tracking-wide mb-2">Genre</p>
+                  <p className="text-white font-medium">{content.genre?.slice(0,2).join(', ')}</p>
                 </div>
-                <div className="bg-gray-900/40 p-3 rounded-lg">
-                  <span className="text-gray-400 text-xs uppercase font-semibold">Duration</span>
-                  <p className="text-white text-sm sm:text-base mt-1">{durationText}</p>
+                <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800/50">
+                  <p className="text-gray-400 text-xs uppercase font-semibold tracking-wide mb-2">Duration</p>
+                  <p className="text-white font-medium">{durationText}</p>
                 </div>
-                <div className="bg-gray-900/40 p-3 rounded-lg">
-                  <span className="text-gray-400 text-xs uppercase font-semibold">Rating</span>
-                  <p className="text-white text-sm sm:text-base mt-1">UA 16+</p>
+                <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800/50">
+                  <p className="text-gray-400 text-xs uppercase font-semibold tracking-wide mb-2">Rating</p>
+                  <p className="text-white font-medium">UA 16+</p>
                 </div>
-                <div className="bg-gray-900/40 p-3 rounded-lg">
-                  <span className="text-gray-400 text-xs uppercase font-semibold">Year</span>
-                  <p className="text-white text-sm sm:text-base mt-1">{new Date().getFullYear()}</p>
+                <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800/50">
+                  <p className="text-gray-400 text-xs uppercase font-semibold tracking-wide mb-2">Year</p>
+                  <p className="text-white font-medium">{new Date().getFullYear()}</p>
                 </div>
               </div>
             </div>
@@ -227,45 +267,60 @@ export const ContentDetailsPage: React.FC = () => {
 
           {activeTab === 'videos' && (
             <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-4">Videos</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="rounded overflow-hidden bg-gray-900/60">
-                  <img src={content.thumbnail} className="w-full h-32 sm:h-44 object-cover" />
-                  <div className="p-3 flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-sm">Official Trailer</div>
-                      <div className="text-xs text-gray-400">2:30</div>
+              <h3 className="text-xl font-bold text-white mb-6">Videos</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-lg overflow-hidden bg-gray-900/50 border border-gray-800/50 group hover:border-gray-700 transition-all">
+                  <div className="relative h-40 overflow-hidden">
+                    <img src={content.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                      <button className="bg-white text-black p-3 rounded-full hover:bg-gray-100 transition-all"><Play size={20} /></button>
                     </div>
-                    <button className="p-2 bg-gradient-to-r from-white to-gray-100 hover:from-gray-100 hover:to-white text-black rounded-lg transition-all shadow-lg"><Play size={18} /></button>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-white font-medium text-sm">Official Trailer</p>
+                    <p className="text-gray-400 text-xs mt-1">2:30</p>
                   </div>
                 </div>
               </div>
             </div>
           )}
-
         </div>
       </div>
 
-      {/* Events Section - Single Event Card with Participate Button */}
-      <div className="mx-auto px-4 sm:px-6 py-8 max-w-5xl">
-        <h2 className="text-xl sm:text-2xl font-bold mb-6">Live Events</h2>
-        <div className="grid grid-cols-1 gap-4">
-          <div className="bg-gradient-to-r from-purple-900/40 to-pink-900/40 rounded-lg overflow-hidden border border-purple-500/30 hover:border-purple-400/60 transition-all">
-            <div className="flex flex-col sm:flex-row">
-              <img src={content.thumbnail} alt="Live Event" className="w-full sm:w-48 h-32 sm:h-40 object-cover" />
-              <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Fan Fest</h3>
-                  <p className="text-gray-300 text-sm sm:text-base mb-3">Join us for an exclusive live event with the cast and crew</p>
-                  <div className="flex gap-3 text-xs sm:text-sm text-gray-400">
-                    <span>📅 Today at 8:00 PM</span>
-                    <span>👥 2.5K Watching</span>
-                  </div>
+      {/* Live Events Section */}
+      <div className="mx-auto px-4 sm:px-6 py-12 max-w-5xl">
+        <h2 className="text-2xl font-bold text-white mb-8">Live Events</h2>
+        <div className="bg-gradient-to-br from-gray-900/80 to-gray-950/80 rounded-xl overflow-hidden border border-gray-800/50 hover:border-gray-700/50 transition-all hover:shadow-xl hover:shadow-red-500/10">
+          <div className="flex flex-col sm:flex-row">
+            {/* Event Image */}
+            <div className="flex-shrink-0 w-full sm:w-64 h-48 sm:h-52 overflow-hidden bg-gray-800">
+              <img 
+                src={content.thumbnail} 
+                alt="Live Event" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+              />
+            </div>
+
+            {/* Event Details */}
+            <div className="flex-1 p-6 sm:p-8 flex flex-col justify-between">
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-3">Fan Fest</h3>
+                <p className="text-gray-300 text-base mb-4 leading-relaxed">
+                  Join us for an exclusive live event with the cast and crew. Participate in interactive sessions, Q&A, and win amazing prizes!
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-400">
+                  <span className="flex items-center gap-2">📅 <span>Today at 8:00 PM</span></span>
+                  <span className="flex items-center gap-2">👥 <span>2.5K Watching</span></span>
                 </div>
-                <button onClick={handleParticipate} className="mt-4 bg-gradient-to-r from-orange-600 via-red-500 to-pink-600 hover:from-orange-500 hover:via-red-400 hover:to-pink-500 text-white rounded-lg py-2 px-4 font-semibold shadow-lg hover:scale-[1.02] transition-all border border-orange-400/30 w-full sm:w-auto text-center">
-                  Participate Now
-                </button>
               </div>
+
+              {/* Event CTA */}
+              <button 
+                onClick={handleParticipate} 
+                className="mt-6 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:shadow-red-500/50 transition-all hover:scale-105 border border-red-400/30 w-full sm:w-auto text-center"
+              >
+                Participate Now
+              </button>
             </div>
           </div>
         </div>
