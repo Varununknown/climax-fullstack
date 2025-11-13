@@ -150,8 +150,8 @@ export const ContentDetailsPage: React.FC = () => {
               {/* Title with Watch Now beside it */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-2">
                 <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight flex-1">{content.title}</h1>
-                {/* Watch Now Button - Professional Disney/Amazon style */}
-                <button onClick={handleWatch} className="w-full sm:w-auto bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 hover:from-purple-500 hover:via-blue-500 hover:to-cyan-400 text-white rounded-lg py-3 px-6 sm:px-8 flex items-center justify-center sm:justify-start gap-2 shadow-lg hover:shadow-blue-600/50 font-bold text-sm sm:text-base transition-all transform hover:scale-105 border border-blue-400/30 hover:border-blue-300/50">
+                {/* Watch Now Button - Purple gradient */}
+                <button onClick={handleWatch} className="w-full sm:w-auto bg-gradient-to-r from-purple-700 via-purple-600 to-purple-500 hover:from-purple-600 hover:via-purple-500 hover:to-purple-400 text-white rounded-lg py-3 px-6 sm:px-8 flex items-center justify-center sm:justify-start gap-2 shadow-lg hover:shadow-purple-600/50 font-bold text-sm sm:text-base transition-all transform hover:scale-105 border border-purple-400/30 hover:border-purple-300/50">
                   <Play size={18} />
                   <span>Watch Now</span>
                 </button>
@@ -176,7 +176,8 @@ export const ContentDetailsPage: React.FC = () => {
                 </button>
               </div>
 
-              <p className="text-gray-300 mt-4 text-sm sm:text-base leading-relaxed hidden sm:block">{content.description}</p>
+              {/* Description - visible on all screen sizes */}
+              <p className="text-gray-300 mt-3 sm:mt-4 text-sm sm:text-base leading-relaxed">{content.description}</p>
             </div>
           </div>
         </div>
