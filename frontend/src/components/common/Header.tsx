@@ -8,7 +8,10 @@ import {
   Film,
   Tv,
   Radio,
-  Cast
+  Cast,
+  X,
+  Tv2,
+  Smartphone
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { SettingsModal } from '../common/SettingsModal';
@@ -21,6 +24,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isCastOpen, setIsCastOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { user, logout } = useAuth();
 
@@ -105,9 +109,9 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
               </form>
 
               {/* Cast Icon */}
-              <a href="https://climaxott.vercel.app" className="text-gray-300 hover:text-blue-400 transition-colors">
+              <button onClick={() => setIsCastOpen(true)} className="text-gray-300 hover:text-blue-400 transition-colors hover:scale-110">
                 <Cast className="w-6 h-6" />
-              </a>
+              </button>
 
               {/* Profile dropdown */}
               <div className="relative">
@@ -175,6 +179,121 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
 
       {/* Settings Modal */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+
+      {/* Cast to Android TV Modal */}
+      {isCastOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-950 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-blue-500/30 shadow-2xl">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-slate-900 via-blue-900/20 to-slate-900 border-b border-blue-500/20 p-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Tv2 className="w-6 h-6 text-blue-400" />
+                Cast to Android TV
+              </h2>
+              <button onClick={() => setIsCastOpen(false)} className="text-gray-400 hover:text-white transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 sm:p-8 space-y-6">
+              {/* Coming Soon Banner */}
+              <div className="bg-gradient-to-r from-blue-900/30 to-cyan-900/30 border border-blue-500/30 rounded-xl p-6 text-center">
+                <h3 className="text-2xl font-bold text-white mb-2">🎬 Coming Soon</h3>
+                <p className="text-blue-300 font-semibold text-lg">Cast Your Content to Android TV</p>
+              </div>
+
+              {/* Feature Description */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold text-white mb-4">What's Coming</h3>
+                
+                <div className="bg-slate-800/40 rounded-lg p-4 border border-blue-500/20">
+                  <div className="flex gap-4">
+                    <Tv2 className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="font-semibold text-white mb-1">Android TV Support</p>
+                      <p className="text-gray-300 text-sm">Seamlessly cast your favorite Climax content from your mobile device to your Android TV with a single tap.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-800/40 rounded-lg p-4 border border-blue-500/20">
+                  <div className="flex gap-4">
+                    <Smartphone className="w-6 h-6 text-purple-400 flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="font-semibold text-white mb-1">Multi-Device Casting</p>
+                      <p className="text-gray-300 text-sm">Control playback from your smartphone while enjoying premium content on the big screen. Perfect for family viewing.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-800/40 rounded-lg p-4 border border-blue-500/20">
+                  <div className="flex gap-4">
+                    <Cast className="w-6 h-6 text-pink-400 flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="font-semibold text-white mb-1">Premium Quality Streaming</p>
+                      <p className="text-gray-300 text-sm">Enjoy crystal-clear, high-quality streaming of all your favorite movies and shows directly on your television.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upcoming Benefits */}
+              <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-lg p-6">
+                <h4 className="font-semibold text-white mb-4">Upcoming Features</h4>
+                <ul className="space-y-2 text-gray-300 text-sm">
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                    Full HD (1080p) & 4K support
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                    One-click pairing with Android TV devices
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                    Remote control integration
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                    Playlist sync across devices
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                    Chromecast support
+                  </li>
+                </ul>
+              </div>
+
+              {/* Notification Section */}
+              <div className="bg-slate-800/40 rounded-lg p-4 border border-blue-500/20">
+                <p className="text-gray-300 text-sm text-center">
+                  📬 Be the first to know when Cast to Android TV launches. Stay tuned for updates!
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-blue-500/20">
+                <button
+                  onClick={() => setIsCastOpen(false)}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-slate-700 to-slate-800 
+                             hover:from-slate-600 hover:to-slate-700 rounded-xl font-semibold transition-all
+                             shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                >
+                  <span>Close</span>
+                </button>
+
+                <button className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 
+                             hover:from-blue-500 hover:to-cyan-500 rounded-xl font-semibold transition-all
+                             shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                >
+                  <span>Notify Me</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
