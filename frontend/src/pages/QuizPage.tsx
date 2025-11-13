@@ -257,9 +257,7 @@ export const QuizPage: React.FC = () => {
               <h4 className="font-semibold text-white mb-4">Fan Fest</h4>
               <ul className="space-y-2 text-sm text-slate-400">
                 <li><a href="#" className="hover:text-white transition-colors">About Fan Fest</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Prize Details</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Rules</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Leaderboard</a></li>
               </ul>
             </div>
 
@@ -269,8 +267,6 @@ export const QuizPage: React.FC = () => {
               <ul className="space-y-2 text-sm text-slate-400">
                 <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">FAQ</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Feedback</a></li>
               </ul>
             </div>
 
@@ -280,8 +276,6 @@ export const QuizPage: React.FC = () => {
               <ul className="space-y-2 text-sm text-slate-400">
                 <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Cookies</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Disclaimer</a></li>
               </ul>
             </div>
           </div>
