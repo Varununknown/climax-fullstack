@@ -155,7 +155,10 @@ export const ContentDetailsPage: React.FC = () => {
                 {/* Title */}
                 <h1 className="text-lg sm:text-2xl md:text-3xl font-bold leading-tight mb-2">{content.title}</h1>
 
-                {/* Meta Information - Right below Title */}
+                {/* Description - Right below Title */}
+                <p className="text-gray-300 text-xs sm:text-sm leading-relaxed mb-3">{content.description}</p>
+
+                {/* Meta Information */}
                 <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-300 mb-3">
                   <span className="px-2 py-1 bg-gray-800 rounded text-xs">{new Date().getFullYear()}</span>
                   <span className="bg-gray-800 px-2 py-1 rounded text-xs">UA 16+</span>
@@ -181,9 +184,6 @@ export const ContentDetailsPage: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {/* Description - Full width below */}
-            <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">{content.description}</p>
           </div>
         </div>
       </div>
