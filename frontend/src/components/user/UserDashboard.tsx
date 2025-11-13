@@ -160,7 +160,7 @@ export const UserDashboard: React.FC = () => {
               </div>
               
               {banners.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3 md:gap-6 mb-8 md:mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-8 md:mb-12">
                   {banners.map((banner) => (
                     <div 
                       key={banner._id}
@@ -169,19 +169,27 @@ export const UserDashboard: React.FC = () => {
                           window.location.href = banner.link;
                         }
                       }}
-                      className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 backdrop-blur-xl border border-white/10 rounded-xl p-3 md:p-6 hover:scale-105 transition-all duration-300 cursor-pointer group shadow-2xl relative overflow-hidden"
+                      className="relative overflow-hidden rounded-xl cursor-pointer group shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] h-40 sm:h-48 md:h-56"
                     >
+                      {/* Background Image */}
                       <img 
                         src={banner.imageUrl} 
                         alt={banner.title} 
-                        className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-50 group-hover:opacity-70 transition-opacity" 
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
                       />
-                      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-white text-sm md:text-xl font-semibold mb-1">{banner.title}</h3>
-                          {banner.description && (
-                            <p className="text-gray-300 text-xs md:text-sm">{banner.description}</p>
-                          )}
+                      
+                      {/* Dark overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                      
+                      {/* Content - Bottom */}
+                      <div className="absolute inset-0 flex flex-col justify-end p-3 sm:p-4 md:p-6 z-10">
+                        <h3 className="text-white text-sm sm:text-base md:text-lg font-bold mb-1 line-clamp-2">{banner.title}</h3>
+                        {banner.description && (
+                          <p className="text-gray-200 text-xs sm:text-sm md:text-base line-clamp-2 opacity-90">{banner.description}</p>
+                        )}
+                        <div className="mt-2 flex items-center gap-2 text-xs sm:text-sm text-blue-300 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span>Tap to explore</span>
+                          <span>→</span>
                         </div>
                       </div>
                     </div>
