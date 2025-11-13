@@ -236,37 +236,74 @@ export const QuizPage: React.FC = () => {
       {/* Professional Footer */}
       <div className="relative mt-12 border-t border-slate-700/50 bg-slate-900/40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-          {/* Footer Content */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {/* Brand Section */}
-            <div>
-              <h3 className="text-xl sm:text-2xl font-bold text-white">
-                CLIMAX
-              </h3>
-              <p className="text-sm text-blue-300 font-semibold tracking-widest">
-                Entertainment
+            <div className="sm:col-span-2 lg:col-span-1">
+              <div className="mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-white">
+                  CLIMAX
+                </h3>
+                <p className="text-sm text-blue-300 font-semibold tracking-widest">
+                  Entertainment
+                </p>
+              </div>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                Premium streaming content with exciting fan engagement opportunities.
               </p>
             </div>
-            
-            {/* Social Links */}
-            <div className="flex items-center gap-4">
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-blue-300 hover:bg-blue-500/20 transition-colors">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-              </a>
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-blue-300 hover:bg-blue-500/20 transition-colors">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-7z"/></svg>
-              </a>
-              <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-blue-300 hover:bg-blue-500/20 transition-colors">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path fill="#000" d="M12 7c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 5.5c-1.379 0-2.5-1.121-2.5-2.5S10.621 7.5 12 7.5s2.5 1.121 2.5 2.5-1.121 2.5-2.5 2.5zM17.5 8c-.276 0-.5.224-.5.5s.224.5.5.5.5-.224.5-.5-.224-.5-.5-.5z"/></svg>
-              </a>
+
+            {/* Fan Fest Info */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Fan Fest</h4>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li><a href="#" className="hover:text-white transition-colors">About Fan Fest</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Prize Details</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Rules</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Leaderboard</a></li>
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Support</h4>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">FAQ</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Feedback</a></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold text-white mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Cookies</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Disclaimer</a></li>
+              </ul>
             </div>
           </div>
 
-          {/* Footer Bottom - Copyright Only */}
+          {/* Footer Bottom */}
           <div className="border-t border-slate-700/50 pt-8">
-            <p className="text-sm text-slate-400 text-center">
-              © 2025 Climax Entertainment. All rights reserved. | Official Platform
-            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-slate-400">
+                © 2025 Climax Entertainment. All rights reserved. | Official Platform
+              </p>
+              <div className="flex items-center gap-4">
+                <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-blue-300 hover:bg-blue-500/20 transition-colors">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+                <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-blue-300 hover:bg-blue-500/20 transition-colors">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-7z"/></svg>
+                </a>
+                <a href="#" className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-blue-300 hover:bg-blue-500/20 transition-colors">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path fill="#000" d="M12 7c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 5.5c-1.379 0-2.5-1.121-2.5-2.5S10.621 7.5 12 7.5s2.5 1.121 2.5 2.5-1.121 2.5-2.5 2.5zM17.5 8c-.276 0-.5.224-.5.5s.224.5.5.5.5-.224.5-.5-.224-.5-.5-.5z"/></svg>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
