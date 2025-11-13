@@ -104,7 +104,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
     return (
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-violet-950"></div>
-        <div className="relative bg-white/10 border border-white/20 rounded-2xl p-8 sm:p-12 text-center backdrop-blur-2xl">
+        <div className="relative bg-white/5 border border-white/20 rounded-2xl p-8 sm:p-12 text-center shadow-xl">
           <div className="mb-6">
             <div className="relative inline-block">
               <div className="absolute -inset-1 bg-gradient-to-r from-green-500/20 to-emerald-600/20 rounded-full blur"></div>
@@ -143,7 +143,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-950 to-violet-950"></div>
         
-        <div className="relative bg-white/10 border border-white/20 rounded-2xl p-8 sm:p-12 text-center backdrop-blur-2xl shadow-2xl">
+        <div className="relative bg-white/5 border border-white/20 rounded-2xl p-8 sm:p-12 text-center shadow-xl">
           <div className="mb-8">
             <div className="relative inline-block">
               <div className="absolute -inset-2 bg-gradient-to-r from-green-500/20 to-emerald-600/20 rounded-full blur-lg"></div>
@@ -172,7 +172,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
           {/* Recognition Program Section */}
           <div className="relative">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/10 to-orange-600/10 rounded-lg blur"></div>
-            <div className="relative bg-amber-500/5 border border-amber-500/20 rounded-lg p-6 backdrop-blur-sm">
+            <div className="relative bg-amber-500/5 border border-amber-500/20 rounded-lg p-6">
               <div className="flex items-center justify-center gap-4">
                 <div className="flex-shrink-0">
                   <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
@@ -206,38 +206,25 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
       </div>
       
       {/* Professional Glass Container */}
-      <div className="relative bg-white/10 border border-white/20 rounded-2xl shadow-2xl backdrop-blur-2xl">
-        {/* Subtle Glass Reflection */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent rounded-2xl"></div>
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-        
+      <div className="relative bg-white/5 border border-white/20 rounded-2xl shadow-xl">
         {/* Professional Header */}
-        <div className="relative bg-gradient-to-r from-black/80 via-slate-900/80 to-violet-950/80 border-b border-white/10 p-8 sm:p-10 lg:p-12 rounded-t-2xl backdrop-blur-xl">
-          {/* Glass Effect Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent rounded-t-2xl"></div>
-          
+        <div className="relative bg-slate-900/60 border-b border-slate-700/50 p-8 sm:p-10 lg:p-12 rounded-t-2xl">
           <div className="relative z-10">
             <div className="flex items-center justify-center mb-8">
-              <div className="relative">
-                <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-3">
-                  <svg className="w-6 h-6 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                    <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm2.5 4a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100-2 1 1 0 000 2zm-1 4h2v-1a1 1 0 00-1-1h-1v2z" clipRule="evenodd"/>
-                  </svg>
-                </div>
+              <div className="bg-slate-700/40 border border-slate-600/40 rounded-lg p-3">
+                <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm2.5 4a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100-2 1 1 0 000 2zm-1 4h2v-1a1 1 0 00-1-1h-1v2z" clipRule="evenodd"/>
+                </svg>
               </div>
             </div>
             
-            <div className="text-center mb-6">
-              <div className="w-20 h-px bg-gradient-to-r from-transparent via-blue-400/60 to-transparent mx-auto mb-6"></div>
-            </div>
-            
             <div className="text-center">
-              <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-blue-100 mb-4">
+              <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-slate-100 mb-3">
                 {contentTitle}
               </h3>
-              <p className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                Share your thoughts about this content in our Fan Fest
+              <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto">
+                Share your thoughts about this content
               </p>
             </div>
           </div>
@@ -275,10 +262,10 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                             key={optionIndex}
                             className="relative block cursor-pointer group/option"
                           >
-                            <div className={`relative flex items-center gap-4 p-4 sm:p-5 rounded-lg border-2 transition-all duration-200 ${
+                            <div className={`relative flex items-center gap-4 p-4 sm:p-5 rounded-lg border-2 transition-all duration-150 ${
                               isSelected
-                                ? 'bg-gradient-to-r from-blue-600/25 to-indigo-600/25 border-blue-500 shadow-md'
-                                : 'bg-slate-800/30 border-slate-700/60 group-hover/option:bg-gradient-to-r group-hover/option:from-blue-500/15 group-hover/option:to-indigo-500/15 group-hover/option:border-blue-400/80 group-hover/option:shadow-md'
+                                ? 'bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border-blue-500 shadow-md'
+                                : 'bg-slate-800/20 border-slate-700/50 group-hover/option:bg-gradient-to-r group-hover/option:from-blue-500/15 group-hover/option:to-indigo-500/15 group-hover/option:border-blue-400/60'
                             }`}>
                               {/* Professional Radio Button */}
                               <div className="flex-shrink-0">
@@ -335,16 +322,13 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         </div>
 
         {/* Professional Contact Section */}
-        <div className="relative border-t border-white/10">
-          {/* Glass Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 via-blue-900/50 to-indigo-900/50"></div>
-          
+        <div className="relative border-t border-white/10">          
           <div className="relative p-8 sm:p-10">
             <div className="flex flex-col sm:flex-row items-start gap-6">
               <div className="flex-shrink-0">
                 <div className="relative">
                   <div className="absolute -inset-1 bg-gradient-to-r from-green-500/20 to-emerald-600/20 rounded-lg blur"></div>
-                  <div className="relative w-12 h-12 bg-white/10 border border-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                  <div className="relative w-12 h-12 bg-white/10 border border-white/20 rounded-lg flex items-center justify-center">
                     <svg className="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
                     </svg>
@@ -365,7 +349,6 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                 
                 {/* Professional Input Field */}
                 <div className="relative">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-green-500/10 to-emerald-600/10 rounded-lg opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 blur"></div>
                   <input
                     type="text"
                     placeholder="Enter your contact number (e.g., +1 234 567 8900)"
@@ -375,7 +358,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                       setPhoneNumber(e.target.value);
                     }}
                     inputMode="numeric"
-                    className="relative w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-green-400/50 focus:ring-2 focus:ring-green-400/20 text-white placeholder-slate-400 transition-all duration-200 backdrop-blur-sm"
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-green-400/50 focus:ring-2 focus:ring-green-400/20 text-white placeholder-slate-400 transition-all duration-150"
                   />
                 </div>
               </div>
@@ -391,10 +374,10 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
               <button
                 onClick={handleSubmit}
                 disabled={Object.keys(answers).length === 0 || loading}
-                className={`relative w-full py-3 sm:py-4 md:py-5 px-6 sm:px-8 rounded-lg font-bold text-base sm:text-lg transition-all duration-200 ${
+                className={`relative w-full py-3 sm:py-4 md:py-5 px-6 sm:px-8 rounded-lg font-bold text-base sm:text-lg transition-all duration-150 ${
                   Object.keys(answers).length === 0 || loading
                     ? 'bg-slate-700/40 text-slate-400 cursor-not-allowed border border-slate-700/50'
-                    : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-500 hover:to-blue-600 shadow-lg hover:shadow-xl border border-blue-500/70'
+                    : 'bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 text-white hover:from-purple-500 hover:via-blue-500 hover:to-pink-500 shadow-lg hover:shadow-xl border border-purple-400/50'
                 }`}
               >
                 {loading ? (
@@ -416,7 +399,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
             {/* Help Text */}
             {Object.keys(answers).length === 0 && (
               <div className="mt-4 sm:mt-6 text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg backdrop-blur-sm">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                   <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
                   </svg>

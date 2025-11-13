@@ -50,7 +50,7 @@ export const QuizPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center bg-white/10 backdrop-blur-2xl border border-white/20 rounded-2xl p-8">
+        <div className="text-center bg-white/5 border border-white/20 rounded-2xl p-8 shadow-xl">
           <div className="mb-6">
             <div className="w-16 h-16 mx-auto border-4 border-white/30 border-t-blue-400 rounded-full animate-spin"></div>
           </div>
@@ -66,7 +66,7 @@ export const QuizPage: React.FC = () => {
   if (!content) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center max-w-md px-6 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-2xl p-8">
+        <div className="text-center max-w-md px-6 bg-white/5 border border-white/20 rounded-2xl p-8 shadow-xl">
           <div className="mb-6">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-500/20 border border-red-400/30">
               <svg className="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 20 20">
@@ -78,7 +78,7 @@ export const QuizPage: React.FC = () => {
           <p className="text-slate-300 mb-8">The requested Fan Fest content could not be located.</p>
           <button
             onClick={() => navigate('/')}
-            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 border border-white/20 backdrop-blur-sm"
+            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 border border-white/20"
           >
             Return Home
           </button>
@@ -94,12 +94,12 @@ export const QuizPage: React.FC = () => {
       <div className="fixed inset-0 bg-gradient-to-r from-transparent via-slate-900/20 to-transparent"></div>
 
       {/* Simple Glass Header */}
-      <div className="sticky top-0 z-50 backdrop-blur-sm bg-slate-900/40 border-b border-white/10 shadow-lg">
+      <div className="sticky top-0 z-50 bg-slate-900/30 border-b border-white/10 shadow-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+              className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors duration-150"
             >
               <ArrowLeft size={20} />
               <span className="font-semibold hidden sm:block">Back</span>
