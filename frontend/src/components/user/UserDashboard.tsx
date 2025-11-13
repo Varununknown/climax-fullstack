@@ -17,19 +17,20 @@ export const UserDashboard: React.FC = () => {
 
   const { contents, categories } = useContent();
 
-  // Fetch settings
+  // Fetch settings from localStorage
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await API.get('/settings');
-        setExploreEnabled(response.data?.exploreEnabled ?? true);
-      } catch (error) {
-        console.warn('⚠️  Could not fetch settings:', error);
-        // Default to true if fetch fails
+    try {
+      const saved = localStorage.getItem('exploreEnabled');
+      if (saved !== null) {
+        setExploreEnabled(JSON.parse(saved));
+      } else {
         setExploreEnabled(true);
       }
-    };
-    fetchSettings();
+    } catch (error) {
+      console.warn('⚠️  Could not load settings:', error);
+      // Default to true if fetch fails
+      setExploreEnabled(true);
+    }
   }, []);
 
   // Fetch banners from API
