@@ -147,15 +147,8 @@ export const ContentDetailsPage: React.FC = () => {
             <img src={content.thumbnail} alt={content.title} className="w-32 sm:w-36 md:w-48 lg:w-56 rounded-lg shadow-2xl object-cover flex-shrink-0" />
 
             <div className="flex-1 min-w-0">
-              {/* Title with Watch Now beside it */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-2">
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight flex-1">{content.title}</h1>
-                {/* Watch Now Button - Purple gradient */}
-                <button onClick={handleWatch} className="w-full sm:w-auto bg-gradient-to-r from-purple-700 via-purple-600 to-purple-500 hover:from-purple-600 hover:via-purple-500 hover:to-purple-400 text-white rounded-lg py-3 px-6 sm:px-8 flex items-center justify-center sm:justify-start gap-2 shadow-lg hover:shadow-purple-600/50 font-bold text-sm sm:text-base transition-all transform hover:scale-105 border border-purple-400/30 hover:border-purple-300/50">
-                  <Play size={18} />
-                  <span>Watch Now</span>
-                </button>
-              </div>
+              {/* Title Only */}
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-2">{content.title}</h1>
 
               {/* Meta Information */}
               <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-300 mb-4">
@@ -164,6 +157,15 @@ export const ContentDetailsPage: React.FC = () => {
                 <span className="text-xs">{durationText}</span>
                 <span className="hidden sm:inline text-xs">{content.genre?.slice(0,3).join(' • ')}</span>
               </div>
+
+              {/* Description - visible on all screen sizes */}
+              <p className="text-gray-300 mb-4 text-sm sm:text-base leading-relaxed">{content.description}</p>
+
+              {/* Watch Now Button */}
+              <button onClick={handleWatch} className="w-full sm:w-auto bg-gradient-to-r from-purple-700 via-purple-600 to-purple-500 hover:from-purple-600 hover:via-purple-500 hover:to-purple-400 text-white rounded-lg py-3 px-6 sm:px-8 flex items-center justify-center sm:justify-start gap-2 shadow-lg hover:shadow-purple-600/50 font-bold text-sm sm:text-base transition-all transform hover:scale-105 border border-purple-400/30 hover:border-purple-300/50 mb-4">
+                <Play size={18} />
+                <span>Watch Now</span>
+              </button>
 
               {/* Share and Plus buttons */}
               <div className="flex gap-2 sm:gap-3">
@@ -175,9 +177,6 @@ export const ContentDetailsPage: React.FC = () => {
                   <Plus size={16} className="sm:size-5" />
                 </button>
               </div>
-
-              {/* Description - visible on all screen sizes */}
-              <p className="text-gray-300 mt-3 sm:mt-4 text-sm sm:text-base leading-relaxed">{content.description}</p>
             </div>
           </div>
         </div>
