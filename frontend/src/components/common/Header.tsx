@@ -105,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
               </form>
 
               {/* Cast Icon */}
-              <a href="https://watchclimax.vercel.app" className="text-gray-300 hover:text-blue-400 transition-colors">
+              <a href="https://climaxott.vercel.app" className="text-gray-300 hover:text-blue-400 transition-colors">
                 <Cast className="w-6 h-6" />
               </a>
 
