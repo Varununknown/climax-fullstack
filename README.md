@@ -1,3 +1,7 @@
+
+## Github Link : https://github.com/Varununknown/climax-fullstack
+
+
 # 🎬 Climax OTT Platform - Full Stack Monorepo
 
 A modern OTT (Over-The-Top) streaming platform with a unique "climax-moment" monetization model. Users can watch content for free up to the climax point, then pay to unlock the remaining content.
