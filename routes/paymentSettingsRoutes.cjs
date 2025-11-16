@@ -10,6 +10,7 @@ const settingsSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
   payuEnabled: { type: Boolean, default: true }, // ✅ Enable PayU tab
   payuMerchantKey: { type: String, default: null }, // Optional - for reference
+  phonepeEnabled: { type: Boolean, default: true }, // ✅ Enable PhonePe tab
 }, { timestamps: true });
 
 const PaymentSettings = mongoose.model('PaymentSettings', settingsSchema);
@@ -31,7 +32,7 @@ router.get('/', async (req, res) => {
 // POST to save or update latest settings
 router.post('/', async (req, res) => {
   try {
-    const { upiId, qrCodeUrl, merchantName, isActive, payuEnabled, payuMerchantKey } = req.body;
+    const { upiId, qrCodeUrl, merchantName, isActive, payuEnabled, payuMerchantKey, phonepeEnabled } = req.body;
     if (!upiId || !qrCodeUrl || !merchantName) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
@@ -45,6 +46,7 @@ router.post('/', async (req, res) => {
       existing.isActive = isActive !== undefined ? isActive : existing.isActive;
       existing.payuEnabled = payuEnabled !== undefined ? payuEnabled : existing.payuEnabled;
       existing.payuMerchantKey = payuMerchantKey || existing.payuMerchantKey;
+      existing.phonepeEnabled = phonepeEnabled !== undefined ? phonepeEnabled : existing.phonepeEnabled;
       await existing.save();
       return res.json({ message: '✅ Settings updated successfully', settings: existing });
     }
@@ -55,7 +57,8 @@ router.post('/', async (req, res) => {
       merchantName, 
       isActive,
       payuEnabled: payuEnabled !== undefined ? payuEnabled : true,
-      payuMerchantKey: payuMerchantKey || null
+      payuMerchantKey: payuMerchantKey || null,
+      phonepeEnabled: phonepeEnabled !== undefined ? phonepeEnabled : true
     });
     await newSettings.save();
     return res.status(201).json({ message: '✅ Settings saved successfully', settings: newSettings });
