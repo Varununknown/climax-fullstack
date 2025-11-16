@@ -14,6 +14,7 @@ const contentRoutes = require('./routes/contentRoutes.cjs');
 const paymentRoutes = require('./routes/paymentRoutes.cjs');
 const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs'); // ✅ NEW
 const payuRoutes = require('./routes/payuRoutes.cjs'); // ✅ PayU Gateway
+const phonepeRoutes = require('./routes/phonepeRoutes.cjs'); // ✅ PhonePe Gateway
 const bannerRoutes = require('./routes/bannerRoutes.cjs'); // ✅ NEW - Banners/Ads
 // DISABLED: Old participation/quiz routes - keeping for backward compatibility but not mounted
 // const participationRoutes = require('./routes/participationRoutes.cjs'); // ✅ DISABLED
@@ -364,6 +365,7 @@ app.use('/api/banners', bannerRoutes); // ✅ BANNER/ADS MANAGEMENT (with GET, P
 app.use('/api/payments', paymentRoutes); // ✅ This now handles /api/payments/check properly
 app.use('/api/payment-settings', paymentSettingsRoutes); // ✅ NEW
 app.use('/api/payu', payuRoutes); // ✅ PayU Gateway
+app.use('/api/phonepe', phonepeRoutes); // ✅ PhonePe Gateway
 // DISABLED: Old participation/quiz routes - using new quiz-system only
 app.use('/api/contents', contentRoutes); // ✅ MAIN CONTENT ROUTES (with POST, PUT, DELETE)
 // app.use('/api/participation', participationRoutes); // ✅ DISABLED - Old Fans Fest
