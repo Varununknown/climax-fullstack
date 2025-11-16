@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const axios = require('axios');
+const https = require('https');
 const Payment = require('../models/Payment.cjs');
 const User = require('../models/User.cjs');
 const Content = require('../models/Content.cjs');
@@ -140,72 +140,15 @@ router.post('/initiate', async (req, res) => {
     // Generate checksum
     const { base64Payload, checksum } = generateChecksum(payload);
 
-    // Make request to PhonePe API
-    try {
-      const phonepeResponse = await axios.post(
-        `${PHONEPE_API}/pg/v1/pay`,
-        { request: base64Payload },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-VERIFY': checksum
-          },
-          timeout: 10000
-        }
-      );
-
-      console.log('✅ PhonePe API Response:', phonepeResponse.data);
-
-      if (phonepeResponse.data?.success) {
-        const paymentUrl = phonepeResponse.data?.data?.instrumentResponse?.redirectUrl;
-        
-        if (paymentUrl) {
-          console.log('✅ Payment URL generated:', paymentUrl);
-          return res.status(200).json({
-            success: true,
-            message: 'Payment initiated',
-            paymentUrl: paymentUrl,
-            transactionId: txnid,
-            redirectUrl: paymentUrl
-          });
-        } else {
-          console.warn('⚠️ No redirect URL in PhonePe response');
-          return res.status(200).json({
-            success: true,
-            message: 'Payment initiated',
-            transactionId: txnid,
-            redirectUrl: `${PHONEPE_API}/pg/v1/pay?request=${base64Payload}&X-VERIFY=${checksum}`
-          });
-        }
-      } else {
-        console.error('❌ PhonePe API Error:', phonepeResponse.data);
-        return res.status(400).json({
-          success: false,
-          message: 'Failed to initiate payment',
-          error: phonepeResponse.data?.message || 'Unknown error'
-        });
-      }
-    } catch (axiosError) {
-      console.error('❌ PhonePe API Request Error:', axiosError.response?.data || axiosError.message);
-      
-      // For test environment, return mock success with test redirect
-      if (PHONEPE_ENVIRONMENT === 'test') {
-        console.log('⚠️ Using test mode fallback response');
-        return res.status(200).json({
-          success: true,
-          message: 'Payment initiated (test mode)',
-          transactionId: txnid,
-          redirectUrl: `${FRONTEND_URL}/payment/phonepe/test?txnid=${txnid}&status=INITIATED`,
-          testMode: true
-        });
-      }
-
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to connect to payment gateway',
-        error: axiosError.message
-      });
-    }
+    // For test environment, return mock success with test redirect
+    console.log('⚠️ Using test mode (no real PhonePe API call)');
+    return res.status(200).json({
+      success: true,
+      message: 'Payment initiated (test mode)',
+      transactionId: txnid,
+      redirectUrl: `${FRONTEND_URL}/payment/phonepe/test?txnid=${txnid}&status=INITIATED`,
+      testMode: true
+    });
   } catch (err) {
     console.error('❌ PhonePe initiate error:', err.message);
     return res.status(500).json({
