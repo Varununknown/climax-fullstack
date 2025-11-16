@@ -16,8 +16,8 @@ const PHONEPE_API = PHONEPE_ENVIRONMENT === 'production'
   ? 'https://api.phonepe.com/apis/hermes'
   : 'https://api-sandbox.phonepe.com/apis/hermes';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const BACKEND_URL = process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://climaxott.vercel.app';
 
 console.log('🔐 PhonePe Configuration:');
 console.log('  Client ID:', PHONEPE_CLIENT_ID ? '✅ Set' : '❌ Not set');
