@@ -80,8 +80,22 @@ router.post('/initiate', async (req, res) => {
       });
     }
 
-    // Check if user already has approved payment for this content
+    // Validate ObjectId formats
     const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid userId format. Must be a valid MongoDB ObjectId.'
+      });
+    }
+    if (!mongoose.Types.ObjectId.isValid(contentId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid contentId format. Must be a valid MongoDB ObjectId.'
+      });
+    }
+
+    // Check if user already has approved payment for this content
     const userIdObj = new mongoose.Types.ObjectId(userId);
     const contentIdObj = new mongoose.Types.ObjectId(contentId);
 

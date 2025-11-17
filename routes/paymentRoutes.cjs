@@ -16,8 +16,16 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Convert to ObjectIds
+    // Validate ObjectId formats
     const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid userId format. Must be a valid MongoDB ObjectId.' });
+    }
+    if (!mongoose.Types.ObjectId.isValid(contentId)) {
+      return res.status(400).json({ message: 'Invalid contentId format. Must be a valid MongoDB ObjectId.' });
+    }
+
+    // Convert to ObjectIds
     const userIdObj = new mongoose.Types.ObjectId(userId);
     const contentIdObj = new mongoose.Types.ObjectId(contentId);
 
@@ -67,7 +75,15 @@ router.get('/check', async (req, res) => {
       return res.status(400).json({ message: 'Missing query parameters' });
     }
 
+    // Validate ObjectId formats
     const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid userId format. Must be a valid MongoDB ObjectId.' });
+    }
+    if (!mongoose.Types.ObjectId.isValid(contentId)) {
+      return res.status(400).json({ message: 'Invalid contentId format. Must be a valid MongoDB ObjectId.' });
+    }
+
     const userIdObj = new mongoose.Types.ObjectId(userId);
     const contentIdObj = new mongoose.Types.ObjectId(contentId);
 
