@@ -119,6 +119,9 @@ const ProfilePage: React.FC = () => {
             <p className="text-sm text-gray-200 leading-relaxed">
               🎬 Experience the unique <span className="font-bold text-purple-300">Climax Entertainment</span> platform. Watch premium content with our innovative pay-when-excited model. Enjoy unlimited streaming, exclusive events, and interactive fan experiences.
             </p>
+            <p className="text-xs text-gray-400 mt-2 opacity-75">
+              Our pricing starts from ₹2 to ₹59
+            </p>
           </div>
 
           {/* Preferences Section */}
