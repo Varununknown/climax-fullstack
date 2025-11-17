@@ -19,9 +19,10 @@ import { SettingsModal } from '../common/SettingsModal';
 interface HeaderProps {
   onSearch?: (query: string) => void;
   currentPage?: string;
+  onNavigate?: (page: string) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
+export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage, onNavigate }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCastOpen, setIsCastOpen] = useState(false);
@@ -35,20 +36,20 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
     }
   };
 
-  // 🌐 Direct href navigation items
+  // 🌐 Navigation items for SPA
   const navigationItems =
     user?.role === 'admin'
       ? [
-          { id: 'dashboard', label: 'Dashboard', icon: Home, href: '/dashboard' },
-          { id: 'content', label: 'Content', icon: Film, href: '/content' },
-          { id: 'users', label: 'Users', icon: User, href: '/users' },
-          { id: 'analytics', label: 'Analytics', icon: Settings, href: '/analytics' }
+          { id: 'dashboard', label: 'Dashboard', icon: Home },
+          { id: 'content', label: 'Content', icon: Film },
+          { id: 'users', label: 'Users', icon: User },
+          { id: 'analytics', label: 'Analytics', icon: Settings }
         ]
       : [
-          { id: 'home', label: 'Home', icon: Home, href: '/' },
-          { id: 'movies', label: 'Movies', icon: Film, href: '/movies' },
-          { id: 'series', label: 'TV Shows', icon: Tv, href: '/series' },
-          { id: 'shows', label: 'Shows', icon: Radio, href: '/shows' }
+          { id: 'home', label: 'Home', icon: Home },
+          { id: 'movies', label: 'Movies', icon: Film },
+          { id: 'series', label: 'TV Shows', icon: Tv },
+          { id: 'series', label: 'Shows', icon: Radio }
         ];
 
   return (
@@ -76,9 +77,9 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
               {navigationItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <a
+                  <button
                     key={item.id}
-                    href={item.href}
+                    onClick={() => onNavigate?.(item.id)}
                     className={`flex items-center space-x-2 text-sm font-medium transition-colors duration-200 ${
                       currentPage === item.id
                         ? 'text-blue-400 border-b-2 border-blue-400 pb-4 shadow-blue-400/50'
@@ -87,7 +88,7 @@ export const Header: React.FC<HeaderProps> = ({ onSearch, currentPage }) => {
                   >
                     <Icon className="w-4 h-4" />
                     <span>{item.label}</span>
-                  </a>
+                  </button>
                 );
               })}
             </nav>
