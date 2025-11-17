@@ -11,7 +11,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] border border-gray-700 overflow-hidden">
+      <div className="bg-gray-900 rounded-xl shadow-2xl w-full max-w-3xl max-h-[75vh] border border-gray-700 overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center border-b border-gray-700 p-6 bg-gradient-to-r from-purple-900/50 to-blue-900/50">
           <div className="flex items-center gap-3">
@@ -27,7 +27,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Content - Scrollable */}
-        <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6 space-y-8">
+        <div className="overflow-y-auto max-h-[calc(75vh-140px)] p-4 space-y-6">
           
           {/* Terms and Conditions Section */}
           <div className="space-y-4">
@@ -36,8 +36,8 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
               <h3 className="text-xl font-bold text-white">Terms and Conditions</h3>
             </div>
             
-            <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-              <div className="text-gray-300 space-y-4 leading-relaxed">
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+              <div className="text-gray-300 space-y-3 leading-relaxed text-sm">
                 <p className="font-semibold text-purple-300">This website is managed by VARUN H V</p>
                 
                 <p>
@@ -54,7 +54,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
                 
                 <p>The use of Platform and/or availing of our Services is subject to the following Terms of Use:</p>
                 
-                <ul className="list-disc list-inside space-y-2 ml-4">
+                <ul className="list-disc list-inside space-y-1 ml-4 text-xs">
                   <li>To access and use the Services, you agree to provide true, accurate and complete information to us during and after registration, and you shall be responsible for all acts done through the use of your registered account on the Platform.</li>
                   
                   <li>Neither we nor any third parties provide any warranty or guarantee as to the accuracy, timeliness, performance, completeness or suitability of the information and materials offered on this website or through the Services, for any specific purpose.</li>
@@ -110,8 +110,8 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
               <h3 className="text-xl font-bold text-white">Privacy Policy</h3>
             </div>
             
-            <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-              <div className="text-gray-300 space-y-4 leading-relaxed">
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+              <div className="text-gray-300 space-y-3 leading-relaxed text-sm">
                 <p>
                   We retain your personal data information for a period no longer than is required for the purpose for which it was collected or as required under any applicable law. However, we may retain data related to you if we believe it may be necessary to prevent fraud or future abuse or for other legitimate purposes. We may continue to retain your data in anonymised form for analytical and research purposes.
                 </p>
@@ -150,8 +150,8 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
               <h3 className="text-xl font-bold text-white">Refund Policy</h3>
             </div>
             
-            <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-              <div className="text-gray-300 space-y-4 leading-relaxed">
+            <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+              <div className="text-gray-300 space-y-3 leading-relaxed text-sm">
                 <p className="font-semibold text-red-300">
                   Refund is not applicable once payment is made.
                 </p>
@@ -162,14 +162,14 @@ export const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-700 p-6 bg-gray-800/30">
-          <div className="flex justify-between items-center">
-            <p className="text-gray-400 text-sm">
+        <div className="border-t border-gray-700 p-4 bg-gray-800/30">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+            <p className="text-gray-400 text-xs">
               Last updated: November 17, 2025
             </p>
             <button
               onClick={onClose}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors shadow-lg hover:shadow-xl"
             >
               I Understand
             </button>
