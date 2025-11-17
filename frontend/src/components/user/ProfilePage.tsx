@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { User, Settings, LogOut, Share2, Star, Clock, Award, Eye, Zap, Shield } from 'lucide-react';
+import { User, Settings, LogOut, Share2, Star, Clock, Award, Eye, Zap, Shield, FileText } from 'lucide-react';
 import { SettingsModal } from '../common/SettingsModal';
+import { TermsModal } from '../common/TermsModal';
 
 const ProfilePage: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [privateMode, setPrivateMode] = useState(false);
   const { user, logout } = useAuth();
@@ -159,7 +161,7 @@ const ProfilePage: React.FC = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-purple-500/20">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-purple-500/20">
             <button
               onClick={() => setIsSettingsOpen(true)}
               className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 
@@ -168,6 +170,16 @@ const ProfilePage: React.FC = () => {
             >
               <Settings className="w-5 h-5" />
               <span>Settings</span>
+            </button>
+
+            <button
+              onClick={() => setIsTermsOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-700 
+                         hover:from-purple-500 hover:to-purple-600 rounded-xl font-semibold transition-all
+                         shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+            >
+              <FileText className="w-5 h-5" />
+              <span>Terms</span>
             </button>
 
             <button
@@ -201,6 +213,11 @@ const ProfilePage: React.FC = () => {
       {/* Settings Modal */}
       {isSettingsOpen && (
         <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      )}
+      
+      {/* Terms Modal */}
+      {isTermsOpen && (
+        <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
       )}
     </div>
   );
