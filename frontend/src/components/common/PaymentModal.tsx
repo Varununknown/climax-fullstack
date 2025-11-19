@@ -79,14 +79,20 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       return;
     }
 
+    // ⚠️ REQUIRE payment settings to be configured
+    if (!paymentSettings?.upiId || !paymentSettings?.merchantName) {
+      alert('❌ Payment settings not configured.\n\nPlease go to Admin Panel → Payment Settings and enter:\n- Your UPI ID\n- Merchant Name\n\nThen try again.');
+      return;
+    }
+
     try {
       console.log('🔗 Opening UPI Deep Link...');
       setIsProcessing(true);
       setPaymentStep('upi-deeplink');
 
-      // Use paymentSettings if available, otherwise use defaults
-      const upiId = paymentSettings?.upiId || 'user@okhdfcbank';
-      const merchantName = paymentSettings?.merchantName || 'Climax';
+      // Use REAL payment settings (no fallbacks)
+      const upiId = paymentSettings.upiId;
+      const merchantName = paymentSettings.merchantName;
 
       // Create unique transaction ID for this payment attempt
       const tempTxnId = `UPI${Date.now()}${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
