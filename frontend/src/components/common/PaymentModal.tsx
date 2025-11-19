@@ -16,8 +16,6 @@ interface PaymentSettings {
   qrCodeUrl: string;
   merchantName: string;
   isActive: boolean;
-  payuMerchantKey?: string;
-  payuEnabled?: boolean;
   phonepeEnabled?: boolean;
 }
 
@@ -28,8 +26,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose
 }) => {
   const { user } = useAuth();
-  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'payU' | 'phonepe'>('qr');
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'payU' | 'phonepe'>('payU'); // Default to Gateway
+  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'phonepe'>('qr');
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'phonepe'>('phonepe'); // Default to PhonePe
   const [transactionId, setTransactionId] = useState('');
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
@@ -120,92 +118,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       }
     } catch (err) {
       console.error('❌ PhonePe error:', err);
-      alert('Payment error: ' + (err instanceof Error ? err.message : 'Unknown error'));
-      setIsProcessing(false);
-    }
-  };
-
-  const handlePayUPayment = async () => {
-    if (!user?.id || !content._id) {
-      alert('Missing user or content information');
-      return;
-    }
-
-    setIsProcessing(true);
-    console.log('🔄 PayU Payment Initiated');
-
-    try {
-      console.log('📡 Fetching PayU form from backend...');
-      const response = await fetch(`${BACKEND_URL}/api/payu/initiate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          contentId: content._id,
-          amount: content.premiumPrice,
-          userEmail: user.email || 'user@climax.app',
-          userName: user.name || 'User'
-        })
-      });
-
-      console.log('Response status:', response.status);
-      const data = await response.json();
-      console.log('✅ PayU response received:', data);
-
-      if (!response.ok) {
-        console.error('❌ Backend error:', data);
-        alert(`Error: ${data.message || 'Payment gateway error'}`);
-        setIsProcessing(false);
-        return;
-      }
-
-      if (data.success && data.paymentData && data.gatewayUrl) {
-        console.log('🔗 Creating form for gateway:', data.gatewayUrl);
-        
-        // Build form manually as string and write to document
-        let formHtml = `<form id="payu_form_${Date.now()}" method="POST" action="${data.gatewayUrl}" style="display:none;">`;
-        
-        Object.entries(data.paymentData).forEach(([key, value]) => {
-          formHtml += `<input type="hidden" name="${key}" value="${String(value).replace(/"/g, '&quot;')}">`;
-        });
-        
-        formHtml += '</form>';
-        
-        console.log('📝 Form HTML created, length:', formHtml.length);
-        
-        // Insert form into document
-        document.body.insertAdjacentHTML('beforeend', formHtml);
-        console.log('✅ Form inserted into DOM');
-        
-        // Get the form and submit
-        const formId = `payu_form_${Date.now()}`;
-        const form = document.getElementById(formId) || document.querySelector('form[id^="payu_form_"]');
-        
-        if (form) {
-          console.log('🚀 Submitting form...');
-          // Small delay to ensure form is in DOM
-          setTimeout(() => {
-            try {
-              (form as HTMLFormElement).submit();
-              console.log('✅ Form submitted successfully');
-            } catch (submitErr) {
-              console.error('❌ Submit error:', submitErr);
-              alert('Failed to redirect to PayU');
-              setIsProcessing(false);
-            }
-          }, 100);
-        } else {
-          console.error('❌ Form not found in DOM');
-          alert('Form creation error');
-          setIsProcessing(false);
-        }
-      } else {
-        console.error('❌ Invalid response format:', data);
-        alert('PayU unavailable. Try UPI payment.');
-        setIsProcessing(false);
-      }
-    } catch (err) {
-      console.error('❌ PayU error:', err);
       alert('Payment error: ' + (err instanceof Error ? err.message : 'Unknown error'));
       setIsProcessing(false);
     }
@@ -492,7 +404,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
 
             {/* Tabs */}
-            {(paymentSettings?.payuEnabled || paymentSettings?.phonepeEnabled) && (
+            {(paymentSettings?.phonepeEnabled) && (
               <div style={tabsContainerStyle}>
                 <button
                   onClick={() => setPaymentMethod('upi')}
@@ -506,20 +418,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   <QrCode size={16} style={{ display: 'inline', marginRight: '6px' }} />
                   QR Code
                 </button>
-                {paymentSettings?.payuEnabled && (
-                  <button
-                    onClick={() => setPaymentMethod('payU')}
-                    onTouchStart={(e) => {
-                      e.preventDefault();
-                      setPaymentMethod('payU');
-                    }}
-                    onMouseDown={(e) => e.preventDefault()}
-                    style={paymentMethod === 'payU' ? tabButtonActiveStyle : tabButtonInactiveStyle}
-                  >
-                    <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                    PayU
-                  </button>
-                )}
                 {paymentSettings?.phonepeEnabled && (
                   <button
                     onClick={() => setPaymentMethod('phonepe')}
@@ -672,61 +570,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     <>
                       <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
                       Continue to PhonePe
-                    </>
-                  )}
-                </button>
-
-                <p style={{ fontSize: '12px', color: 'rgb(107, 114, 128)', textAlign: 'center', marginTop: '8px' }}>
-                  ✓ Instant & Secure Payment
-                </p>
-
-                <button 
-                  onClick={onClose}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
-                    onClose();
-                  }}
-                  onMouseDown={(e) => e.preventDefault()}
-                  style={cancelButtonStyle}
-                >
-                  Cancel
-                </button>
-              </>
-            )}
-
-            {/* PayU Section */}
-            {paymentMethod === 'payU' && (
-              <>
-                <div style={{ background: 'linear-gradient(to bottom right, rgba(30, 58, 138, 0.3), rgba(88, 28, 135, 0.3))', border: '1px solid rgba(59, 130, 246, 0.4)', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <CreditCard size={20} style={{ color: '#60a5fa', marginTop: '2px' }} />
-                    <div>
-                      <h3 style={{ fontWeight: '600', color: 'white', fontSize: '14px' }}>Fast Checkout</h3>
-                      <p style={{ fontSize: '12px', color: 'rgb(209, 213, 219)', marginTop: '2px' }}>Secure PayU Gateway</p>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handlePayUPayment}
-                  onTouchStart={(e) => {
-                    if (isProcessing) return;
-                    e.preventDefault();
-                    handlePayUPayment();
-                  }}
-                  onMouseDown={(e) => e.preventDefault()}
-                  disabled={isProcessing}
-                  style={isProcessing ? disabledButtonStyle : submitButtonStyle}
-                >
-                  {isProcessing ? (
-                    <>
-                      <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                      Continue to PayU
                     </>
                   )}
                 </button>
