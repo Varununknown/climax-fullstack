@@ -452,34 +452,32 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </div>
 
             {/* Tabs */}
-            {(paymentSettings?.phonepeEnabled) && (
-              <div style={tabsContainerStyle}>
-                <button
-                  onClick={() => setPaymentMethod('upi')}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
-                    setPaymentMethod('upi');
-                  }}
-                  onMouseDown={(e) => e.preventDefault()}
-                  style={paymentMethod === 'upi' ? tabButtonActiveStyle : tabButtonInactiveStyle}
-                >
-                  <QrCode size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                  QR Code
-                </button>
-                <button
-                  onClick={() => setPaymentMethod('upi-deeplink')}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
-                    setPaymentMethod('upi-deeplink');
-                  }}
-                  onMouseDown={(e) => e.preventDefault()}
-                  style={paymentMethod === 'upi-deeplink' ? tabButtonActiveStyle : tabButtonInactiveStyle}
-                >
-                  <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                  UPI
-                </button>
-              </div>
-            )}
+            <div style={tabsContainerStyle}>
+              <button
+                onClick={() => setPaymentMethod('upi')}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  setPaymentMethod('upi');
+                }}
+                onMouseDown={(e) => e.preventDefault()}
+                style={paymentMethod === 'upi' ? tabButtonActiveStyle : tabButtonInactiveStyle}
+              >
+                <QrCode size={16} style={{ display: 'inline', marginRight: '6px' }} />
+                QR Code
+              </button>
+              <button
+                onClick={() => setPaymentMethod('upi-deeplink')}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  setPaymentMethod('upi-deeplink');
+                }}
+                onMouseDown={(e) => e.preventDefault()}
+                style={paymentMethod === 'upi-deeplink' ? tabButtonActiveStyle : tabButtonInactiveStyle}
+              >
+                <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
+                UPI
+              </button>
+            </div>
 
             {/* Price Card */}
             <div style={priceCardStyle}>
