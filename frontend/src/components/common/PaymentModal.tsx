@@ -26,12 +26,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose
 }) => {
   const { user } = useAuth();
-  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'phonepe'>('qr');
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'phonepe'>('phonepe'); // Default to PhonePe
+  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'phonepe' | 'upi-deeplink'>('qr');
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'phonepe' | 'upi-deeplink'>('phonepe'); // Default to PhonePe
   const [transactionId, setTransactionId] = useState('');
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [upiDeepLinkTxnId, setUpiDeepLinkTxnId] = useState(''); // For UPI deep link transaction ID input
 
   console.log('💳 PaymentModal rendered:', content.title);
 
@@ -119,6 +120,105 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     } catch (err) {
       console.error('❌ PhonePe error:', err);
       alert('Payment error: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      setIsProcessing(false);
+    }
+  };
+
+  // 🔗 UPI DEEP LINK HANDLER
+  const handleUpiDeepLink = async () => {
+    if (!user?.id || !content._id || !paymentSettings) {
+      alert('Missing required information');
+      return;
+    }
+
+    try {
+      console.log('🔗 Opening UPI Deep Link...');
+      setPaymentStep('upi-deeplink');
+
+      // Create unique transaction ID for this payment attempt
+      const tempTxnId = `UPI${Date.now()}${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
+
+      // First, create a PENDING payment record in database
+      const createResponse = await fetch(`${BACKEND_URL}/api/payments/create-upi-pending`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          contentId: content._id,
+          amount: content.premiumPrice,
+          tempTransactionId: tempTxnId
+        })
+      });
+
+      if (!createResponse.ok) {
+        throw new Error('Failed to create payment record');
+      }
+
+      // Generate UPI deep link with pre-filled details
+      const upiLink = `upi://pay?pa=${paymentSettings.upiId}&pn=${encodeURIComponent(paymentSettings.merchantName)}&am=${content.premiumPrice}&tn=${encodeURIComponent(`Payment for ${content.title}`)}&tr=${tempTxnId}`;
+
+      console.log('🔗 UPI Link:', upiLink);
+      
+      // Open UPI app
+      window.location.href = upiLink;
+    } catch (err) {
+      console.error('❌ UPI Deep Link error:', err);
+      alert('Failed to initiate UPI payment. Try again.');
+      setPaymentStep('qr');
+    }
+  };
+
+  // ✅ VERIFY UPI TRANSACTION ID
+  const handleVerifyUpiTransaction = async () => {
+    if (!upiDeepLinkTxnId.trim()) {
+      setTxnError('Please enter transaction ID');
+      return;
+    }
+
+    // Validate transaction ID format (12 digits or alphanumeric)
+    const txnIdPattern = /^[A-Z0-9]{12,}$/i;
+    if (!txnIdPattern.test(upiDeepLinkTxnId.trim())) {
+      setTxnError('Invalid transaction ID format. Should be 12 alphanumeric characters.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setTxnError('');
+
+    try {
+      console.log('✅ Verifying UPI Transaction:', upiDeepLinkTxnId);
+
+      const response = await fetch(`${BACKEND_URL}/api/payments/verify-upi`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          contentId: content._id,
+          transactionId: upiDeepLinkTxnId.trim()
+        })
+      });
+
+      const data = await response.json();
+      console.log('✅ Verification response:', data);
+
+      if (data.success) {
+        setPaymentStep('success');
+        alert('✅ Payment verified! Content unlocked.');
+        setTimeout(() => {
+          onSuccess();
+          onClose();
+        }, 1500);
+      } else if (data.error === 'DUPLICATE') {
+        setTxnError('⚠️ This payment already exists in our system');
+      } else if (data.error === 'NOT_FOUND') {
+        setTxnError('❌ Transaction ID not found. Please check and try again.');
+      } else {
+        setTxnError(data.error || 'Verification failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('❌ Verification error:', err);
+      setTxnError('Error verifying payment. Please try again.');
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -432,6 +532,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     PhonePe
                   </button>
                 )}
+                <button
+                  onClick={() => setPaymentMethod('upi-deeplink')}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setPaymentMethod('upi-deeplink');
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  style={paymentMethod === 'upi-deeplink' ? tabButtonActiveStyle : tabButtonInactiveStyle}
+                >
+                  <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
+                  UPI
+                </button>
               </div>
             )}
 
@@ -592,70 +704,161 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </>
             )}
 
-            {/* Instamojo Section */}
-            {paymentMethod === 'instamojo' && (
+            {/* 🔗 UPI DEEP LINK SECTION */}
+            {paymentMethod === 'upi-deeplink' && (
               <>
                 <div style={{ marginTop: '16px' }}>
-                  <div style={{
-                    backgroundColor: 'rgb(243, 244, 246)',
-                    padding: '16px',
-                    borderRadius: '8px',
-                    border: '1px solid rgb(229, 231, 235)',
-                    marginBottom: '16px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                      <CreditCard size={16} style={{ color: '#1f2937', marginRight: '6px' }} />
-                      <span style={{ color: '#1f2937', fontWeight: '600' }}>Instamojo Payment</span>
-                    </div>
-                    <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0' }}>
-                      Safe, secure payment gateway
-                    </p>
-                    <p style={{ color: '#6b7280', fontSize: '12px', marginTop: '8px' }}>
-                      Amount: ₹{content.premiumPrice}
-                    </p>
-                    <p style={{ fontSize: '12px', color: 'rgb(107, 114, 128)', marginTop: '2px' }}>Secure Instamojo Gateway</p>
-                  </div>
-                </div>
+                  {/* Payment Step: Waiting for user to enter transaction ID */}
+                  {paymentStep === 'upi-deeplink' && (
+                    <>
+                      <div style={{
+                        backgroundColor: 'rgb(243, 244, 246)',
+                        padding: '16px',
+                        borderRadius: '8px',
+                        border: '1px solid rgb(229, 231, 235)',
+                        marginBottom: '16px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                          <CreditCard size={18} style={{ color: '#1f2937', marginRight: '8px' }} />
+                          <span style={{ color: '#1f2937', fontWeight: '700', fontSize: '15px' }}>UPI Payment</span>
+                        </div>
+                        
+                        <p style={{ color: '#374151', fontSize: '14px', margin: '8px 0', fontWeight: '500' }}>
+                          Amount: ₹{content.premiumPrice}
+                        </p>
+                        
+                        <p style={{ color: '#6b7280', fontSize: '13px', margin: '12px 0' }}>
+                          📱 <strong>Step 1:</strong> Click button below to open your UPI app (PhonePe, Google Pay, BHIM, etc.)
+                        </p>
+                        
+                        <p style={{ color: '#6b7280', fontSize: '13px', margin: '8px 0' }}>
+                          ✅ <strong>Step 2:</strong> Complete the payment
+                        </p>
+                        
+                        <p style={{ color: '#6b7280', fontSize: '13px', margin: '8px 0' }}>
+                          📋 <strong>Step 3:</strong> Copy the 12-digit transaction ID from your payment receipt
+                        </p>
+                        
+                        <p style={{ color: '#6b7280', fontSize: '13px', margin: '12px 0' }}>
+                          💬 <strong>Step 4:</strong> Return here and enter the transaction ID below
+                        </p>
+                      </div>
 
-                <button
-                  onClick={handleInstamojoPayment}
-                  onTouchStart={(e) => {
-                    if (isProcessing) return;
-                    e.preventDefault();
-                    handleInstamojoPayment();
-                  }}
-                  onMouseDown={(e) => e.preventDefault()}
-                  disabled={isProcessing}
-                  style={isProcessing ? disabledButtonStyle : submitButtonStyle}
-                >
-                  {isProcessing ? (
-                    <>
-                      <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                      Continue to Instamojo
+                      {/* Open UPI App Button */}
+                      <button
+                        onClick={handleUpiDeepLink}
+                        disabled={isProcessing}
+                        style={isProcessing ? disabledButtonStyle : submitButtonStyle}
+                      >
+                        {isProcessing ? (
+                          <>
+                            <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
+                            Opening UPI App...
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
+                            Open UPI App
+                          </>
+                        )}
+                      </button>
+
+                      <p style={{ fontSize: '12px', color: '#059669', textAlign: 'center', marginTop: '12px', fontWeight: '500' }}>
+                        💚 Works with PhonePe, Google Pay, BHIM & all UPI apps
+                      </p>
+
+                      {/* Transaction ID Input Field */}
+                      <div style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                        <label style={{ display: 'block', color: '#1f2937', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>
+                          Enter Transaction ID:
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Enter 12-digit transaction ID from receipt"
+                          value={upiDeepLinkTxnId}
+                          onChange={(e) => {
+                            setUpiDeepLinkTxnId(e.target.value.toUpperCase());
+                            setTxnError('');
+                          }}
+                          style={{
+                            width: '100%',
+                            padding: '12px',
+                            fontSize: '14px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '6px',
+                            boxSizing: 'border-box',
+                            fontFamily: 'monospace',
+                            letterSpacing: '1px'
+                          }}
+                        />
+                        {txnError && (
+                          <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '8px', fontWeight: '500' }}>
+                            {txnError}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Verify Button */}
+                      <button
+                        onClick={handleVerifyUpiTransaction}
+                        disabled={isProcessing || !upiDeepLinkTxnId.trim()}
+                        style={{
+                          ...submitButtonStyle,
+                          marginTop: '16px',
+                          opacity: (isProcessing || !upiDeepLinkTxnId.trim()) ? 0.6 : 1,
+                          cursor: (isProcessing || !upiDeepLinkTxnId.trim()) ? 'not-allowed' : 'pointer'
+                        }}
+                      >
+                        {isProcessing ? (
+                          <>
+                            <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
+                            Verifying...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle size={16} style={{ display: 'inline', marginRight: '6px' }} />
+                            Verify & Unlock
+                          </>
+                        )}
+                      </button>
+
+                      {/* Cancel Button */}
+                      <button 
+                        onClick={onClose}
+                        onTouchStart={(e) => {
+                          e.preventDefault();
+                          onClose();
+                        }}
+                        onMouseDown={(e) => e.preventDefault()}
+                        style={cancelButtonStyle}
+                      >
+                        Cancel
+                      </button>
                     </>
                   )}
-                </button>
 
-                <p style={{ fontSize: '12px', color: 'rgb(107, 114, 128)', textAlign: 'center', marginTop: '8px' }}>
-                  ✓ Instant & Secure Payment
-                </p>
+                  {/* Success Step */}
+                  {paymentStep === 'success' && (
+                    <>
+                      <div style={{ textAlign: 'center', padding: '20px' }}>
+                        <CheckCircle size={48} style={{ color: '#10b981', margin: '0 auto 16px' }} />
+                        <h3 style={{ color: '#1f2937', fontSize: '18px', fontWeight: '700', margin: '12px 0' }}>
+                          ✅ Payment Successful!
+                        </h3>
+                        <p style={{ color: '#6b7280', fontSize: '14px', margin: '8px 0' }}>
+                          Content unlocked. Redirecting...
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
 
-                <button 
-                  onClick={onClose}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
-                    onClose();
-                  }}
-                  onMouseDown={(e) => e.preventDefault()}
-                  style={cancelButtonStyle}
-                >
-                  Cancel
-                </button>
+            {/* Instamojo Section - DISABLED */}
+            {false && (
+              <>
+                {/* Instamojo code removed - not needed */}
               </>
             )}
           </>
