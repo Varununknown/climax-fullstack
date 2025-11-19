@@ -12,8 +12,8 @@ const authRoutes = require('./routes/authRoutes.cjs');
 const googleAuthRoutes = require('./routes/googleAuth.cjs'); // Added Google Auth routes
 const contentRoutes = require('./routes/contentRoutes.cjs');
 const paymentRoutes = require('./routes/paymentRoutes.cjs');
-const upiRoutes = require('./routes/upiRoutes.cjs'); // ✅ UPI Deep Link Gateway
 const paymentSettingsRoutes = require('./routes/paymentSettingsRoutes.cjs'); // ✅ NEW
+const upiRoutes = require('./routes/upiRoutes.cjs'); // ✅ UPI DEEP LINK
 const phonepeRoutes = require('./routes/phonepeRoutes.cjs'); // ✅ PhonePe Gateway
 const bannerRoutes = require('./routes/bannerRoutes.cjs'); // ✅ NEW - Banners/Ads
 // DISABLED: Old participation/quiz routes - keeping for backward compatibility but not mounted
@@ -362,8 +362,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/auth', googleAuthRoutes);  // <-- Add Google auth routes here
 // Skip content routes since we have direct endpoint above
 app.use('/api/banners', bannerRoutes); // ✅ BANNER/ADS MANAGEMENT (with GET, POST, PUT, DELETE)
-app.use('/api/payments', upiRoutes); // ✅ UPI Deep Link Gateway - Register FIRST
-app.use('/api/payments', paymentRoutes); // ✅ QR Code Payment Routes - Register SECOND
+app.use('/api/payments', upiRoutes); // ✅ UPI DEEP LINK ROUTES (register BEFORE paymentRoutes)
+app.use('/api/payments', paymentRoutes); // ✅ This now handles /api/payments/check properly
 app.use('/api/payment-settings', paymentSettingsRoutes); // ✅ NEW
 app.use('/api/phonepe', phonepeRoutes); // ✅ PhonePe Gateway
 // DISABLED: Old participation/quiz routes - using new quiz-system only
