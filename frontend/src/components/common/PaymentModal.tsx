@@ -26,8 +26,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose
 }) => {
   const { user } = useAuth();
-  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'phonepe'>('qr');
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'phonepe'>('phonepe'); // Default to PhonePe
+  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'phonepe' | 'instamojo'>('qr');
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'phonepe' | 'instamojo'>('phonepe'); // Default to PhonePe
   const [transactionId, setTransactionId] = useState('');
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
@@ -119,6 +119,46 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     } catch (err) {
       console.error('❌ PhonePe error:', err);
       alert('Payment error: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      setIsProcessing(false);
+    }
+  };
+
+  const handleInstamojoPayment = async () => {
+    if (!user?.id || !content._id) {
+      alert('Missing user or content information');
+      return;
+    }
+
+    setIsProcessing(true);
+    console.log('🔄 Instamojo Payment Initiated');
+
+    try {
+      console.log('📡 Creating Instamojo payment request...');
+      const response = await fetch(`${BACKEND_URL}/api/instamojo/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          contentId: content._id,
+          amount: content.premiumPrice,
+          purpose: `Payment for ${content.title}`
+        })
+      });
+
+      const data = await response.json();
+      console.log('✅ Instamojo response:', data);
+
+      if (data.success && data.paymentUrl) {
+        setPaymentStep('instamojo');
+        console.log('🔗 Redirecting to Instamojo:', data.paymentUrl);
+        window.location.href = data.paymentUrl;
+      } else {
+        alert('Failed to create payment request: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('❌ Instamojo error:', err);
+      alert('Payment error: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -432,6 +472,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     PhonePe
                   </button>
                 )}
+                <button
+                  onClick={() => setPaymentMethod('instamojo')}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setPaymentMethod('instamojo');
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  style={paymentMethod === 'instamojo' ? tabButtonActiveStyle : tabButtonInactiveStyle}
+                >
+                  <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
+                  Instamojo
+                </button>
               </div>
             )}
 
@@ -570,6 +622,73 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     <>
                       <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
                       Continue to PhonePe
+                    </>
+                  )}
+                </button>
+
+                <p style={{ fontSize: '12px', color: 'rgb(107, 114, 128)', textAlign: 'center', marginTop: '8px' }}>
+                  ✓ Instant & Secure Payment
+                </p>
+
+                <button 
+                  onClick={onClose}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    onClose();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  style={cancelButtonStyle}
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+
+            {/* Instamojo Section */}
+            {paymentMethod === 'instamojo' && (
+              <>
+                <div style={{ marginTop: '16px' }}>
+                  <div style={{
+                    backgroundColor: 'rgb(243, 244, 246)',
+                    padding: '16px',
+                    borderRadius: '8px',
+                    border: '1px solid rgb(229, 231, 235)',
+                    marginBottom: '16px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <CreditCard size={16} style={{ color: '#1f2937', marginRight: '6px' }} />
+                      <span style={{ color: '#1f2937', fontWeight: '600' }}>Instamojo Payment</span>
+                    </div>
+                    <p style={{ color: '#6b7280', fontSize: '13px', margin: '4px 0' }}>
+                      Safe, secure payment gateway
+                    </p>
+                    <p style={{ color: '#6b7280', fontSize: '12px', marginTop: '8px' }}>
+                      Amount: ₹{content.premiumPrice}
+                    </p>
+                    <p style={{ fontSize: '12px', color: 'rgb(107, 114, 128)', marginTop: '2px' }}>Secure Instamojo Gateway</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleInstamojoPayment}
+                  onTouchStart={(e) => {
+                    if (isProcessing) return;
+                    e.preventDefault();
+                    handleInstamojoPayment();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  disabled={isProcessing}
+                  style={isProcessing ? disabledButtonStyle : submitButtonStyle}
+                >
+                  {isProcessing ? (
+                    <>
+                      <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
+                      Continue to Instamojo
                     </>
                   )}
                 </button>
