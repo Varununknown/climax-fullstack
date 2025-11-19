@@ -592,151 +592,149 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             {/* 🔗 UPI DEEP LINK SECTION */}
             {paymentMethod === 'upi-deeplink' && (
               <>
-                <div style={{ marginTop: '16px' }}>
-                  {/* Payment Step: Waiting for user to enter transaction ID */}
-                  {paymentStep === 'upi-deeplink' && (
-                    <>
-                      <div style={{
-                        backgroundColor: 'rgb(243, 244, 246)',
-                        padding: '16px',
-                        borderRadius: '8px',
-                        border: '1px solid rgb(229, 231, 235)',
-                        marginBottom: '16px'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                          <CreditCard size={18} style={{ color: '#1f2937', marginRight: '8px' }} />
-                          <span style={{ color: '#1f2937', fontWeight: '700', fontSize: '15px' }}>UPI Payment</span>
-                        </div>
-                        
-                        <p style={{ color: '#374151', fontSize: '14px', margin: '8px 0', fontWeight: '500' }}>
-                          Amount: ₹{content.premiumPrice}
-                        </p>
-                        
-                        <p style={{ color: '#6b7280', fontSize: '13px', margin: '12px 0' }}>
-                          📱 <strong>Step 1:</strong> Click button below to open your UPI app (PhonePe, Google Pay, BHIM, etc.)
-                        </p>
-                        
-                        <p style={{ color: '#6b7280', fontSize: '13px', margin: '8px 0' }}>
-                          ✅ <strong>Step 2:</strong> Complete the payment
-                        </p>
-                        
-                        <p style={{ color: '#6b7280', fontSize: '13px', margin: '8px 0' }}>
-                          📋 <strong>Step 3:</strong> Copy the 12-digit transaction ID from your payment receipt
-                        </p>
-                        
-                        <p style={{ color: '#6b7280', fontSize: '13px', margin: '12px 0' }}>
-                          💬 <strong>Step 4:</strong> Return here and enter the transaction ID below
-                        </p>
+                {/* Payment Step: Waiting for user to enter transaction ID */}
+                {paymentStep === 'upi-deeplink' && (
+                  <>
+                    <div style={{
+                      backgroundColor: 'rgb(243, 244, 246)',
+                      padding: '16px',
+                      borderRadius: '8px',
+                      border: '1px solid rgb(229, 231, 235)',
+                      marginBottom: '16px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                        <CreditCard size={18} style={{ color: '#1f2937', marginRight: '8px' }} />
+                        <span style={{ color: '#1f2937', fontWeight: '700', fontSize: '15px' }}>UPI Payment</span>
                       </div>
-
-                      {/* Open UPI App Button */}
-                      <button
-                        onClick={handleUpiDeepLink}
-                        disabled={isProcessing}
-                        style={isProcessing ? disabledButtonStyle : submitButtonStyle}
-                      >
-                        {isProcessing ? (
-                          <>
-                            <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
-                            Opening UPI App...
-                          </>
-                        ) : (
-                          <>
-                            <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                            Open UPI App
-                          </>
-                        )}
-                      </button>
-
-                      <p style={{ fontSize: '12px', color: '#059669', textAlign: 'center', marginTop: '12px', fontWeight: '500' }}>
-                        💚 Works with PhonePe, Google Pay, BHIM & all UPI apps
+                      
+                      <p style={{ color: '#374151', fontSize: '14px', margin: '8px 0', fontWeight: '500' }}>
+                        Amount: ₹{content.premiumPrice}
                       </p>
+                      
+                      <p style={{ color: '#6b7280', fontSize: '13px', margin: '12px 0' }}>
+                        📱 <strong>Step 1:</strong> Click button below to open your UPI app (PhonePe, Google Pay, BHIM, etc.)
+                      </p>
+                      
+                      <p style={{ color: '#6b7280', fontSize: '13px', margin: '8px 0' }}>
+                        ✅ <strong>Step 2:</strong> Complete the payment
+                      </p>
+                      
+                      <p style={{ color: '#6b7280', fontSize: '13px', margin: '8px 0' }}>
+                        📋 <strong>Step 3:</strong> Copy the 12-digit transaction ID from your payment receipt
+                      </p>
+                      
+                      <p style={{ color: '#6b7280', fontSize: '13px', margin: '12px 0' }}>
+                        💬 <strong>Step 4:</strong> Return here and enter the transaction ID below
+                      </p>
+                    </div>
 
-                      {/* Transaction ID Input Field */}
-                      <div style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                        <label style={{ display: 'block', color: '#1f2937', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>
-                          Enter Transaction ID:
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Enter 12-digit transaction ID from receipt"
-                          value={upiDeepLinkTxnId}
-                          onChange={(e) => {
-                            setUpiDeepLinkTxnId(e.target.value.toUpperCase());
-                            setTxnError('');
-                          }}
-                          style={{
-                            width: '100%',
-                            padding: '12px',
-                            fontSize: '14px',
-                            border: '1px solid #d1d5db',
-                            borderRadius: '6px',
-                            boxSizing: 'border-box',
-                            fontFamily: 'monospace',
-                            letterSpacing: '1px'
-                          }}
-                        />
-                        {txnError && (
-                          <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '8px', fontWeight: '500' }}>
-                            {txnError}
-                          </p>
-                        )}
-                      </div>
+                    {/* Open UPI App Button */}
+                    <button
+                      onClick={handleUpiDeepLink}
+                      disabled={isProcessing}
+                      style={isProcessing ? disabledButtonStyle : submitButtonStyle}
+                    >
+                      {isProcessing ? (
+                        <>
+                          <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
+                          Opening UPI App...
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
+                          Open UPI App
+                        </>
+                      )}
+                    </button>
 
-                      {/* Verify Button */}
-                      <button
-                        onClick={handleVerifyUpiTransaction}
-                        disabled={isProcessing || !upiDeepLinkTxnId.trim()}
+                    <p style={{ fontSize: '12px', color: '#059669', textAlign: 'center', marginTop: '12px', fontWeight: '500' }}>
+                      💚 Works with PhonePe, Google Pay, BHIM & all UPI apps
+                    </p>
+
+                    {/* Transaction ID Input Field */}
+                    <div style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                      <label style={{ display: 'block', color: '#1f2937', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>
+                        Enter Transaction ID:
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter 12-digit transaction ID from receipt"
+                        value={upiDeepLinkTxnId}
+                        onChange={(e) => {
+                          setUpiDeepLinkTxnId(e.target.value.toUpperCase());
+                          setTxnError('');
+                        }}
                         style={{
-                          ...submitButtonStyle,
-                          marginTop: '16px',
-                          opacity: (isProcessing || !upiDeepLinkTxnId.trim()) ? 0.6 : 1,
-                          cursor: (isProcessing || !upiDeepLinkTxnId.trim()) ? 'not-allowed' : 'pointer'
+                          width: '100%',
+                          padding: '12px',
+                          fontSize: '14px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          boxSizing: 'border-box',
+                          fontFamily: 'monospace',
+                          letterSpacing: '1px'
                         }}
-                      >
-                        {isProcessing ? (
-                          <>
-                            <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
-                            Verifying...
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                            Verify & Unlock
-                          </>
-                        )}
-                      </button>
-
-                      {/* Cancel Button */}
-                      <button 
-                        onClick={onClose}
-                        onTouchStart={(e) => {
-                          e.preventDefault();
-                          onClose();
-                        }}
-                        onMouseDown={(e) => e.preventDefault()}
-                        style={cancelButtonStyle}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  )}
-
-                  {/* Success Step */}
-                  {paymentStep === 'success' && (
-                    <>
-                      <div style={{ textAlign: 'center', padding: '20px' }}>
-                        <CheckCircle size={48} style={{ color: '#10b981', margin: '0 auto 16px' }} />
-                        <h3 style={{ color: '#1f2937', fontSize: '18px', fontWeight: '700', margin: '12px 0' }}>
-                          ✅ Payment Successful!
-                        </h3>
-                        <p style={{ color: '#6b7280', fontSize: '14px', margin: '8px 0' }}>
-                          Content unlocked. Redirecting...
+                      />
+                      {txnError && (
+                        <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '8px', fontWeight: '500' }}>
+                          {txnError}
                         </p>
-                      </div>
-                    </>
-                  )}
-                </div>
+                      )}
+                    </div>
+
+                    {/* Verify Button */}
+                    <button
+                      onClick={handleVerifyUpiTransaction}
+                      disabled={isProcessing || !upiDeepLinkTxnId.trim()}
+                      style={{
+                        ...submitButtonStyle,
+                        marginTop: '16px',
+                        opacity: (isProcessing || !upiDeepLinkTxnId.trim()) ? 0.6 : 1,
+                        cursor: (isProcessing || !upiDeepLinkTxnId.trim()) ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      {isProcessing ? (
+                        <>
+                          <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
+                          Verifying...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle size={16} style={{ display: 'inline', marginRight: '6px' }} />
+                          Verify & Unlock
+                        </>
+                      )}
+                    </button>
+
+                    {/* Cancel Button */}
+                    <button 
+                      onClick={onClose}
+                      onTouchStart={(e) => {
+                        e.preventDefault();
+                        onClose();
+                      }}
+                      onMouseDown={(e) => e.preventDefault()}
+                      style={cancelButtonStyle}
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
+
+                {/* Success Step */}
+                {paymentStep === 'success' && (
+                  <>
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                      <CheckCircle size={48} style={{ color: '#10b981', margin: '0 auto 16px' }} />
+                      <h3 style={{ color: '#1f2937', fontSize: '18px', fontWeight: '700', margin: '12px 0' }}>
+                        ✅ Payment Successful!
+                      </h3>
+                      <p style={{ color: '#6b7280', fontSize: '14px', margin: '8px 0' }}>
+                        Content unlocked. Redirecting...
+                      </p>
+                    </div>
+                  </>
+                )}
               </>
             )}
 
