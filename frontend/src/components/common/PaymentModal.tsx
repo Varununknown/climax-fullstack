@@ -130,6 +130,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
     try {
       console.log('✅ Verifying UPI Transaction:', upiDeepLinkTxnId);
+      console.log('📝 User ID:', user?.id);
+      console.log('📝 Content ID:', content._id);
 
       const response = await fetch(`${BACKEND_URL}/api/payments/verify-upi`, {
         method: 'POST',
@@ -141,10 +143,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         })
       });
 
+      console.log('📊 Response status:', response.status);
       const data = await response.json();
-      console.log('✅ Verification response:', data);
+      console.log('📊 Verification response:', data);
 
-      if (data.success) {
+      if (data.success === true) {
         setPaymentStep('success');
         alert('✅ Payment verified! Content unlocked.');
         setTimeout(() => {
@@ -153,10 +156,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         }, 1500);
       } else if (data.error === 'DUPLICATE') {
         setTxnError('⚠️ This payment already exists in our system');
-      } else if (data.error === 'NOT_FOUND') {
-        setTxnError('❌ Transaction ID not found. Please check and try again.');
+      } else if (data.error === 'INVALID_FORMAT') {
+        setTxnError('❌ Invalid transaction ID format. Please check and try again.');
+      } else if (data.error === 'VERIFICATION_ERROR') {
+        setTxnError('❌ ' + (data.message || 'Verification failed. Please try again.'));
       } else {
-        setTxnError(data.error || 'Verification failed. Please try again.');
+        setTxnError(data.message || data.error || 'Verification failed. Please try again.');
       }
     } catch (err) {
       console.error('❌ Verification error:', err);
