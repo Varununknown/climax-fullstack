@@ -36,6 +36,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   console.log('💳 PaymentModal rendered:', content.title);
 
+  // Set default payment method based on device type on modal open
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    setPaymentMethod(isMobile ? 'upi-deeplink' : 'upi');
+  }, []);
+
   useEffect(() => {
     console.log('🔄 Payment method:', paymentMethod);
     const modal = document.querySelector('[data-modal-content]') as HTMLElement;
@@ -930,33 +936,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               }}
             >
               Continue Watching
-            </button>
-          </div>
-        )}
-                color: 'white',
-                border: '1px solid rgba(16, 185, 129, 0.35)',
-                padding: '14px 40px',
-                borderRadius: '12px',
-                fontSize: '16px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                animation: 'fade-in 0.8s ease-out 0.6s both',
-                boxShadow: '0 8px 32px 0 rgba(16, 185, 129, 0.15)',
-                letterSpacing: '0.5px',
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLButtonElement).style.transform = 'scale(1.08) translateY(-2px)';
-                (e.target as HTMLButtonElement).style.boxShadow = '0 12px 40px 0 rgba(16, 185, 129, 0.25)';
-                (e.target as HTMLButtonElement).style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(59, 130, 246, 0.35))';
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLButtonElement).style.transform = 'scale(1) translateY(0)';
-                (e.target as HTMLButtonElement).style.boxShadow = '0 8px 32px 0 rgba(16, 185, 129, 0.15)';
-                (e.target as HTMLButtonElement).style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(59, 130, 246, 0.25))';
-              }}
-            >
-              Continue Watching 🎬
             </button>
           </div>
         )}
