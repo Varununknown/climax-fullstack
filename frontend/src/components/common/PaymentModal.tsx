@@ -454,10 +454,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             {/* Tabs */}
             <div style={tabsContainerStyle}>
               <button
-                onClick={() => setPaymentMethod('upi')}
+                onClick={() => {
+                  setPaymentMethod('upi');
+                  setPaymentStep('qr');
+                }}
                 onTouchStart={(e) => {
                   e.preventDefault();
                   setPaymentMethod('upi');
+                  setPaymentStep('qr');
                 }}
                 onMouseDown={(e) => e.preventDefault()}
                 style={paymentMethod === 'upi' ? tabButtonActiveStyle : tabButtonInactiveStyle}
@@ -466,10 +470,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 QR Code
               </button>
               <button
-                onClick={() => setPaymentMethod('upi-deeplink')}
+                onClick={() => {
+                  setPaymentMethod('upi-deeplink');
+                  setPaymentStep('upi-deeplink');
+                }}
                 onTouchStart={(e) => {
                   e.preventDefault();
                   setPaymentMethod('upi-deeplink');
+                  setPaymentStep('upi-deeplink');
                 }}
                 onMouseDown={(e) => e.preventDefault()}
                 style={paymentMethod === 'upi-deeplink' ? tabButtonActiveStyle : tabButtonInactiveStyle}
