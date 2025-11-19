@@ -149,11 +149,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       if (data.success === true) {
         setPaymentStep('success');
-        alert('✅ Payment verified! Content unlocked.');
         setTimeout(() => {
           onSuccess();
           onClose();
-        }, 1500);
+        }, 2000);
       } else if (data.error === 'DUPLICATE') {
         setTxnError('⚠️ This payment already exists in our system');
       } else if (data.error === 'INVALID_FORMAT') {
