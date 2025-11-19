@@ -103,8 +103,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         })
       });
 
+      console.log('Response status:', createResponse.status);
+      const responseData = await createResponse.json();
+      console.log('Response data:', responseData);
+
       if (!createResponse.ok) {
-        throw new Error('Failed to create payment record');
+        throw new Error(responseData.error || responseData.message || 'Failed to create payment record');
       }
 
       console.log('✅ Payment record created, opening UPI app...');
@@ -119,7 +123,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       setIsProcessing(false);
     } catch (err) {
       console.error('❌ UPI Deep Link error:', err);
-      alert('Failed to initiate UPI payment. Try again.');
+      console.error('Error message:', err instanceof Error ? err.message : String(err));
+      alert(`Failed to initiate UPI payment: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setIsProcessing(false);
       setPaymentStep('upi-deeplink');
     }
