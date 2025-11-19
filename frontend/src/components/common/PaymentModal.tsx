@@ -74,14 +74,19 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   // 🔗 UPI DEEP LINK HANDLER
   const handleUpiDeepLink = async () => {
-    if (!user?.id || !content._id || !paymentSettings) {
-      alert('Missing required information');
+    if (!user?.id || !content._id) {
+      alert('Missing user or content information');
       return;
     }
 
     try {
       console.log('🔗 Opening UPI Deep Link...');
+      setIsProcessing(true);
       setPaymentStep('upi-deeplink');
+
+      // Use paymentSettings if available, otherwise use defaults
+      const upiId = paymentSettings?.upiId || 'user@okhdfcbank';
+      const merchantName = paymentSettings?.merchantName || 'Climax';
 
       // Create unique transaction ID for this payment attempt
       const tempTxnId = `UPI${Date.now()}${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
@@ -102,17 +107,21 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         throw new Error('Failed to create payment record');
       }
 
+      console.log('✅ Payment record created, opening UPI app...');
+
       // Generate UPI deep link with pre-filled details
-      const upiLink = `upi://pay?pa=${paymentSettings.upiId}&pn=${encodeURIComponent(paymentSettings.merchantName)}&am=${content.premiumPrice}&tn=${encodeURIComponent(`Payment for ${content.title}`)}&tr=${tempTxnId}`;
+      const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${content.premiumPrice}&tn=${encodeURIComponent(`Payment for ${content.title}`)}&tr=${tempTxnId}`;
 
       console.log('🔗 UPI Link:', upiLink);
       
       // Open UPI app
       window.location.href = upiLink;
+      setIsProcessing(false);
     } catch (err) {
       console.error('❌ UPI Deep Link error:', err);
       alert('Failed to initiate UPI payment. Try again.');
-      setPaymentStep('qr');
+      setIsProcessing(false);
+      setPaymentStep('upi-deeplink');
     }
   };
 
