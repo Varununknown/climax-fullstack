@@ -638,6 +638,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     {/* Open UPI App Button */}
                     <button
                       onClick={handleUpiDeepLink}
+                      onTouchStart={(e) => {
+                        if (isProcessing) return;
+                        e.preventDefault();
+                        handleUpiDeepLink();
+                      }}
+                      onMouseDown={(e) => e.preventDefault()}
                       disabled={isProcessing}
                       style={isProcessing ? disabledButtonStyle : submitButtonStyle}
                     >
@@ -689,17 +695,23 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                       )}
                     </div>
 
-                    {/* Verify Button */}
-                    <button
-                      onClick={handleVerifyUpiTransaction}
-                      disabled={isProcessing || !upiDeepLinkTxnId.trim()}
-                      style={{
-                        ...submitButtonStyle,
-                        marginTop: '16px',
-                        opacity: (isProcessing || !upiDeepLinkTxnId.trim()) ? 0.6 : 1,
-                        cursor: (isProcessing || !upiDeepLinkTxnId.trim()) ? 'not-allowed' : 'pointer'
-                      }}
-                    >
+                      {/* Verify Button */}
+                      <button
+                        onClick={handleVerifyUpiTransaction}
+                        onTouchStart={(e) => {
+                          if (isProcessing || !upiDeepLinkTxnId.trim()) return;
+                          e.preventDefault();
+                          handleVerifyUpiTransaction();
+                        }}
+                        onMouseDown={(e) => e.preventDefault()}
+                        disabled={isProcessing || !upiDeepLinkTxnId.trim()}
+                        style={{
+                          ...submitButtonStyle,
+                          marginTop: '16px',
+                          opacity: (isProcessing || !upiDeepLinkTxnId.trim()) ? 0.6 : 1,
+                          cursor: (isProcessing || !upiDeepLinkTxnId.trim()) ? 'not-allowed' : 'pointer'
+                        }}
+                      >
                       {isProcessing ? (
                         <>
                           <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
