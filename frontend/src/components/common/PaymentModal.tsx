@@ -26,8 +26,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose
 }) => {
   const { user } = useAuth();
-  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'phonepe' | 'upi-deeplink'>('qr');
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'phonepe' | 'upi-deeplink'>('phonepe'); // Default to PhonePe
+  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'upi-deeplink'>('qr');
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'upi-deeplink'>('upi'); // Default to QR Code
   const [transactionId, setTransactionId] = useState('');
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
@@ -70,58 +70,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     const upiRegex2 = /^[A-Z]{4}\d{8,}$/i;
     const upiRegex3 = /^[\w.-]{5,30}@[\w]{3,}$/i;
     return upiRegex1.test(trimmed) || upiRegex2.test(trimmed) || upiRegex3.test(trimmed);
-  };
-
-  const handlePhonePePayment = async () => {
-    if (!user?.id || !content._id) {
-      alert('Missing user or content information');
-      return;
-    }
-
-    setIsProcessing(true);
-    console.log('🔄 PhonePe Payment Initiated');
-
-    try {
-      console.log('📡 Fetching PhonePe payment from backend...');
-      const response = await fetch(`${BACKEND_URL}/api/phonepe/initiate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          contentId: content._id,
-          amount: content.premiumPrice,
-          userEmail: user.email || 'user@climax.app',
-          userName: user.name || 'User'
-        })
-      });
-
-      console.log('Response status:', response.status);
-      const data = await response.json();
-      console.log('✅ PhonePe response received:', data);
-
-      if (!response.ok) {
-        console.error('❌ Backend error:', data);
-        alert(`Error: ${data.message || 'Payment gateway error'}`);
-        setIsProcessing(false);
-        return;
-      }
-
-      if (data.success && data.redirectUrl) {
-        console.log('🔗 Redirecting to PhonePe:', data.redirectUrl);
-        window.location.href = data.redirectUrl;
-      } else if (data.testMode) {
-        console.log('🧪 Test mode redirect:', data.redirectUrl);
-        window.location.href = data.redirectUrl;
-      } else {
-        console.error('❌ Invalid response format:', data);
-        alert('PhonePe unavailable. Try another payment method.');
-        setIsProcessing(false);
-      }
-    } catch (err) {
-      console.error('❌ PhonePe error:', err);
-      alert('Payment error: ' + (err instanceof Error ? err.message : 'Unknown error'));
-      setIsProcessing(false);
-    }
   };
 
   // 🔗 UPI DEEP LINK HANDLER
@@ -518,20 +466,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   <QrCode size={16} style={{ display: 'inline', marginRight: '6px' }} />
                   QR Code
                 </button>
-                {paymentSettings?.phonepeEnabled && (
-                  <button
-                    onClick={() => setPaymentMethod('phonepe')}
-                    onTouchStart={(e) => {
-                      e.preventDefault();
-                      setPaymentMethod('phonepe');
-                    }}
-                    onMouseDown={(e) => e.preventDefault()}
-                    style={paymentMethod === 'phonepe' ? tabButtonActiveStyle : tabButtonInactiveStyle}
-                  >
-                    <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                    PhonePe
-                  </button>
-                )}
                 <button
                   onClick={() => setPaymentMethod('upi-deeplink')}
                   onTouchStart={(e) => {
@@ -634,61 +568,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     <p style={{ color: 'rgb(209, 213, 219)', fontSize: '12px' }}>Use Gateway payment instead.</p>
                   </div>
                 )}
-
-                <button 
-                  onClick={onClose}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
-                    onClose();
-                  }}
-                  onMouseDown={(e) => e.preventDefault()}
-                  style={cancelButtonStyle}
-                >
-                  Cancel
-                </button>
-              </>
-            )}
-
-            {/* PhonePe Section */}
-            {paymentMethod === 'phonepe' && (
-              <>
-                <div style={{ background: 'linear-gradient(to bottom right, rgba(30, 58, 138, 0.3), rgba(88, 28, 135, 0.3))', border: '1px solid rgba(59, 130, 246, 0.4)', borderRadius: '8px', padding: '12px', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <CreditCard size={20} style={{ color: '#60a5fa', marginTop: '2px' }} />
-                    <div>
-                      <h3 style={{ fontWeight: '600', color: 'white', fontSize: '14px' }}>PhonePe Checkout</h3>
-                      <p style={{ fontSize: '12px', color: 'rgb(209, 213, 219)', marginTop: '2px' }}>Secure PhonePe Gateway</p>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handlePhonePePayment}
-                  onTouchStart={(e) => {
-                    if (isProcessing) return;
-                    e.preventDefault();
-                    handlePhonePePayment();
-                  }}
-                  onMouseDown={(e) => e.preventDefault()}
-                  disabled={isProcessing}
-                  style={isProcessing ? disabledButtonStyle : submitButtonStyle}
-                >
-                  {isProcessing ? (
-                    <>
-                      <div style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite', marginRight: '8px' }} />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                      Continue to PhonePe
-                    </>
-                  )}
-                </button>
-
-                <p style={{ fontSize: '12px', color: 'rgb(107, 114, 128)', textAlign: 'center', marginTop: '8px' }}>
-                  ✓ Instant & Secure Payment
-                </p>
 
                 <button 
                   onClick={onClose}
