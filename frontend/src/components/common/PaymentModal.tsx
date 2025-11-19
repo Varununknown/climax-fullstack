@@ -443,55 +443,53 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </button>
         )}
 
-        {/* QR Step */}
-        {paymentStep === 'qr' && (
-          <>
-            <div style={{ marginBottom: '12px' }}>
-              <h2 style={titleStyle}>Unlock Premium</h2>
-              <p style={subtitleStyle}>Watch "{content.title}"</p>
-            </div>
+        {/* Title & Tabs */}
+        <div style={{ marginBottom: '12px' }}>
+          <h2 style={titleStyle}>Unlock Premium</h2>
+          <p style={subtitleStyle}>Watch "{content.title}"</p>
+        </div>
 
-            {/* Tabs */}
-            <div style={tabsContainerStyle}>
-              <button
-                onClick={() => {
-                  setPaymentMethod('upi');
-                  setPaymentStep('qr');
-                }}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  setPaymentMethod('upi');
-                  setPaymentStep('qr');
-                }}
-                onMouseDown={(e) => e.preventDefault()}
-                style={paymentMethod === 'upi' ? tabButtonActiveStyle : tabButtonInactiveStyle}
-              >
-                <QrCode size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                QR Code
-              </button>
-              <button
-                onClick={() => {
-                  setPaymentMethod('upi-deeplink');
-                  setPaymentStep('upi-deeplink');
-                }}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  setPaymentMethod('upi-deeplink');
-                  setPaymentStep('upi-deeplink');
-                }}
-                onMouseDown={(e) => e.preventDefault()}
-                style={paymentMethod === 'upi-deeplink' ? tabButtonActiveStyle : tabButtonInactiveStyle}
-              >
-                <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
-                UPI
-              </button>
-            </div>
+        {/* Tabs */}
+        <div style={tabsContainerStyle}>
+          <button
+            onClick={() => {
+              setPaymentMethod('upi');
+              setPaymentStep('qr');
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              setPaymentMethod('upi');
+              setPaymentStep('qr');
+            }}
+            onMouseDown={(e) => e.preventDefault()}
+            style={paymentMethod === 'upi' ? tabButtonActiveStyle : tabButtonInactiveStyle}
+          >
+            <QrCode size={16} style={{ display: 'inline', marginRight: '6px' }} />
+            QR Code
+          </button>
+          <button
+            onClick={() => {
+              setPaymentMethod('upi-deeplink');
+              setPaymentStep('upi-deeplink');
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              setPaymentMethod('upi-deeplink');
+              setPaymentStep('upi-deeplink');
+            }}
+            onMouseDown={(e) => e.preventDefault()}
+            style={paymentMethod === 'upi-deeplink' ? tabButtonActiveStyle : tabButtonInactiveStyle}
+          >
+            <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
+            UPI
+          </button>
+        </div>
 
-            {/* Price Card */}
-            <div style={priceCardStyle}>
-              <span style={priceTextStyle}>Full Access</span>
-              <span style={priceAmountStyle}>₹{content.premiumPrice}</span>
-            </div>
+        {/* Price Card */}
+        <div style={priceCardStyle}>
+          <span style={priceTextStyle}>Full Access</span>
+          <span style={priceAmountStyle}>₹{content.premiumPrice}</span>
+        </div>
 
             {/* UPI Section */}
             {paymentMethod === 'upi' && (
@@ -744,8 +742,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 {/* Instamojo code removed - not needed */}
               </>
             )}
-          </>
-        )}
 
         {/* Waiting Step */}
         {paymentStep === 'waiting' && (
