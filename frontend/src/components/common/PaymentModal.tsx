@@ -94,37 +94,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const upiId = paymentSettings.upiId;
       const merchantName = paymentSettings.merchantName;
 
-      // Create unique transaction ID for this payment attempt
-      const tempTxnId = `UPI${Date.now()}${Math.random().toString(36).substr(2, 9)}`.toUpperCase();
-
-      // First, create a PENDING payment record in database
-      const createResponse = await fetch(`${BACKEND_URL}/api/payments/create-upi-pending`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          contentId: content._id,
-          amount: content.premiumPrice,
-          tempTransactionId: tempTxnId
-        })
-      });
-
-      console.log('Response status:', createResponse.status);
-      const responseData = await createResponse.json();
-      console.log('Response data:', responseData);
-
-      if (!createResponse.ok) {
-        throw new Error(responseData.error || responseData.message || 'Failed to create payment record');
-      }
-
-      console.log('✅ Payment record created, opening UPI app...');
-
       // Generate UPI deep link with pre-filled details
-      const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${content.premiumPrice}&tn=${encodeURIComponent(`Payment for ${content.title}`)}&tr=${tempTxnId}`;
+      const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(merchantName)}&am=${content.premiumPrice}&tn=${encodeURIComponent(`Payment for ${content.title}`)}`;
 
       console.log('🔗 UPI Link:', upiLink);
       
-      // Open UPI app
+      // Open UPI app directly
       window.location.href = upiLink;
       setIsProcessing(false);
     } catch (err) {
