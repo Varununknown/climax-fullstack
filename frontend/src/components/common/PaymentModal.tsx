@@ -152,7 +152,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         setTimeout(() => {
           onSuccess();
           onClose();
-        }, 2000);
+        }, 3000);
       } else if (data.error === 'DUPLICATE') {
         setTxnError('⚠️ This payment already exists in our system');
       } else if (data.error === 'INVALID_FORMAT') {
@@ -765,139 +765,174 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
         {/* Success Step */}
         {paymentStep === 'success' && (
-          <div style={{ textAlign: 'center', padding: '40px 20px', position: 'relative', overflow: 'hidden' }}>
-            {/* Confetti Background */}
+          <div style={{ textAlign: 'center', padding: '40px 20px', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08))' }}>
+            {/* Animated Background Gradient */}
+            <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
+              <div style={{ position: 'absolute', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(16, 185, 129, 0.2), transparent)', top: '-50px', right: '-50px', borderRadius: '50%', filter: 'blur(40px)' }} />
+              <div style={{ position: 'absolute', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.2), transparent)', bottom: '-50px', left: '-50px', borderRadius: '50%', filter: 'blur(40px)' }} />
+            </div>
+
+            {/* Confetti */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-              {[...Array(20)].map((_, i) => (
+              {[...Array(25)].map((_, i) => (
                 <div
                   key={i}
                   style={{
                     position: 'absolute',
-                    width: '8px',
-                    height: '8px',
-                    backgroundColor: ['#10b981', '#3b82f6', '#ffffff', '#000000'][i % 4],
+                    width: '10px',
+                    height: '10px',
+                    backgroundColor: ['#10b981', '#3b82f6', '#06b6d4', '#8b5cf6'][i % 4],
                     borderRadius: '50%',
                     left: `${Math.random() * 100}%`,
-                    top: '-10px',
-                    opacity: 0.8,
-                    animation: `confetti-fall 3s ease-out ${i * 0.08}s forwards`,
+                    top: '-20px',
+                    opacity: 0.7,
+                    animation: `confetti-fall 3.5s ease-out ${i * 0.05}s forwards`,
                   }}
                 />
               ))}
             </div>
 
-            {/* Success Icon */}
-            <div style={{ position: 'relative', zIndex: 1, marginBottom: '24px' }}>
+            {/* Success Icon - Enhanced */}
+            <div style={{ position: 'relative', zIndex: 2, marginBottom: '28px' }}>
               <div
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: '90px',
-                  height: '90px',
-                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2))',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
+                  width: '100px',
+                  height: '100px',
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(59, 130, 246, 0.15))',
+                  backdropFilter: 'blur(25px)',
+                  WebkitBackdropFilter: 'blur(25px)',
                   borderRadius: '50%',
-                  marginBottom: '12px',
-                  border: '2px solid rgba(16, 185, 129, 0.4)',
-                  boxShadow: '0 8px 32px 0 rgba(16, 185, 129, 0.15)',
-                  animation: 'pop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  marginBottom: '16px',
+                  border: '2.5px solid rgba(16, 185, 129, 0.5)',
+                  boxShadow: '0 0 40px rgba(16, 185, 129, 0.25), inset 0 0 20px rgba(16, 185, 129, 0.1)',
+                  animation: 'pulse-success 2s ease-in-out infinite',
                 }}
               >
-                <CheckCircle size={60} style={{ color: '#10b981' }} />
+                <CheckCircle size={68} style={{ color: '#10b981', filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))' }} />
               </div>
             </div>
 
-            {/* Main Message */}
+            {/* Main Message - Premium */}
             <h2
               style={{
-                fontSize: '32px',
-                fontWeight: '800',
-                marginBottom: '8px',
-                background: 'linear-gradient(to right, #10b981, #3b82f6)',
+                fontSize: '36px',
+                fontWeight: '900',
+                marginBottom: '12px',
+                background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
-                animation: 'fade-in 0.8s ease-out 0.2s both',
-                color: '#10b981',
+                animation: 'fade-in 0.9s ease-out 0.2s both',
+                letterSpacing: '-0.5px',
               }}
             >
               Payment Successful! ✓
             </h2>
 
-            {/* Subtitle */}
+            {/* Subtitle - Enhanced */}
             <p
               style={{
-                color: 'rgba(255, 255, 255, 0.85)',
+                color: 'rgba(255, 255, 255, 0.9)',
                 fontSize: '16px',
-                marginBottom: '24px',
-                animation: 'fade-in 0.8s ease-out 0.4s both',
+                marginBottom: '32px',
+                animation: 'fade-in 0.9s ease-out 0.35s both',
                 fontWeight: '500',
+                letterSpacing: '0.3px',
               }}
             >
-              Your premium access is ready
+              Your premium access is now unlocked
             </p>
 
-            {/* Content Card - Glassmorphism */}
+            {/* Content Card - Premium Glassmorphism */}
             <div
               style={{
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(59, 130, 246, 0.12))',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(16, 185, 129, 0.25)',
-                borderRadius: '16px',
-                padding: '20px',
-                marginBottom: '24px',
-                animation: 'slide-up 0.8s ease-out 0.3s both',
-                boxShadow: '0 8px 32px 0 rgba(16, 185, 129, 0.1)',
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.12))',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                borderRadius: '18px',
+                padding: '24px',
+                marginBottom: '28px',
+                animation: 'slide-up 0.9s ease-out 0.3s both',
+                boxShadow: '0 8px 40px rgba(16, 185, 129, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
               }}
             >
-              <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '12px', marginBottom: '8px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: '600' }}>
-                ✓ UNLOCKED
+              <p style={{ color: 'rgba(16, 185, 129, 0.9)', fontSize: '12px', marginBottom: '10px', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: '700' }}>
+                ✓ CONTENT UNLOCKED
               </p>
               <h3
                 style={{
-                  color: 'white',
-                  fontSize: '20px',
-                  fontWeight: '700',
-                  marginBottom: '10px',
+                  color: '#ffffff',
+                  fontSize: '22px',
+                  fontWeight: '800',
+                  marginBottom: '12px',
+                  letterSpacing: '-0.3px',
                 }}
               >
                 {content.title}
               </h3>
-              <p style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '13px', letterSpacing: '0.3px' }}>
-                📺 Full HD • ∞ Forever Access • 🎬 Premium Quality
+              <p style={{ color: 'rgba(255, 255, 255, 0.75)', fontSize: '14px', letterSpacing: '0.3px', fontWeight: '500' }}>
+                📺 Full HD • 🔒 Lifetime Access • 🎬 Premium Quality
               </p>
             </div>
 
-            {/* Action Message */}
+            {/* Status Message */}
             <p
               style={{
-                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.15))',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                color: 'rgba(255, 255, 255, 0.9)',
-                fontSize: '13px',
-                fontWeight: '600',
+                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.15))',
+                backdropFilter: 'blur(15px)',
+                WebkitBackdropFilter: 'blur(15px)',
+                color: 'rgba(255, 255, 255, 0.95)',
+                fontSize: '14px',
+                fontWeight: '700',
                 marginBottom: '20px',
-                padding: '10px 16px',
-                borderRadius: '10px',
-                border: '1px solid rgba(59, 130, 246, 0.2)',
-                animation: 'fade-in 0.8s ease-out 0.5s both',
-                letterSpacing: '0.5px',
+                padding: '12px 20px',
+                borderRadius: '12px',
+                border: '1px solid rgba(59, 130, 246, 0.25)',
+                animation: 'fade-in 0.9s ease-out 0.5s both',
+                letterSpacing: '0.4px',
               }}
             >
               ⏱️ Redirecting in 3 seconds...
             </p>
 
-            {/* Close Button - Glassmorphic */}
+            {/* Close Button - Premium */}
             <button
               onClick={onClose}
               style={{
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(59, 130, 246, 0.25))',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(59, 130, 246, 0.25))',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                color: '#ffffff',
+                border: '1.5px solid rgba(16, 185, 129, 0.4)',
+                padding: '16px 48px',
+                borderRadius: '14px',
+                fontSize: '16px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                animation: 'fade-in 0.9s ease-out 0.65s both',
+                boxShadow: '0 8px 40px rgba(16, 185, 129, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+                letterSpacing: '0.5px',
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.transform = 'scale(1.1) translateY(-3px)';
+                (e.target as HTMLButtonElement).style.boxShadow = '0 12px 50px rgba(16, 185, 129, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.1)';
+                (e.target as HTMLButtonElement).style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.45), rgba(59, 130, 246, 0.35))';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.transform = 'scale(1) translateY(0)';
+                (e.target as HTMLButtonElement).style.boxShadow = '0 8px 40px rgba(16, 185, 129, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1)';
+                (e.target as HTMLButtonElement).style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(59, 130, 246, 0.25))';
+              }}
+            >
+              Continue Watching
+            </button>
+          </div>
+        )}
                 color: 'white',
                 border: '1px solid rgba(16, 185, 129, 0.35)',
                 padding: '14px 40px',
