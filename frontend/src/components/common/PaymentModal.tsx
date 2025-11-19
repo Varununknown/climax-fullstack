@@ -39,7 +39,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   // Set default payment method based on device type on modal open
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
-    setPaymentMethod(isMobile ? 'upi-deeplink' : 'upi');
+    if (isMobile) {
+      setPaymentMethod('upi-deeplink');
+      setPaymentStep('upi-deeplink');
+    } else {
+      setPaymentMethod('upi');
+      setPaymentStep('qr');
+    }
   }, []);
 
   useEffect(() => {
