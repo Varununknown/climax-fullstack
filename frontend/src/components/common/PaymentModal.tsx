@@ -620,21 +620,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                         Amount: ₹{content.premiumPrice}
                       </p>
                       
-                      <p style={{ color: '#6b7280', fontSize: '13px', margin: '12px 0' }}>
-                        📱 <strong>Step 1:</strong> Click button below to open your UPI app (PhonePe, Google Pay, BHIM, etc.)
-                      </p>
-                      
-                      <p style={{ color: '#6b7280', fontSize: '13px', margin: '8px 0' }}>
-                        ✅ <strong>Step 2:</strong> Complete the payment
-                      </p>
-                      
-                      <p style={{ color: '#6b7280', fontSize: '13px', margin: '8px 0' }}>
-                        📋 <strong>Step 3:</strong> Copy the 12-digit transaction ID from your payment receipt
-                      </p>
-                      
-                      <p style={{ color: '#6b7280', fontSize: '13px', margin: '12px 0' }}>
-                        💬 <strong>Step 4:</strong> Return here and enter the transaction ID below
-                      </p>
+                      <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '10px 12px', borderRadius: '8px', margin: '12px 0', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
+                        <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
+                          <strong style={{ color: '#374151' }}>1.</strong> Tap button → Open UPI app (PhonePe, Google Pay, BHIM)
+                        </p>
+                        <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
+                          <strong style={{ color: '#374151' }}>2.</strong> Complete payment → Get 12-digit transaction ID
+                        </p>
+                        <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
+                          <strong style={{ color: '#374151' }}>3.</strong> Return here & paste transaction ID
+                        </p>
+                      </div>
                     </div>
 
                     {/* Open UPI App Button */}
