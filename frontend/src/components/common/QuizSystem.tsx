@@ -298,25 +298,30 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         {/* ✅ Payment Banner - Show if fest is paid but user hasn't paid */}
         {festPaymentEnabled && !userHasPaidForFest && (
           <div className="relative mx-2 sm:mx-6 lg:mx-10 mb-6 sm:mb-8 bg-gradient-to-r from-amber-500/10 to-orange-600/10 border border-amber-500/30 rounded-lg p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex-1">
+            <div className="flex flex-col gap-4">
+              {/* Title and Description */}
+              <div>
                 <h3 className="text-base sm:text-lg font-bold text-amber-100 mb-2 flex items-center gap-2">
                   <span className="text-xl sm:text-2xl">🎉</span>
                   Paid Fan Fest Participation
                 </h3>
-                <p className="text-xs sm:text-sm text-amber-200 mb-3 sm:mb-4">
+                <p className="text-xs sm:text-sm text-amber-200">
                   This is an exclusive paid fan fest. To participate and answer questions, please complete the payment below.
                 </p>
+              </div>
+              
+              {/* Fee and Button on same line */}
+              <div className="flex items-center justify-between gap-4">
                 <div className="text-base sm:text-lg font-bold text-amber-300">
                   Participation Fee: <span className="text-lg sm:text-2xl text-amber-100">₹{festParticipationFee}</span>
                 </div>
+                <button
+                  onClick={() => setShowFestPaymentModal(true)}
+                  className="flex-shrink-0 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-sm sm:text-base font-bold rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl whitespace-nowrap"
+                >
+                  💳 Pay Now
+                </button>
               </div>
-              <button
-                onClick={() => setShowFestPaymentModal(true)}
-                className="flex-shrink-0 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-sm sm:text-base font-bold rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl whitespace-nowrap"
-              >
-                💳 Pay Now
-              </button>
             </div>
           </div>
         )}
