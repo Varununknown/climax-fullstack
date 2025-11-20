@@ -636,9 +636,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                       
                       <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '10px 12px', borderRadius: '8px', margin: '12px 0', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
                         <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
-                          Tap button → Open UPI app (PhonePe, Google Pay, BHIM)
-                        </p>
-                        <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
                           • Complete payment → Get 12-digit transaction ID
                         </p>
                         <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
@@ -672,9 +669,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                       )}
                     </button>
 
-                    <p style={{ fontSize: '12px', color: '#059669', textAlign: 'center', marginTop: '12px', fontWeight: '500' }}>
-                      Tap button → Open UPI app (PhonePe, Google Pay, BHIM)
-                    </p>
+
 
                     {/* Transaction ID Input Field */}
                     <div style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
