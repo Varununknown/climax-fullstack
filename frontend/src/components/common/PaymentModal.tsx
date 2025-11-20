@@ -672,13 +672,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
 
                     {/* Transaction ID Input Field */}
-                    <div style={{ marginTop: '20px', padding: '16px', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)', borderRadius: '12px', border: '1.5px solid rgba(59, 130, 246, 0.2)', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.08)' }}>
-                      <label style={{ display: 'block', color: '#1f2937', fontWeight: '700', marginBottom: '10px', fontSize: '14px' }}>
+                    <div style={{ marginTop: '20px', padding: '18px', background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%)', borderRadius: '14px', border: '2px solid rgba(99, 102, 241, 0.25)', boxShadow: '0 8px 24px rgba(99, 102, 241, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5)' }}>
+                      <label style={{ display: 'block', color: '#1f2937', fontWeight: '700', marginBottom: '12px', fontSize: '15px', letterSpacing: '0.3px' }}>
                         Enter Transaction ID:
                       </label>
                       <input
                         type="text"
-                        placeholder="Enter 12-digit transaction ID from receipt"
+                        placeholder="UPI Transaction Id"
                         value={upiDeepLinkTxnId}
                         onChange={(e) => {
                           setUpiDeepLinkTxnId(e.target.value.toUpperCase());
@@ -686,28 +686,31 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                         }}
                         style={{
                           width: '100%',
-                          padding: '12px 14px',
-                          fontSize: '14px',
-                          border: '1.5px solid rgba(59, 130, 246, 0.3)',
-                          borderRadius: '8px',
+                          padding: '14px 16px',
+                          fontSize: '15px',
+                          border: '2px solid rgba(99, 102, 241, 0.2)',
+                          borderRadius: '10px',
                           boxSizing: 'border-box',
                           fontFamily: 'monospace',
-                          letterSpacing: '1px',
-                          background: '#ffffff',
-                          transition: 'all 0.3s ease',
-                          outline: 'none'
+                          letterSpacing: '1.2px',
+                          background: 'linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.95) 100%)',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          outline: 'none',
+                          color: '#1f2937'
                         }}
                         onFocus={(e) => {
-                          e.target.style.borderColor = 'rgba(59, 130, 246, 0.6)';
-                          e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                          e.target.style.borderColor = 'rgba(99, 102, 241, 0.6)';
+                          e.target.style.boxShadow = '0 0 0 4px rgba(99, 102, 241, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.05)';
+                          e.target.style.background = 'linear-gradient(135deg, #ffffff 0%, rgba(248, 250, 252, 1) 100%)';
                         }}
                         onBlur={(e) => {
-                          e.target.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                          e.target.style.borderColor = 'rgba(99, 102, 241, 0.2)';
                           e.target.style.boxShadow = 'none';
+                          e.target.style.background = 'linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.95) 100%)';
                         }}
                       />
                       {txnError && (
-                        <p style={{ color: '#dc2626', fontSize: '12px', marginTop: '8px', fontWeight: '500' }}>
+                        <p style={{ color: '#dc2626', fontSize: '13px', marginTop: '10px', fontWeight: '600' }}>
                           {txnError}
                         </p>
                       )}
