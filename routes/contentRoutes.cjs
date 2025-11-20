@@ -6,7 +6,41 @@ const Content = require('../models/Content.cjs');
 router.get('/', async (req, res) => {
   try {
     const contents = await Content.find().sort({ createdAt: -1 });
-    res.json(contents);
+    // Ensure fest fields exist with defaults
+    const enrichedContents = contents.map(content => ({
+      ...content.toObject(),
+      festPaymentEnabled: content.festPaymentEnabled || false,
+      festParticipationFee: content.festParticipationFee || 0
+    }));
+    res.json(enrichedContents);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Initialize missing fest payment fields for all existing documents
+router.post('/migrate/add-fest-fields', async (req, res) => {
+  try {
+    const result = await Content.updateMany(
+      { 
+        $or: [
+          { festPaymentEnabled: { $exists: false } },
+          { festParticipationFee: { $exists: false } }
+        ]
+      },
+      { 
+        $set: { 
+          festPaymentEnabled: false,
+          festParticipationFee: 0
+        }
+      }
+    );
+    res.json({
+      success: true,
+      message: 'Migration completed',
+      modifiedCount: result.modifiedCount,
+      matchedCount: result.matchedCount
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -19,7 +53,13 @@ router.get('/:id', async (req, res) => {
     if (!content) {
       return res.status(404).json({ message: 'Content not found' });
     }
-    res.json(content);
+    // Ensure fest fields exist with defaults
+    const enrichedContent = {
+      ...content.toObject(),
+      festPaymentEnabled: content.festPaymentEnabled || false,
+      festParticipationFee: content.festParticipationFee || 0
+    };
+    res.json(enrichedContent);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

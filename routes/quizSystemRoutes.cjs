@@ -513,4 +513,28 @@ router.post('/fest-payment/verify/:contentId', async (req, res) => {
   }
 });
 
+// 🔍 DEBUG: Check what's actually in the database for a content ID
+router.get('/debug/check-db/:contentId', async (req, res) => {
+  try {
+    const { contentId } = req.params;
+    const Content = require('../models/Content.cjs');
+    
+    const content = await Content.findById(contentId).lean();
+    
+    res.json({
+      success: true,
+      contentId,
+      festPaymentEnabled: content?.festPaymentEnabled,
+      festParticipationFee: content?.festParticipationFee,
+      exists: !!content,
+      allFields: content ? Object.keys(content) : []
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

@@ -87,8 +87,20 @@ const QuizEditor: React.FC = () => {
       
       // Load payment settings from content
       if (contentResponse.data) {
-        setFestPaymentEnabled(contentResponse.data.festPaymentEnabled || false);
+        console.log('📥 Content response:', {
+          festPaymentEnabled: contentResponse.data.festPaymentEnabled,
+          festParticipationFee: contentResponse.data.festParticipationFee,
+          type_enabled: typeof contentResponse.data.festPaymentEnabled,
+          type_fee: typeof contentResponse.data.festParticipationFee
+        });
+        
+        setFestPaymentEnabled(contentResponse.data.festPaymentEnabled === true);
         setFestParticipationFee(contentResponse.data.festParticipationFee || 0);
+        
+        console.log('✅ Payment settings loaded:', {
+          festPaymentEnabled: contentResponse.data.festPaymentEnabled === true,
+          festParticipationFee: contentResponse.data.festParticipationFee || 0
+        });
       }
     } catch (err) {
       console.error('Failed to load questions:', err);
@@ -179,11 +191,13 @@ const QuizEditor: React.FC = () => {
           options: q.options.filter(o => o.trim()),
           correctAnswer: q.correctAnswer || q.options[0]
         })),
-        festPaymentEnabled: festPaymentEnabled,
-        festParticipationFee: festParticipationFee
+        festPaymentEnabled: festPaymentEnabled === true,
+        festParticipationFee: Number(festParticipationFee) || 0
       };
 
       console.log('📤 Saving payload:', payload);
+      console.log('   festPaymentEnabled type:', typeof payload.festPaymentEnabled);
+      console.log('   festPaymentEnabled value:', payload.festPaymentEnabled);
       
       const response = await API.post(`/quiz-system/admin/${selectedContentId}`, payload);
       
@@ -199,6 +213,11 @@ const QuizEditor: React.FC = () => {
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);
+      
+      // ✅ RELOAD the questions to confirm the data was saved
+      setTimeout(() => {
+        loadQuestions();
+      }, 500);
     } catch (err) {
       const errorMsg = err.response?.data?.message || err.message || 'Failed to save questions';
       setError(`Error: ${errorMsg}`);

@@ -18,6 +18,8 @@ const contentSchema = new mongoose.Schema({
     enum: ['English', 'Hindi', 'Tamil', 'Telugu', 'Malayalam', 'Kannada', 'Bengali', 'Marathi', 'Gujarati', 'Punjabi'],
     default: 'English'
   }, // ✅ Language field with all 10 languages
+  festPaymentEnabled: { type: Boolean, default: false }, // ✅ Enable paid fest participation
+  festParticipationFee: { type: Number, default: 0 }, // ✅ Fee for paid fest participation
   isActive: { type: Boolean, default: true },
   createdAt: {
     type: Date,
