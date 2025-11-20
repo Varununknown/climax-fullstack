@@ -496,9 +496,23 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           </button>
         </div>
 
-        {/* Price Card */}
+        {/* Price Card with Content Thumbnail */}
         <div style={priceCardStyle}>
-          <span style={priceTextStyle}>Full Access</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+            {/* Small Thumbnail */}
+            <img 
+              src={content.thumbnail || 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=60&h=60&fit=crop&auto=format'}
+              alt={content.title}
+              style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }}
+            />
+            {/* Title and Access Info */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ ...priceTextStyle, fontSize: '13px', color: '#374151' }}>
+                {content.title} Full Access
+              </span>
+              <div style={{ color: '#6b7280', fontSize: '11px', marginTop: '2px' }}>Premium Unlock</div>
+            </div>
+          </div>
           <span style={priceAmountStyle}>₹{content.premiumPrice}</span>
         </div>
 
