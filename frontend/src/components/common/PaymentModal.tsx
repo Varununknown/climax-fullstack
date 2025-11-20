@@ -636,13 +636,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                       
                       <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '10px 12px', borderRadius: '8px', margin: '12px 0', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
                         <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
-                          <strong style={{ color: '#374151' }}>1.</strong> Tap button → Open UPI app (PhonePe, Google Pay, BHIM)
+                          Tap button → Open UPI app (PhonePe, Google Pay, BHIM)
                         </p>
                         <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
-                          <strong style={{ color: '#374151' }}>2.</strong> Complete payment → Get 12-digit transaction ID
+                          • Complete payment → Get 12-digit transaction ID
                         </p>
                         <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
-                          <strong style={{ color: '#374151' }}>3.</strong> Return here & paste transaction ID
+                          • Return here & paste transaction ID
                         </p>
                       </div>
                     </div>
@@ -673,7 +673,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     </button>
 
                     <p style={{ fontSize: '12px', color: '#059669', textAlign: 'center', marginTop: '12px', fontWeight: '500' }}>
-                      💚 Works with PhonePe, Google Pay, BHIM & all UPI apps
+                      Tap button → Open UPI app (PhonePe, Google Pay, BHIM)
                     </p>
 
                     {/* Transaction ID Input Field */}
