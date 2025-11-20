@@ -297,26 +297,33 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
 
         {/* ✅ Payment Banner - Show if fest is paid but user hasn't paid */}
         {festPaymentEnabled && !userHasPaidForFest && (
-          <div className="relative mx-6 sm:mx-8 lg:mx-10 mb-8 bg-gradient-to-r from-amber-500/10 to-orange-600/10 border border-amber-500/30 rounded-lg p-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-amber-100 mb-2 flex items-center gap-2">
-                  <span className="text-2xl">🎉</span>
-                  Paid Fan Fest Participation
-                </h3>
-                <p className="text-sm text-amber-200 mb-4">
-                  This is an exclusive paid fan fest. To participate and answer questions, please complete the payment below.
-                </p>
-                <div className="text-lg font-bold text-amber-300">
-                  Participation Fee: <span className="text-2xl text-amber-100">₹{festParticipationFee}</span>
+          <div className="relative mx-2 sm:mx-4 lg:mx-10 mb-4 bg-gradient-to-r from-amber-500/10 to-orange-600/10 border border-amber-500/30 rounded-lg p-3 sm:p-4">
+            <div className="flex flex-col gap-2">
+              {/* Header with icon and title */}
+              <div className="flex items-start gap-2 sm:gap-3">
+                <span className="text-xl sm:text-2xl flex-shrink-0">🎉</span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xs sm:text-sm font-bold text-amber-100">
+                    Paid Fan Fest
+                  </h3>
+                  <p className="text-xs text-amber-200 line-clamp-2 mt-0.5">
+                    Complete payment to answer questions
+                  </p>
                 </div>
               </div>
-              <button
-                onClick={() => setShowFestPaymentModal(true)}
-                className="flex-shrink-0 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl whitespace-nowrap"
-              >
-                💳 Pay Now
-              </button>
+              
+              {/* Fee and button row */}
+              <div className="flex items-center justify-between gap-2 sm:gap-3 bg-amber-500/5 rounded p-2">
+                <div className="text-xs sm:text-sm font-bold text-amber-100">
+                  ₹<span className="text-lg sm:text-xl">{festParticipationFee}</span>
+                </div>
+                <button
+                  onClick={() => setShowFestPaymentModal(true)}
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs sm:text-sm font-bold rounded transition-all duration-200 hover:shadow-lg whitespace-nowrap"
+                >
+                  💳 Pay
+                </button>
+              </div>
             </div>
           </div>
         )}
