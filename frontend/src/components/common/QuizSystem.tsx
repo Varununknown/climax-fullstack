@@ -500,6 +500,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                 title: content.title + " - Fan Fest Participation",
                 premiumPrice: festParticipationFee
               }}
+              paymentType="fest-participation"
               onSuccess={() => {
                 setUserHasPaidForFest(true);
                 setShowFestPaymentModal(false);

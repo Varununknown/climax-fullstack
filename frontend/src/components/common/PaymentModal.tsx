@@ -9,6 +9,7 @@ interface PaymentModalProps {
   content: Content;
   onSuccess: () => void;
   onClose: () => void;
+  paymentType?: 'premium-content' | 'fest-participation'; // ✅ Add payment type
 }
 
 interface PaymentSettings {
@@ -23,7 +24,8 @@ interface PaymentSettings {
 export const PaymentModal: React.FC<PaymentModalProps> = ({
   content,
   onSuccess,
-  onClose
+  onClose,
+  paymentType = 'premium-content' // ✅ Default to premium-content
 }) => {
   const { user } = useAuth();
   const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'upi-deeplink'>('qr');
@@ -144,15 +146,29 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       console.log('✅ Verifying UPI Transaction:', upiDeepLinkTxnId);
       console.log('📝 User ID:', user?.id);
       console.log('📝 Content ID:', content._id);
+      console.log('📝 Payment Type:', paymentType);
 
-      const response = await fetch(`${BACKEND_URL}/api/payments/verify-upi`, {
+      // ✅ Use different endpoints based on payment type
+      let endpoint = `${BACKEND_URL}/api/payments/verify-upi`;
+      let payload: any = {
+        userId: user?.id,
+        contentId: content._id,
+        transactionId: upiDeepLinkTxnId.trim()
+      };
+
+      if (paymentType === 'fest-participation') {
+        endpoint = `${BACKEND_URL}/api/quiz-system/fest-payment/verify/${content._id}`;
+        payload = {
+          userId: user?.id,
+          transactionId: upiDeepLinkTxnId.trim(),
+          paymentType: 'fest-participation'
+        };
+      }
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user?.id,
-          contentId: content._id,
-          transactionId: upiDeepLinkTxnId.trim()
-        })
+        body: JSON.stringify(payload)
       });
 
       console.log('📊 Response status:', response.status);
@@ -197,15 +213,28 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setPaymentStep('waiting');
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/payments`, {
+      // ✅ Use different endpoints based on payment type
+      let endpoint = `${BACKEND_URL}/api/payments`;
+      let payload: any = {
+        userId: user.id,
+        contentId: content._id,
+        amount: content.premiumPrice,
+        transactionId
+      };
+
+      if (paymentType === 'fest-participation') {
+        endpoint = `${BACKEND_URL}/api/quiz-system/fest-payment/verify/${content._id}`;
+        payload = {
+          userId: user.id,
+          transactionId,
+          paymentType: 'fest-participation'
+        };
+      }
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          contentId: content._id,
-          amount: content.premiumPrice,
-          transactionId
-        })
+        body: JSON.stringify(payload)
       });
 
       if (response.status === 409) {
@@ -219,7 +248,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       if (!response.ok) throw new Error('Payment failed');
 
       const result = await response.json();
-      if (result.paid || result.alreadyPaid) {
+      if (result.paid || result.alreadyPaid || result.success) {
         setPaymentStep('success');
         setTimeout(onSuccess, 3000);
       } else {
