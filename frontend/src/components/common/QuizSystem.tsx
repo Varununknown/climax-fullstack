@@ -87,11 +87,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         const hasPaid = response.data.hasPaid || false;
         console.log('💳 Payment check result:', { hasPaid, isFestPaymentEnabled });
         setUserHasPaidForFest(hasPaid);
-        // ✅ Show payment modal if fest is paid and user hasn't paid yet
-        if (isFestPaymentEnabled && !hasPaid) {
-          console.log('💳 Showing payment modal for fest:', contentId);
-          setShowFestPaymentModal(true);
-        }
+        // ✅ DO NOT auto-open modal - user will click payment button
       }
     } catch (error) {
       console.log('Could not check fest payment status:', error);
@@ -298,6 +294,32 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
             </div>
           </div>
         </div>
+
+        {/* ✅ Payment Banner - Show if fest is paid but user hasn't paid */}
+        {festPaymentEnabled && !userHasPaidForFest && (
+          <div className="relative mx-6 sm:mx-8 lg:mx-10 mb-8 bg-gradient-to-r from-amber-500/10 to-orange-600/10 border border-amber-500/30 rounded-lg p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-amber-100 mb-2 flex items-center gap-2">
+                  <span className="text-2xl">🎉</span>
+                  Paid Fan Fest Participation
+                </h3>
+                <p className="text-sm text-amber-200 mb-4">
+                  This is an exclusive paid fan fest. To participate and answer questions, please complete the payment below.
+                </p>
+                <div className="text-lg font-bold text-amber-300">
+                  Participation Fee: <span className="text-2xl text-amber-100">₹{festParticipationFee}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowFestPaymentModal(true)}
+                className="flex-shrink-0 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold rounded-lg shadow-lg transition-all duration-200 hover:shadow-xl whitespace-nowrap"
+              >
+                💳 Pay Now
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Questions Section */}
         <div className="relative p-6 sm:p-8 lg:p-10 space-y-6 sm:space-y-8">
