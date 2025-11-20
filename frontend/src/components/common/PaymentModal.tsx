@@ -672,8 +672,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
 
                     {/* Transaction ID Input Field */}
-                    <div style={{ marginTop: '20px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                      <label style={{ display: 'block', color: '#1f2937', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>
+                    <div style={{ marginTop: '20px', padding: '16px', background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)', borderRadius: '12px', border: '1.5px solid rgba(59, 130, 246, 0.2)', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.08)' }}>
+                      <label style={{ display: 'block', color: '#1f2937', fontWeight: '700', marginBottom: '10px', fontSize: '14px' }}>
                         Enter Transaction ID:
                       </label>
                       <input
@@ -686,13 +686,24 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                         }}
                         style={{
                           width: '100%',
-                          padding: '12px',
+                          padding: '12px 14px',
                           fontSize: '14px',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '6px',
+                          border: '1.5px solid rgba(59, 130, 246, 0.3)',
+                          borderRadius: '8px',
                           boxSizing: 'border-box',
                           fontFamily: 'monospace',
-                          letterSpacing: '1px'
+                          letterSpacing: '1px',
+                          background: '#ffffff',
+                          transition: 'all 0.3s ease',
+                          outline: 'none'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = 'rgba(59, 130, 246, 0.6)';
+                          e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                          e.target.style.boxShadow = 'none';
                         }}
                       />
                       {txnError && (
