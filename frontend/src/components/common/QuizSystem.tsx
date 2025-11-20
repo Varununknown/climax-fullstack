@@ -53,12 +53,22 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
       const response = await API.get(`/contents/${contentId}`);
       if (response.data) {
         setContent(response.data);
-        setFestPaymentEnabled(response.data.festPaymentEnabled || false);
-        setFestParticipationFee(response.data.festParticipationFee || 0);
+        const isFestPaymentEnabled = response.data.festPaymentEnabled || false;
+        const feeAmount = response.data.festParticipationFee || 0;
         
-        // Check if user has paid for this fest
-        if (response.data.festPaymentEnabled && user?.id) {
-          checkFestPayment();
+        console.log('📥 Content loaded:', {
+          contentId,
+          festPaymentEnabled: isFestPaymentEnabled,
+          festParticipationFee: feeAmount,
+          userId: user?.id
+        });
+        
+        setFestPaymentEnabled(isFestPaymentEnabled);
+        setFestParticipationFee(feeAmount);
+        
+        // ✅ Check if user has paid for this fest (AFTER setting the state)
+        if (isFestPaymentEnabled && user?.id) {
+          checkFestPayment(isFestPaymentEnabled);
         }
       }
     } catch (error) {
@@ -68,19 +78,23 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
     }
   };
 
-  const checkFestPayment = async () => {
-    if (!user?.id) return;
+  const checkFestPayment = async (isFestPaymentEnabled: boolean) => {
+    if (!user?.id || !isFestPaymentEnabled) return;
     try {
+      console.log('🔍 Checking fest payment for:', { contentId, userId: user.id });
       const response = await API.get(`/quiz-system/fest-payment/check/${contentId}/${user.id}`);
       if (response.data.success) {
-        setUserHasPaidForFest(response.data.hasPaid || false);
-        // Show payment modal if fest is paid and user hasn't paid yet
-        if (festPaymentEnabled && !response.data.hasPaid) {
+        const hasPaid = response.data.hasPaid || false;
+        console.log('💳 Payment check result:', { hasPaid, isFestPaymentEnabled });
+        setUserHasPaidForFest(hasPaid);
+        // ✅ Show payment modal if fest is paid and user hasn't paid yet
+        if (isFestPaymentEnabled && !hasPaid) {
+          console.log('💳 Showing payment modal for fest:', contentId);
           setShowFestPaymentModal(true);
         }
       }
     } catch (error) {
-      console.log('Could not check fest payment status');
+      console.log('Could not check fest payment status:', error);
     }
   };
 
@@ -477,39 +491,44 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
       </div>
 
       {/* Fest Payment Modal */}
-      {showFestPaymentModal && content && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-gray-900 rounded-2xl max-w-md w-full border border-gray-800 p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-white">🎉 Paid Fan Fest</h3>
-              <button
-                onClick={() => setShowFestPaymentModal(false)}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                ✕
-              </button>
+      {(() => {
+        if (showFestPaymentModal && content) {
+          console.log('🎬 Rendering fest payment modal for:', content?.title, 'Fee:', festParticipationFee);
+        }
+        return showFestPaymentModal && content ? (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-gray-900 rounded-2xl max-w-md w-full border border-gray-800 p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-white">🎉 Paid Fan Fest</h3>
+                <button
+                  onClick={() => setShowFestPaymentModal(false)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <p className="text-gray-300 mb-6">
+                This is a paid fan fest. Complete the payment of <span className="font-bold text-blue-400">₹{festParticipationFee}</span> to answer questions.
+              </p>
+              
+              <PaymentModal
+                content={{
+                  ...(content as any),
+                  title: content.title + " - Fan Fest Participation",
+                  premiumPrice: festParticipationFee
+                }}
+                paymentType="fest-participation"
+                onSuccess={() => {
+                  setUserHasPaidForFest(true);
+                  setShowFestPaymentModal(false);
+                }}
+                onClose={() => setShowFestPaymentModal(false)}
+              />
             </div>
-            
-            <p className="text-gray-300 mb-6">
-              This is a paid fan fest. Complete the payment of <span className="font-bold text-blue-400">₹{festParticipationFee}</span> to answer questions.
-            </p>
-            
-            <PaymentModal
-              content={{
-                ...content,
-                title: content.title + " - Fan Fest Participation",
-                premiumPrice: festParticipationFee
-              }}
-              paymentType="fest-participation"
-              onSuccess={() => {
-                setUserHasPaidForFest(true);
-                setShowFestPaymentModal(false);
-              }}
-              onClose={() => setShowFestPaymentModal(false)}
-            />
           </div>
-        </div>
-      )}
+        ) : null;
+      })()}
     </div>
   );
 };
