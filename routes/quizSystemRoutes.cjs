@@ -293,11 +293,18 @@ router.post('/admin/:contentId', async (req, res) => {
     res.json({ 
       success: true, 
       message: "Quiz updated successfully",
-      quizHash: newHash
+      quizHash: newHash,
+      contentUpdated: !!updatedContent,
+      quizUpdated: !!updatedQuiz
     });
   } catch (error) {
-    console.error('Quiz admin error:', error);
-    res.json({ success: true, message: "Quiz saved" });
+    console.error('❌ Quiz admin error:', error.message);
+    console.error('   Stack:', error.stack);
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to save quiz: " + error.message,
+      error: error.message
+    });
   }
 });
 

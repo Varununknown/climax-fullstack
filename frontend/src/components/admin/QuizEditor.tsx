@@ -183,15 +183,26 @@ const QuizEditor: React.FC = () => {
         festParticipationFee: festParticipationFee
       };
 
-      await API.post(`/quiz-system/admin/${selectedContentId}`, payload);
+      console.log('📤 Saving payload:', payload);
+      
+      const response = await API.post(`/quiz-system/admin/${selectedContentId}`, payload);
+      
+      console.log('✅ Save response:', response.data);
+      
+      if (!response.data.success) {
+        setError(`Save failed: ${response.data.message}`);
+        return;
+      }
+      
       setSuccess(`✅ Quiz questions & payment settings saved for "${selectedContentTitle}"!`);
       setEditingIndex(null);
 
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError('Failed to save questions. Please try again.');
-      console.error(err);
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to save questions';
+      setError(`Error: ${errorMsg}`);
+      console.error('Save error:', err);
     }
 
     setSaving(false);
