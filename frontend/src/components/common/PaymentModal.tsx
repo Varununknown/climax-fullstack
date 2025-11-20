@@ -467,7 +467,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   // ==================== RENDER ====================
   return (
     <div style={backdropStyle} data-payment-modal-root="true">
-      <div style={modalStyle} data-modal-content="true">
+      <div style={{
+        ...modalStyle,
+        overflow: paymentStep === 'success' ? 'hidden' : 'auto'  // ✅ No scroll on success screen
+      }} data-modal-content="true">
         {/* Close Button */}
         {paymentStep !== 'waiting' && (
           <button
@@ -806,13 +809,25 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 {/* Success Step */}
                 {paymentStep === 'success' && (
                   <>
-                    <div style={{ textAlign: 'center', padding: '20px' }}>
-                      <CheckCircle size={48} style={{ color: '#10b981', margin: '0 auto 16px' }} />
-                      <h3 style={{ color: '#1f2937', fontSize: '18px', fontWeight: '700', margin: '12px 0' }}>
+                    <div style={{ 
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      minHeight: '300px',
+                      textAlign: 'center', 
+                      padding: '40px 20px',
+                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1))',
+                      borderRadius: '12px'
+                    }}>
+                      <CheckCircle size={64} style={{ color: '#10b981', marginBottom: '20px', filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))' }} />
+                      <h3 style={{ color: '#10b981', fontSize: '24px', fontWeight: '800', margin: '16px 0', letterSpacing: '0.5px' }}>
                         ✅ Payment Successful!
                       </h3>
-                      <p style={{ color: '#6b7280', fontSize: '14px', margin: '8px 0' }}>
-                        Content unlocked. Redirecting...
+                      <p style={{ color: '#9ca3af', fontSize: '15px', margin: '12px 0', fontWeight: '500' }}>
+                        {paymentType === 'fest-participation' 
+                          ? 'Your fest participation is now unlocked' 
+                          : 'Content unlocked. Enjoy!'}
                       </p>
                     </div>
                   </>
@@ -838,7 +853,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
         {/* Success Step */}
         {paymentStep === 'success' && (
-          <div style={{ textAlign: 'center', padding: '40px 20px', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08))' }}>
+          <div style={{ 
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '100%',
+            textAlign: 'center', 
+            padding: '40px 20px', 
+            position: 'relative', 
+            overflow: 'hidden', 
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(59, 130, 246, 0.08))'
+          }}>
             {/* Animated Background Gradient */}
             <div style={{ position: 'absolute', inset: 0, opacity: 0.5, pointerEvents: 'none' }}>
               <div style={{ position: 'absolute', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(16, 185, 129, 0.2), transparent)', top: '-50px', right: '-50px', borderRadius: '50%', filter: 'blur(40px)' }} />
