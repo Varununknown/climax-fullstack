@@ -228,11 +228,23 @@ router.post('/admin/:contentId', async (req, res) => {
     
     // Update Content model with payment settings
     const Content = require('../backend/models/Content.cjs');
+    const mongoose = require('mongoose');
+    
+    // Try with ObjectId conversion
+    let updateFilter = { _id: contentId };
+    try {
+      if (mongoose.Types.ObjectId.isValid(contentId)) {
+        updateFilter = { _id: new mongoose.Types.ObjectId(contentId) };
+      }
+    } catch (e) {
+      console.log('contentId is not a valid ObjectId, using as string:', contentId);
+    }
+    
     const updatedContent = await Content.findOneAndUpdate(
-      { _id: contentId },
+      updateFilter,
       { 
-        festPaymentEnabled: festPaymentEnabled || false,
-        festParticipationFee: festParticipationFee || 0
+        festPaymentEnabled: festPaymentEnabled === true,
+        festParticipationFee: Number(festParticipationFee) || 0
       },
       { new: true }
     );
@@ -241,8 +253,17 @@ router.post('/admin/:contentId', async (req, res) => {
       contentId,
       festPaymentEnabled,
       festParticipationFee,
-      updated: !!updatedContent
+      updateFilter,
+      updated: !!updatedContent,
+      updatedData: updatedContent ? { 
+        festPaymentEnabled: updatedContent.festPaymentEnabled,
+        festParticipationFee: updatedContent.festParticipationFee
+      } : null
     });
+    
+    if (!updatedContent) {
+      console.warn('⚠️ WARNING: Content not found for ID:', contentId);
+    }
     
     const updatedQuiz = await SimpleQuiz.findOneAndUpdate(
       { contentId },
