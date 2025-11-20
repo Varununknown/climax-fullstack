@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { PaymentModal } from './PaymentModal';
 
 interface QuizQuestion {
   id: string;
   question: string;
   options: string[];
+}
+
+interface Content {
+  _id: string;
+  title: string;
+  thumbnail: string;
+  festPaymentEnabled?: boolean;
+  festParticipationFee?: number;
+  premiumPrice?: number;
 }
 
 interface QuizSystemProps {
@@ -23,11 +33,56 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   const [loading, setLoading] = useState(false);
   const [userHasAnswered, setUserHasAnswered] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
+  
+  // Fest payment states
+  const [content, setContent] = useState<Content | null>(null);
+  const [festPaymentEnabled, setFestPaymentEnabled] = useState(false);
+  const [festParticipationFee, setFestParticipationFee] = useState(0);
+  const [userHasPaidForFest, setUserHasPaidForFest] = useState(false);
+  const [showFestPaymentModal, setShowFestPaymentModal] = useState(false);
+  const [contentLoading, setContentLoading] = useState(true);
 
   useEffect(() => {
+    loadContent();
     loadQuiz();
     checkIfUserAnswered();
   }, [contentId, user]);
+
+  const loadContent = async () => {
+    try {
+      const response = await API.get(`/contents/${contentId}`);
+      if (response.data) {
+        setContent(response.data);
+        setFestPaymentEnabled(response.data.festPaymentEnabled || false);
+        setFestParticipationFee(response.data.festParticipationFee || 0);
+        
+        // Check if user has paid for this fest
+        if (response.data.festPaymentEnabled && user?.id) {
+          checkFestPayment();
+        }
+      }
+    } catch (error) {
+      console.log('Could not load content');
+    } finally {
+      setContentLoading(false);
+    }
+  };
+
+  const checkFestPayment = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await API.get(`/quiz-system/fest-payment/check/${contentId}/${user.id}`);
+      if (response.data.success) {
+        setUserHasPaidForFest(response.data.hasPaid || false);
+        // Show payment modal if fest is paid and user hasn't paid yet
+        if (festPaymentEnabled && !response.data.hasPaid) {
+          setShowFestPaymentModal(true);
+        }
+      }
+    } catch (error) {
+      console.log('Could not check fest payment status');
+    }
+  };
 
   const loadQuiz = async () => {
     try {
@@ -257,13 +312,16 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                     <div className="space-y-3 sm:space-y-4">
                       {question.options.map((option, optionIndex) => {
                         const isSelected = answers[question.id] === option;
+                        const isDisabled = festPaymentEnabled && !userHasPaidForFest;
                         return (
                           <label
                             key={optionIndex}
-                            className="relative block cursor-pointer group/option"
+                            className={`relative block ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} group/option`}
                           >
                             <div className={`relative flex items-center gap-4 p-4 sm:p-5 rounded-lg border-2 transition-all duration-150 ${
-                              isSelected
+                              isDisabled
+                                ? 'bg-slate-700/30 border-slate-700/30'
+                                : isSelected
                                 ? 'bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border-blue-500 shadow-md'
                                 : 'bg-slate-800/20 border-slate-700/50 group-hover/option:bg-gradient-to-r group-hover/option:from-blue-500/15 group-hover/option:to-indigo-500/15 group-hover/option:border-blue-400/60'
                             }`}>
@@ -275,14 +333,17 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                                   value={option}
                                   checked={isSelected}
                                   onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                                  disabled={isDisabled}
                                   className="sr-only"
                                 />
                                 <div className={`w-5 h-5 rounded-full border-2 transition-all duration-200 ${
-                                  isSelected
+                                  isDisabled
+                                    ? 'border-slate-600/50 bg-slate-700/20'
+                                    : isSelected
                                     ? 'border-blue-400 bg-blue-500 shadow-lg'
                                     : 'border-white/40 bg-transparent hover:border-white/60'
                                 }`}>
-                                  {isSelected && (
+                                  {isSelected && !isDisabled && (
                                     <div className="w-full h-full flex items-center justify-center">
                                       <div className="w-2 h-2 bg-white rounded-full"></div>
                                     </div>
@@ -292,7 +353,9 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                               
                               {/* Professional Option Text */}
                               <span className={`text-sm sm:text-base font-medium flex-1 transition-colors duration-200 ${
-                                isSelected 
+                                isDisabled
+                                  ? 'text-slate-500'
+                                  : isSelected 
                                   ? 'text-blue-200' 
                                   : 'text-slate-200 group-hover/option:text-white'
                               }`}>
@@ -412,6 +475,40 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
           </div>
         </div>
       </div>
+
+      {/* Fest Payment Modal */}
+      {showFestPaymentModal && content && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-gray-900 rounded-2xl max-w-md w-full border border-gray-800 p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-white">🎉 Paid Fan Fest</h3>
+              <button
+                onClick={() => setShowFestPaymentModal(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <p className="text-gray-300 mb-6">
+              This is a paid fan fest. Complete the payment of <span className="font-bold text-blue-400">₹{festParticipationFee}</span> to answer questions.
+            </p>
+            
+            <PaymentModal
+              content={{
+                ...content,
+                title: content.title + " - Fan Fest Participation",
+                premiumPrice: festParticipationFee
+              }}
+              onSuccess={() => {
+                setUserHasPaidForFest(true);
+                setShowFestPaymentModal(false);
+              }}
+              onClose={() => setShowFestPaymentModal(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

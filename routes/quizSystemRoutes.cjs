@@ -213,7 +213,7 @@ router.post('/:contentId/submit', async (req, res) => {
 router.post('/admin/:contentId', async (req, res) => {
   try {
     const { contentId } = req.params;
-    const { questions } = req.body;
+    const { questions, festPaymentEnabled, festParticipationFee } = req.body;
     
     // Create hash of new questions
     const newHash = getQuizHash(questions);
@@ -221,8 +221,21 @@ router.post('/admin/:contentId', async (req, res) => {
     console.log('📝 Admin updating quiz:', {
       contentId,
       newHash,
-      questionsCount: questions?.length
+      questionsCount: questions?.length,
+      festPaymentEnabled,
+      festParticipationFee
     });
+    
+    // Update Content model with payment settings
+    const Content = require('../backend/models/Content.cjs');
+    await Content.findByIdAndUpdate(
+      contentId,
+      { 
+        festPaymentEnabled: festPaymentEnabled || false,
+        festParticipationFee: festParticipationFee || 0
+      },
+      { new: true }
+    );
     
     const updatedQuiz = await SimpleQuiz.findOneAndUpdate(
       { contentId },
@@ -244,6 +257,8 @@ router.post('/admin/:contentId', async (req, res) => {
     console.log('✅ Quiz updated with new version:', {
       contentId,
       newHash,
+      festPaymentEnabled,
+      festParticipationFee,
       previousResponses: 'Still accessible in history'
     });
     
@@ -365,6 +380,100 @@ router.post('/admin/clear/:contentId', async (req, res) => {
     res.json({
       success: false,
       message: 'Failed to clear answers: ' + error.message
+    });
+  }
+});
+
+// ✅ Fest Payment - Check if user has paid for fest participation
+router.get('/fest-payment/check/:contentId/:userId', async (req, res) => {
+  try {
+    const { contentId, userId } = req.params;
+    
+    // Check if user has a successful fest payment payment for this content
+    const Payment = require('../backend/models/Payment.cjs');
+    const festPayment = await Payment.findOne({
+      contentId,
+      userId,
+      status: 'approved',
+      paymentType: 'fest-participation'
+    });
+    
+    res.json({
+      success: true,
+      hasPaid: !!festPayment,
+      payment: festPayment || null
+    });
+  } catch (error) {
+    console.error('Error checking fest payment:', error);
+    res.json({
+      success: false,
+      hasPaid: false
+    });
+  }
+});
+
+// ✅ Fest Payment - Verify and record fest participation payment
+router.post('/fest-payment/verify/:contentId', async (req, res) => {
+  try {
+    const { contentId } = req.params;
+    const { userId, transactionId, amount } = req.body;
+    
+    if (!userId || !transactionId || !amount) {
+      return res.json({
+        success: false,
+        message: 'Missing required fields'
+      });
+    }
+    
+    // Validate transaction ID format
+    if (!/^[A-Z0-9]{12,}$/i.test(transactionId)) {
+      return res.json({
+        success: false,
+        message: 'Invalid transaction ID format'
+      });
+    }
+    
+    // Check if this transaction ID already exists
+    const Payment = require('../backend/models/Payment.cjs');
+    const existingPayment = await Payment.findOne({ transactionId });
+    if (existingPayment) {
+      return res.json({
+        success: false,
+        message: 'This transaction ID has already been used'
+      });
+    }
+    
+    // Create approved payment record for fest participation
+    const payment = new Payment({
+      userId,
+      contentId,
+      transactionId,
+      amount,
+      status: 'approved',
+      paymentType: 'fest-participation', // Mark as fest participation
+      gateway: 'upi',
+      paymentDate: new Date()
+    });
+    
+    await payment.save();
+    
+    console.log('✅ Fest participation payment recorded:', {
+      userId,
+      contentId,
+      transactionId,
+      amount
+    });
+    
+    res.json({
+      success: true,
+      message: 'Fest participation payment verified successfully',
+      payment: payment
+    });
+  } catch (error) {
+    console.error('Error verifying fest payment:', error);
+    res.json({
+      success: false,
+      message: 'Payment verification failed'
     });
   }
 });

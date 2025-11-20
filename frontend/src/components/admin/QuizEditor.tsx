@@ -12,6 +12,8 @@ interface Question {
 interface Content {
   _id: string;
   title: string;
+  festPaymentEnabled?: boolean;
+  festParticipationFee?: number;
 }
 
 const QuizEditor: React.FC = () => {
@@ -24,6 +26,8 @@ const QuizEditor: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [festPaymentEnabled, setFestPaymentEnabled] = useState(false);
+  const [festParticipationFee, setFestParticipationFee] = useState(0);
 
   // Load all contents on mount
   useEffect(() => {
@@ -54,6 +58,8 @@ const QuizEditor: React.FC = () => {
     if (content) {
       setSelectedContentId(contentId);
       setSelectedContentTitle(content.title);
+      setFestPaymentEnabled(content.festPaymentEnabled || false);
+      setFestParticipationFee(content.festParticipationFee || 0);
       setError('');
       setSuccess('');
     }
@@ -144,6 +150,12 @@ const QuizEditor: React.FC = () => {
       }
     }
 
+    // Validate paid fest settings
+    if (festPaymentEnabled && festParticipationFee <= 0) {
+      setError('Enter a valid participation fee (₹1 or more)');
+      return;
+    }
+
     setSaving(true);
     setError('');
     setSuccess('');
@@ -154,11 +166,13 @@ const QuizEditor: React.FC = () => {
           question: q.question,
           options: q.options.filter(o => o.trim()),
           correctAnswer: q.correctAnswer || q.options[0]
-        }))
+        })),
+        festPaymentEnabled: festPaymentEnabled,
+        festParticipationFee: festParticipationFee
       };
 
       await API.post(`/quiz-system/admin/${selectedContentId}`, payload);
-      setSuccess(`✅ Quiz questions saved for "${selectedContentTitle}"!`);
+      setSuccess(`✅ Quiz questions & payment settings saved for "${selectedContentTitle}"!`);
       setEditingIndex(null);
 
       // Clear success message after 3 seconds
@@ -218,6 +232,47 @@ const QuizEditor: React.FC = () => {
               <p className="text-gray-400 text-sm">
                 {questions.length} question{questions.length !== 1 ? 's' : ''} created
               </p>
+            </div>
+
+            {/* Payment Settings Section */}
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-lg font-bold text-white mb-1">💳 Paid Fan Fest Participation</h4>
+                  <p className="text-sm text-gray-400">Make this fan fest a paid event</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={festPaymentEnabled}
+                    onChange={(e) => {
+                      setFestPaymentEnabled(e.target.checked);
+                      if (!e.target.checked) setFestParticipationFee(0);
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+
+              {/* Participation Fee Input */}
+              {festPaymentEnabled && (
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Participation Fee (₹):
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={festParticipationFee}
+                    onChange={(e) => setFestParticipationFee(Math.max(0, Number(e.target.value)))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter fee amount..."
+                  />
+                  <p className="text-xs text-gray-400 mt-2">Users must pay ₹{festParticipationFee} to answer questions</p>
+                </div>
+              )}
             </div>
 
             {/* Messages */}
