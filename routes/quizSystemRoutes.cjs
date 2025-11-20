@@ -33,6 +33,7 @@ const SimpleQuizResponseSchema = new mongoose.Schema({
   phoneNumber: String,  // NEW: Optional phone number (for winners contact)
   answers: [{ question: String, answer: String }],
   score: Number,
+  festTransactionId: String,  // NEW: Transaction ID for fest payment (if paid)
   submittedAt: { type: Date, default: Date.now }
 });
 
@@ -133,7 +134,7 @@ router.get('/check/:contentId/:userId', async (req, res) => {
 router.post('/:contentId/submit', async (req, res) => {
   try {
     const { contentId } = req.params;
-    const { answers, userId, quizHash, userName, phoneNumber } = req.body;
+    const { answers, userId, quizHash, userName, phoneNumber, festTransactionId } = req.body;
     
     console.log('📝 Quiz Submit Received:', {
       contentId,
@@ -141,6 +142,7 @@ router.post('/:contentId/submit', async (req, res) => {
       userName,
       phoneNumber,
       quizHash,
+      festTransactionId,
       answersCount: answers?.length,
       answers
     });
@@ -169,7 +171,7 @@ router.post('/:contentId/submit', async (req, res) => {
       });
     }
     
-    // Save the response WITH THE QUIZ VERSION HASH + USER INFO
+    // Save the response WITH THE QUIZ VERSION HASH + USER INFO + FEST TRANSACTION ID
     const response = new SimpleQuizResponse({
       contentId,
       quizHash: currentHash,  // Store which version was answered
@@ -177,7 +179,8 @@ router.post('/:contentId/submit', async (req, res) => {
       userName: userName || 'Anonymous',  // Store user name
       phoneNumber: phoneNumber || '',  // Store optional phone number
       answers: answers || [],
-      score: answers?.length || 1
+      score: answers?.length || 1,
+      festTransactionId: festTransactionId || null  // Store fest payment transaction ID if provided
     });
     
     await response.save();
@@ -189,6 +192,7 @@ router.post('/:contentId/submit', async (req, res) => {
       userId: finalUserId,
       userName: userName,
       phoneNumber: phoneNumber,
+      festTransactionId: festTransactionId,
       answersCount: answers?.length
     });
     
@@ -424,19 +428,17 @@ router.get('/fest-payment/check/:contentId/:userId', async (req, res) => {
   try {
     const { contentId, userId } = req.params;
     
-    // Check if user has a successful fest payment for this content
-    // ✅ Use SEPARATE FestPayment collection - NO clash with video payments
-    const FestPayment = require('../models/FestPayment.cjs');
-    const festPayment = await FestPayment.findOne({
+    // Check if user has submitted quiz for this content with valid fest transaction ID
+    const response = await SimpleQuizResponse.findOne({
       contentId,
       userId,
-      status: 'approved'
+      festTransactionId: { $exists: true, $ne: null }
     });
     
     res.json({
       success: true,
-      hasPaid: !!festPayment,
-      payment: festPayment || null
+      hasPaid: !!response,
+      payment: response ? { transactionId: response.festTransactionId } : null
     });
   } catch (error) {
     console.error('Error checking fest payment:', error);
@@ -447,62 +449,37 @@ router.get('/fest-payment/check/:contentId/:userId', async (req, res) => {
   }
 });
 
-// ✅ Fest Payment - Verify and record fest participation payment
+// ✅ Fest Payment - Verify transaction ID format (no storage needed, just validation)
 router.post('/fest-payment/verify/:contentId', async (req, res) => {
   try {
     const { contentId } = req.params;
-    const { userId, transactionId, amount } = req.body;
+    const { userId, transactionId } = req.body;
     
-    if (!userId || !transactionId || !amount) {
+    if (!userId || !transactionId) {
       return res.json({
         success: false,
         message: 'Missing required fields'
       });
     }
     
-    // Validate transaction ID format
-    if (!/^[A-Z0-9]{12,}$/i.test(transactionId)) {
+    // Validate transaction ID - must be exactly 12 digits
+    if (!/^\d{12}$/.test(transactionId)) {
       return res.json({
         success: false,
-        message: 'Invalid transaction ID format'
+        message: 'Transaction ID must be exactly 12 digits'
       });
     }
     
-    // Check if this transaction ID already exists in FestPayment collection
-    // ✅ SEPARATE collection - NO clash with video payments
-    const FestPayment = require('../models/FestPayment.cjs');
-    const existingPayment = await FestPayment.findOne({ transactionId });
-    if (existingPayment) {
-      return res.json({
-        success: false,
-        message: 'This transaction ID has already been used'
-      });
-    }
-    
-    // Create approved fest payment record in SEPARATE collection
-    const payment = new FestPayment({
+    console.log('✅ Fest payment transaction ID validated:', {
       userId,
       contentId,
-      transactionId,
-      amount,
-      status: 'approved',
-      gateway: 'upi',
-      paymentDate: new Date()
+      transactionId
     });
     
-    await payment.save();
-    
-    console.log('✅ Fest participation payment recorded:', {
-      userId,
-      contentId,
-      transactionId,
-      amount
-    });
-    
+    // Auto-approve valid transaction ID
     res.json({
       success: true,
-      message: 'Fest participation payment verified successfully',
-      payment: payment
+      message: 'Transaction ID verified successfully'
     });
   } catch (error) {
     console.error('Error verifying fest payment:', error);

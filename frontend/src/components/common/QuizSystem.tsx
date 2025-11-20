@@ -41,6 +41,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   const [userHasPaidForFest, setUserHasPaidForFest] = useState(false);
   const [showFestPaymentModal, setShowFestPaymentModal] = useState(false);
   const [contentLoading, setContentLoading] = useState(true);
+  const [festTransactionId, setFestTransactionId] = useState<string>('');  // NEW: Store fest transaction ID
 
   useEffect(() => {
     loadContent();
@@ -146,7 +147,8 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         userId: user?.id,
         quizHash: quizHash,
         userName: user?.name || 'Anonymous',
-        phoneNumber: phoneNumber
+        phoneNumber: phoneNumber,
+        festTransactionId: festTransactionId || undefined  // NEW: Pass transaction ID if user paid for fest
       });
       
       if (response.data.success) {
@@ -546,7 +548,12 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                   premiumPrice: festParticipationFee
                 }}
                 paymentType="fest-participation"
-                onSuccess={() => {
+                onSuccess={(transactionId?: string) => {
+                  // NEW: Store transaction ID from successful fest payment
+                  if (transactionId) {
+                    setFestTransactionId(transactionId);
+                    console.log('✅ Fest payment successful, transaction ID:', transactionId);
+                  }
                   setUserHasPaidForFest(true);
                   setShowFestPaymentModal(false);
                 }}

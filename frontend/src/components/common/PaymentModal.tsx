@@ -206,7 +206,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     }
 
     if (!validateTransactionId(transactionId)) {
-      setTxnError('Invalid Transaction ID');
+      setTxnError('Invalid Transaction ID - must be 12 digits');
       return;
     }
 
@@ -214,7 +214,19 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setPaymentStep('waiting');
 
     try {
-      // ✅ Use different endpoints based on payment type
+      if (paymentType === 'fest-participation') {
+        // ✅ For fest payments, just validate transaction ID format and proceed to success
+        // Transaction ID will be stored with quiz answers when user submits quiz
+        console.log('✅ Fest payment transaction ID validated:', transactionId);
+        setPaymentStep('success');
+        setTimeout(() => {
+          onSuccess(transactionId);  // Pass transaction ID to parent component
+          onClose();
+        }, 2000);
+        return;
+      }
+
+      // For video payments, verify with backend
       let endpoint = `${BACKEND_URL}/api/payments`;
       let payload: any = {
         userId: user.id,
@@ -222,16 +234,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         amount: content.premiumPrice,
         transactionId
       };
-
-      if (paymentType === 'fest-participation') {
-        endpoint = `${BACKEND_URL}/api/quiz-system/fest-payment/verify/${content._id}`;
-        payload = {
-          userId: user.id,
-          transactionId,
-          amount: content.premiumPrice,
-          paymentType: 'fest-participation'
-        };
-      }
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -242,7 +244,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       if (response.status === 409) {
         setTimeout(() => {
           setPaymentStep('success');
-          setTimeout(onSuccess, 3000);
+          setTimeout(() => { onSuccess(); onClose(); }, 3000);
         }, 1000);
         return;
       }
