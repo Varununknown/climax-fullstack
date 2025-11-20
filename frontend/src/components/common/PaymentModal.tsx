@@ -597,6 +597,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                       </label>
                       <input
                         type="text"
+                        inputMode="numeric"
                         value={transactionId}
                         onChange={(e) => {
                           setTransactionId(e.target.value);
@@ -710,6 +711,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                       <div style={{ position: 'relative' }}>
                         <input
                           type="text"
+                          inputMode="numeric"
                           placeholder="Paste your UPI Transaction ID"
                           value={upiDeepLinkTxnId}
                           onChange={(e) => {
