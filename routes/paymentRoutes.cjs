@@ -30,7 +30,11 @@ router.post('/', async (req, res) => {
     const contentIdObj = new mongoose.Types.ObjectId(contentId);
 
     // If payment exists, ensure it's approved and return success
-    const existing = await Payment.findOne({ userId: userIdObj, contentId: contentIdObj });
+    const existing = await Payment.findOne({ 
+      userId: userIdObj, 
+      contentId: contentIdObj,
+      paymentType: 'premium-content'  // ✅ Only check premium content payments
+    });
     if (existing) {
       if (existing.status !== 'approved') {
         existing.status = 'approved';
@@ -50,7 +54,8 @@ router.post('/', async (req, res) => {
       contentId: contentIdObj, 
       amount, 
       transactionId,
-      status: 'approved'
+      status: 'approved',
+      paymentType: 'premium-content'  // ✅ EXPLICITLY mark as premium content
     });
     await newPayment.save();
 
@@ -90,6 +95,7 @@ router.get('/check', async (req, res) => {
     const payment = await Payment.findOne({ 
       userId: userIdObj, 
       contentId: contentIdObj,
+      paymentType: 'premium-content',  // ✅ Only check premium content payments
       status: 'approved'
     });
     return res.status(200).json({ paid: !!payment, payment });
@@ -114,6 +120,7 @@ router.get('/all', async (req, res) => {
           contentId: p.contentId,
           amount: p.amount,
           transactionId: p.transactionId,
+          paymentType: p.paymentType || 'premium-content',  // ✅ Show payment type
           createdAt: p.createdAt,
           userName: user?.name || 'Unknown',
           userEmail: user?.email || 'Unknown',

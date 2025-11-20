@@ -20,14 +20,38 @@ const paymentSchema = new mongoose.Schema({
     required: true,
     unique: true // globally unique
   },
+  paymentMethod: {
+    type: String,
+    enum: ['upi', 'payu'],
+    default: 'upi'
+  },
+  gateway: {
+    type: String,
+    enum: ['upi', 'payu', 'other'],
+    default: 'upi'
+  },
+  paymentType: {
+    type: String,
+    enum: ['premium-content', 'fest-participation'],
+    default: 'premium-content'
+  },
+  payuTransactionId: {
+    type: String,
+    default: null
+  },
+  paymentDate: {
+    type: Date,
+    default: () => Date.now()
+  },
   status: {
     type: String,
     enum: ['pending', 'approved', 'declined'],
-    default: 'pending'
+    default: 'approved', // ✅ AUTO-APPROVE
+    required: true
   }
 }, { timestamps: true }); // adds createdAt and updatedAt automatically
 
-// Prevent duplicate payment for same user-content
-paymentSchema.index({ userId: 1, contentId: 1 }, { unique: true });
+// ✅ Prevent duplicate: same user cannot pay twice for same content with same payment type
+paymentSchema.index({ userId: 1, contentId: 1, paymentType: 1 }, { unique: true });
 
 module.exports = mongoose.model('Payment', paymentSchema);
