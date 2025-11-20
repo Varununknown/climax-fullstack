@@ -424,13 +424,13 @@ router.get('/fest-payment/check/:contentId/:userId', async (req, res) => {
   try {
     const { contentId, userId } = req.params;
     
-    // Check if user has a successful fest payment payment for this content
-    const Payment = require('../models/Payment.cjs');
-    const festPayment = await Payment.findOne({
+    // Check if user has a successful fest payment for this content
+    // ✅ Use SEPARATE FestPayment collection - NO clash with video payments
+    const FestPayment = require('../models/FestPayment.cjs');
+    const festPayment = await FestPayment.findOne({
       contentId,
       userId,
-      status: 'approved',
-      paymentType: 'fest-participation'
+      status: 'approved'
     });
     
     res.json({
@@ -468,9 +468,10 @@ router.post('/fest-payment/verify/:contentId', async (req, res) => {
       });
     }
     
-    // Check if this transaction ID already exists
-    const Payment = require('../models/Payment.cjs');
-    const existingPayment = await Payment.findOne({ transactionId });
+    // Check if this transaction ID already exists in FestPayment collection
+    // ✅ SEPARATE collection - NO clash with video payments
+    const FestPayment = require('../models/FestPayment.cjs');
+    const existingPayment = await FestPayment.findOne({ transactionId });
     if (existingPayment) {
       return res.json({
         success: false,
@@ -478,14 +479,13 @@ router.post('/fest-payment/verify/:contentId', async (req, res) => {
       });
     }
     
-    // Create approved payment record for fest participation
-    const payment = new Payment({
+    // Create approved fest payment record in SEPARATE collection
+    const payment = new FestPayment({
       userId,
       contentId,
       transactionId,
       amount,
       status: 'approved',
-      paymentType: 'fest-participation', // Mark as fest participation
       gateway: 'upi',
       paymentDate: new Date()
     });
