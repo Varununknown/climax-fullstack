@@ -161,6 +161,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         payload = {
           userId: user?.id,
           transactionId: upiDeepLinkTxnId.trim(),
+          amount: content.premiumPrice,
           paymentType: 'fest-participation'
         };
       }
@@ -227,6 +228,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         payload = {
           userId: user.id,
           transactionId,
+          amount: content.premiumPrice,
           paymentType: 'fest-participation'
         };
       }
@@ -910,7 +912,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 letterSpacing: '0.3px',
               }}
             >
-              Your premium access is now unlocked
+              {paymentType === 'fest-participation' 
+                ? 'Your fest participation is now unlocked' 
+                : 'Your premium access is now unlocked'}
             </p>
 
             {/* Content Card - Premium Glassmorphism */}
@@ -928,7 +932,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               }}
             >
               <p style={{ color: 'rgba(16, 185, 129, 0.9)', fontSize: '12px', marginBottom: '10px', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: '700' }}>
-                ✓ CONTENT UNLOCKED
+                {paymentType === 'fest-participation' ? '✓ FEST UNLOCKED' : '✓ CONTENT UNLOCKED'}
               </p>
               <h3
                 style={{
@@ -942,7 +946,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 {content.title}
               </h3>
               <p style={{ color: 'rgba(255, 255, 255, 0.75)', fontSize: '14px', letterSpacing: '0.3px', fontWeight: '500' }}>
-                📺 Full HD • 🔒 Lifetime Access • 🎬 Premium Quality
+                {paymentType === 'fest-participation' 
+                  ? '🎉 Participate Now • 🏆 Answer Questions • 🎯 Win Prizes'
+                  : '📺 Full HD • 🔒 Lifetime Access • 🎬 Premium Quality'}
               </p>
             </div>
 
