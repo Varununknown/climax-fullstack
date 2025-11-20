@@ -227,7 +227,7 @@ router.post('/admin/:contentId', async (req, res) => {
     });
     
     // Update Content model with payment settings
-    const Content = require('../backend/models/Content.cjs');
+    const Content = require('../models/Content.cjs');
     const mongoose = require('mongoose');
     
     // Try with ObjectId conversion
@@ -425,7 +425,7 @@ router.get('/fest-payment/check/:contentId/:userId', async (req, res) => {
     const { contentId, userId } = req.params;
     
     // Check if user has a successful fest payment payment for this content
-    const Payment = require('../backend/models/Payment.cjs');
+    const Payment = require('../models/Payment.cjs');
     const festPayment = await Payment.findOne({
       contentId,
       userId,
@@ -469,7 +469,7 @@ router.post('/fest-payment/verify/:contentId', async (req, res) => {
     }
     
     // Check if this transaction ID already exists
-    const Payment = require('../backend/models/Payment.cjs');
+    const Payment = require('../models/Payment.cjs');
     const existingPayment = await Payment.findOne({ transactionId });
     if (existingPayment) {
       return res.json({
