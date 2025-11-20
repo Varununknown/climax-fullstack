@@ -68,15 +68,27 @@ const QuizEditor: React.FC = () => {
   const loadQuestions = async () => {
     setLoading(true);
     try {
-      const response = await API.get(`/quiz-system/${selectedContentId}`);
-      if (response.data.success && response.data.quiz) {
-        const formattedQuestions = response.data.quiz.map((q: any) => ({
+      // Fetch both quiz questions AND content payment settings
+      const [quizResponse, contentResponse] = await Promise.all([
+        API.get(`/quiz-system/${selectedContentId}`),
+        API.get(`/contents/${selectedContentId}`)
+      ]);
+      
+      // Load questions
+      if (quizResponse.data.success && quizResponse.data.quiz) {
+        const formattedQuestions = quizResponse.data.quiz.map((q: any) => ({
           _id: q.id,
           question: q.question,
           options: q.options,
           correctAnswer: q.correctAnswer || ''
         }));
         setQuestions(formattedQuestions);
+      }
+      
+      // Load payment settings from content
+      if (contentResponse.data) {
+        setFestPaymentEnabled(contentResponse.data.festPaymentEnabled || false);
+        setFestParticipationFee(contentResponse.data.festParticipationFee || 0);
       }
     } catch (err) {
       console.error('Failed to load questions:', err);

@@ -228,14 +228,21 @@ router.post('/admin/:contentId', async (req, res) => {
     
     // Update Content model with payment settings
     const Content = require('../backend/models/Content.cjs');
-    await Content.findByIdAndUpdate(
-      contentId,
+    const updatedContent = await Content.findOneAndUpdate(
+      { _id: contentId },
       { 
         festPaymentEnabled: festPaymentEnabled || false,
         festParticipationFee: festParticipationFee || 0
       },
       { new: true }
     );
+    
+    console.log('✅ Content updated with payment settings:', {
+      contentId,
+      festPaymentEnabled,
+      festParticipationFee,
+      updated: !!updatedContent
+    });
     
     const updatedQuiz = await SimpleQuiz.findOneAndUpdate(
       { contentId },
