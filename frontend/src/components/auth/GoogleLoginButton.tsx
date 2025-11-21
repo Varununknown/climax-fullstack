@@ -6,27 +6,40 @@ export const GoogleLoginButton: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Detect if running in Median app
+  const isMedianApp = () => {
+    return /median|mobileweb/i.test(navigator.userAgent) || 
+           (window as any).__MEDIAN__ !== undefined ||
+           (window as any).__CORDOVA__ !== undefined;
+  };
+
+  // Use implicit flow for Median, auth-code for browsers
+  const usingImplicitFlow = isMedianApp();
+
   const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (codeResponse) => {
+    onSuccess: async (response: any) => {
       setIsLoading(true);
       setError('');
 
       try {
-        // Send the authorization code to backend
-        const response = await axios.post(
+        // Handle both auth-code flow (browser) and implicit flow (Median)
+        const payload = usingImplicitFlow 
+          ? { access_token: response.access_token }  // implicit flow
+          : { code: response.code };  // auth-code flow
+
+        // Send the authorization code/token to backend
+        const res = await axios.post(
           `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'}/api/auth/google/signin`,
-          {
-            code: codeResponse.code,
-          }
+          payload
         );
 
-        if (response.data && response.data.token && response.data.user) {
+        if (res.data && res.data.token && res.data.user) {
           // Store token and user in localStorage (SAME FORMAT as email login)
-          localStorage.setItem('streamflix_user', JSON.stringify(response.data.user));
-          localStorage.setItem('streamflix_token', response.data.token);
+          localStorage.setItem('streamflix_user', JSON.stringify(res.data.user));
+          localStorage.setItem('streamflix_token', res.data.token);
           // Also set backup keys for compatibility
-          localStorage.setItem('token', response.data.token);
-          localStorage.setItem('user', JSON.stringify(response.data.user));
+          localStorage.setItem('token', res.data.token);
+          localStorage.setItem('user', JSON.stringify(res.data.user));
 
           // Force a page reload to trigger auth context update
           window.location.href = '/';
@@ -50,7 +63,8 @@ export const GoogleLoginButton: React.FC = () => {
       setError('Failed to authenticate with Google');
       setIsLoading(false);
     },
-    flow: 'auth-code',
+    // ✅ Use 'implicit' for Median app (webview), 'auth-code' for browsers
+    flow: usingImplicitFlow ? 'implicit' : 'auth-code',
     scope: 'openid email profile',
   });
 
