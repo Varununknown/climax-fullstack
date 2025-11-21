@@ -106,6 +106,11 @@ export const GoogleLoginButton: React.FC = () => {
         </svg>
         {isLoading ? 'Signing in...' : 'Sign in with Google'}
       </button>
+      
+      {/* ℹ️ Info text for Median app users */}
+      <p className="text-xs text-gray-400 text-center mt-3">
+        💡 <span className="text-gray-300">For Google login, please use from browser</span>
+      </p>
     </div>
   );
 };
