@@ -3,7 +3,7 @@ import { VideoPlayer } from '../components/common/PremiumVideoPlayer';
 import { IntroVideoModal } from '../components/common/IntroVideoModal';
 
 const WatchPage: React.FC = () => {
-  const [showIntro, setShowIntro] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
 
   useEffect(() => {
     // ✅ Show intro video when entering watch page
@@ -14,14 +14,14 @@ const WatchPage: React.FC = () => {
 
   return (
     <>
-      {/* ✅ Intro Video Modal - plays before content */}
+      {/* ✅ Intro Video Modal - plays before content (loads main video in background) */}
       <IntroVideoModal 
         isOpen={showIntro}
         onClose={() => setShowIntro(false)}
         videoUrl={INTRO_VIDEO_URL}
       />
       
-      {/* Main Video Player */}
+      {/* Main Video Player - loads in background while intro plays */}
       <VideoPlayer />
     </>
   );
