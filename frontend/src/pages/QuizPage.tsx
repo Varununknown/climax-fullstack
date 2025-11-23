@@ -121,32 +121,32 @@ export const QuizPage: React.FC = () => {
 
       {/* Main Content - Flex grow to push footer down */}
       <div className="relative flex-1">
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-          {/* Hero Section - Compact */}
-          <div className="mb-6 sm:mb-8">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+          {/* Hero Section - Minimal Compact */}
+          <div className="mb-4 sm:mb-6">
             <div className="relative">
-              <div className="relative bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 sm:p-5 lg:p-6">
+              <div className="relative bg-slate-800/40 border border-slate-700/50 rounded-lg p-3 sm:p-4">
                 {/* Title */}
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-1 text-center">
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-1 text-center">
                   {content.title}
                 </h2>
                 
                 {/* Subtitle - Fan Fest Tagline */}
-                <p className="text-center text-xs sm:text-sm text-blue-300 font-semibold mb-2 tracking-wide">
-                  Test Your Knowledge • Win Exciting Prizes • Powered by Climax
+                <p className="text-center text-xs sm:text-xs text-blue-300 font-semibold mb-2 tracking-wide line-clamp-1">
+                  • Win Exciting Prizes • Powered by Climax
                 </p>
                 
                 {/* Description */}
                 {content.description && (
-                  <p className="text-sm sm:text-base text-gray-300 max-w-3xl mx-auto leading-relaxed text-center mb-4">
+                  <p className="text-xs sm:text-sm text-gray-300 max-w-2xl mx-auto leading-relaxed text-center mb-3 line-clamp-2">
                     {content.description}
                   </p>
                 )}
 
-                {/* Image - Simple Display */}
+                {/* Image - Small Display */}
                 {content.thumbnail && (
-                  <div className="mb-4 sm:mb-5 flex justify-center">
-                    <div className="w-full max-w-xl overflow-hidden rounded-lg border border-slate-700/50">
+                  <div className="mb-3 flex justify-center">
+                    <div className="w-full max-w-xs overflow-hidden rounded-lg border border-slate-700/50">
                       <img
                         src={content.thumbnail}
                         alt={content.title}
