@@ -296,7 +296,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
 
         {/* Sponsor Section - Direct at top */}
         {sponsorName && (
-          <div className="relative mx-2 sm:mx-6 lg:mx-10 mb-8 sm:mb-10">
+          <div className="relative mx-2 sm:mx-6 lg:mx-10 mt-6 sm:mt-8 mb-8 sm:mb-10">
             {/* Background Gradient */}
             <div className="absolute inset-0 bg-gradient-to-r from-slate-900/40 via-purple-900/30 to-slate-900/40 rounded-2xl blur-xl opacity-50"></div>
             
