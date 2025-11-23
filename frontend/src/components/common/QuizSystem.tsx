@@ -50,6 +50,11 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
   const [sponsorName, setSponsorName] = useState<string>('');
   const [sponsorLogoUrl, setSponsorLogoUrl] = useState<string>('');
   const [prizeAmount, setPrizeAmount] = useState<number>(0);
+  
+  // Quiz results states
+  const [quizScore, setQuizScore] = useState<number>(0);
+  const [totalQuestions, setTotalQuestions] = useState<number>(0);
+  const [showResultNotification, setShowResultNotification] = useState(false);
 
   useEffect(() => {
     loadContent();
@@ -155,6 +160,12 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
         answer: answers[questionId]
       }));
 
+      // Calculate score (assuming first option is correct)
+      const correctAnswers = Object.keys(answers).filter(questionId => {
+        const question = questions.find(q => q.id === questionId);
+        return question && answers[questionId] === question.options[0];
+      }).length;
+
       const response = await API.post(`/quiz-system/${contentId}/submit`, { 
         answers: submissionData,
         userId: user?.id,
@@ -165,8 +176,13 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
       });
       
       if (response.data.success) {
+        setQuizScore(correctAnswers);
+        setTotalQuestions(questions.length);
+        setShowResultNotification(true);
         setSubmitted(true);
         setUserHasAnswered(true);
+        // Auto-hide notification after 5 seconds
+        setTimeout(() => setShowResultNotification(false), 5000);
       } else if (response.data.alreadyAnswered) {
         setUserHasAnswered(true);
         setSubmitted(true);
@@ -248,6 +264,87 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
           <p className="text-sm text-slate-400 mb-8">
             has been successfully recorded in our system.
           </p>
+
+          {/* ✨ Quiz Results Notification Section - Share Your Score */}
+          {showResultNotification && totalQuestions > 0 && (
+            <div className="mb-8 animate-in fade-in slide-in-from-top-2 duration-500">
+              <div className="relative bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-400/30 rounded-xl p-5 sm:p-6">
+                <h4 className="text-lg sm:text-xl font-bold text-white mb-3">📊 Your Quiz Results</h4>
+                
+                {/* Score Display */}
+                <div className="mb-5 text-center">
+                  <div className="inline-block bg-gradient-to-br from-blue-500 to-purple-600 rounded-full px-6 py-3 mb-3">
+                    <p className="text-3xl font-black text-white">{quizScore}/{totalQuestions}</p>
+                  </div>
+                  <p className="text-sm text-slate-300">Questions answered correctly</p>
+                  <p className="text-xs text-slate-400 mt-1">Score: {Math.round((quizScore / totalQuestions) * 100)}%</p>
+                </div>
+
+                {/* Social Sharing Buttons */}
+                <div className="border-t border-blue-400/20 pt-4">
+                  <p className="text-sm font-semibold text-blue-200 mb-3">📱 Share Your Achievement</p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {/* WhatsApp Share */}
+                    <button
+                      onClick={() => {
+                        const text = `🎬 I just completed the Fan Fest quiz for "${contentTitle}" on Climax! 🏆\n\n📊 My Score: ${quizScore}/${totalQuestions} (${Math.round((quizScore / totalQuestions) * 100)}%)\n\n✨ Can you beat my score? Join me on Climax Entertainment!`;
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-400/50 rounded-lg text-green-300 text-sm font-semibold transition-colors duration-200"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.006a9.87 9.87 0 00-5.031 1.378c-3.55 2.6-5.741 6.656-5.741 11.052 0 5.159 2.786 9.753 7.373 11.652.5.21 1.003.419 1.505.595 1.404.527 2.778.645 4.114.4 1.42-.264 2.772-1.04 3.71-2.27.52-.734.993-1.679 1.282-2.832.19-.764.282-1.628.282-2.559 0-.524-.05-1.043-.148-1.554-.05-.271-.318-.469-.6-.426-.282.044-.48.295-.428.577.088.478.133.97.133 1.47 0 .883-.082 1.706-.246 2.463-.23.971-.595 1.747-1.088 2.305-.84.941-2.055 1.531-3.414 1.758-1.194.183-2.387.103-3.5-.276-1.11-.383-2.157-.848-3.099-1.447-1.867-.973-3.28-2.362-4.03-4.04-.517-1.13-.783-2.385-.783-3.772 0-3.76 1.78-7.148 4.772-9.287 1.543-1.129 3.322-1.805 5.248-2.025.51-.053 1.02-.055 1.527-.01 1.084.095 2.13.452 3.053 1.088.525.372.868.886 1.025 1.526.08.333.195.732.195 1.198 0 1.14-.378 2.236-1.107 3.062-.412.494-.977.884-1.636 1.128-.42.16-.87.26-1.329.26-.543 0-1.066-.117-1.545-.363-1.037-.547-1.719-1.609-1.719-2.869 0-1.138.637-2.122 1.562-2.607.34-.18.717-.275 1.113-.275.39 0 .757.088 1.09.255.21.11.403.27.56.46.174.217.306.472.388.752.092.32.14.657.14 1.005 0 .754-.196 1.436-.561 2.03-.395.65-.997 1.128-1.73 1.38-1.148.396-2.456.156-3.323-.64-.484-.447-.845-1.057-.988-1.746-.044-.21-.072-.434-.083-.66-.055-1.061.276-2.056.968-2.834.694-.792 1.69-1.288 2.794-1.436.54-.073 1.087-.068 1.627.017 1.268.195 2.456.805 3.388 1.76.604.598 1.067 1.285 1.388 2.034.187.448.32.91.39 1.377.036.241.054.483.054.726 0 .695-.056 1.38-.165 2.045-.255 1.565-.823 2.975-1.675 4.123-.85 1.147-1.98 2.004-3.331 2.514-1.35.512-2.83.549-4.289.107-.42-.126-.83-.294-1.225-.502z"/>
+                      </svg>
+                      WhatsApp
+                    </button>
+
+                    {/* Twitter/X Share */}
+                    <button
+                      onClick={() => {
+                        const text = `🎬 Just crushed the Fan Fest quiz for "${contentTitle}" on @ClimaxEntertainment! 🏆\n\n📊 Score: ${quizScore}/${totalQuestions} (${Math.round((quizScore / totalQuestions) * 100)}%)\n\n✨ Beat my score and join the challenge! #FanFest #Quiz`;
+                        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/50 rounded-lg text-blue-300 text-sm font-semibold transition-colors duration-200"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-7"/>
+                      </svg>
+                      X/Twitter
+                    </button>
+
+                    {/* Facebook Share */}
+                    <button
+                      onClick={() => {
+                        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/50 rounded-lg text-blue-200 text-sm font-semibold transition-colors duration-200"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      </svg>
+                      Facebook
+                    </button>
+
+                    {/* Copy Link */}
+                    <button
+                      onClick={() => {
+                        const text = `Check out my Fan Fest quiz score! I got ${quizScore}/${totalQuestions} on "${contentTitle}" - Can you beat that? 🎬🏆`;
+                        navigator.clipboard.writeText(text);
+                        alert('Score copied to clipboard!');
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/50 rounded-lg text-purple-300 text-sm font-semibold transition-colors duration-200"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8 16.5a2 2 0 11-4 0 2 2 0 014 0zM15 8.5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        <path d="M12.854 5.146a.5.5 0 00-.707 0l-7 7a.5.5 0 00.707.707l7-7a.5.5 0 000-.707zM9 10a.5.5 0 100-1 .5.5 0 000 1z"/>
+                      </svg>
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Recognition Program Section */}
           <div className="relative">
