@@ -14,6 +14,9 @@ interface Content {
   title: string;
   festPaymentEnabled?: boolean;
   festParticipationFee?: number;
+  sponsorName?: string;
+  sponsorLogoUrl?: string;
+  prizeAmount?: number;
 }
 
 const QuizEditor: React.FC = () => {
@@ -28,6 +31,9 @@ const QuizEditor: React.FC = () => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [festPaymentEnabled, setFestPaymentEnabled] = useState(false);
   const [festParticipationFee, setFestParticipationFee] = useState(0);
+  const [sponsorName, setSponsorName] = useState<string>('');
+  const [sponsorLogoUrl, setSponsorLogoUrl] = useState<string>('');
+  const [prizeAmount, setPrizeAmount] = useState<number>(0);
 
   // Load all contents on mount
   useEffect(() => {
@@ -60,6 +66,9 @@ const QuizEditor: React.FC = () => {
       setSelectedContentTitle(content.title);
       setFestPaymentEnabled(content.festPaymentEnabled || false);
       setFestParticipationFee(content.festParticipationFee || 0);
+      setSponsorName(content.sponsorName || '');
+      setSponsorLogoUrl(content.sponsorLogoUrl || '');
+      setPrizeAmount(content.prizeAmount || 0);
       setError('');
       setSuccess('');
     }
@@ -96,6 +105,9 @@ const QuizEditor: React.FC = () => {
         
         setFestPaymentEnabled(contentResponse.data.festPaymentEnabled === true);
         setFestParticipationFee(contentResponse.data.festParticipationFee || 0);
+        setSponsorName(contentResponse.data.sponsorName || '');
+        setSponsorLogoUrl(contentResponse.data.sponsorLogoUrl || '');
+        setPrizeAmount(contentResponse.data.prizeAmount || 0);
         
         console.log('✅ Payment settings loaded:', {
           festPaymentEnabled: contentResponse.data.festPaymentEnabled === true,
@@ -192,7 +204,10 @@ const QuizEditor: React.FC = () => {
           correctAnswer: q.correctAnswer || q.options[0]
         })),
         festPaymentEnabled: festPaymentEnabled === true,
-        festParticipationFee: Number(festParticipationFee) || 0
+        festParticipationFee: Number(festParticipationFee) || 0,
+        sponsorName: sponsorName.trim() || '',
+        sponsorLogoUrl: sponsorLogoUrl.trim() || '',
+        prizeAmount: Number(prizeAmount) || 0
       };
 
       console.log('📤 Saving payload:', payload);
@@ -316,6 +331,83 @@ const QuizEditor: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Sponsor Settings Section */}
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+              <h4 className="text-lg font-bold text-white mb-4">🎯 Sponsor & Prize Information</h4>
+              <p className="text-sm text-gray-400 mb-4">Optional: Add sponsor details and prize amount to display on the fan fest page</p>
+              
+              <div className="space-y-4">
+                {/* Sponsor Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Sponsor Name:
+                  </label>
+                  <input
+                    type="text"
+                    value={sponsorName}
+                    onChange={(e) => setSponsorName(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="e.g., Red Bull, Nike, etc..."
+                  />
+                </div>
+
+                {/* Sponsor Logo URL */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Sponsor Logo URL:
+                  </label>
+                  <input
+                    type="url"
+                    value={sponsorLogoUrl}
+                    onChange={(e) => setSponsorLogoUrl(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="https://example.com/logo.png"
+                  />
+                  {sponsorLogoUrl && (
+                    <div className="mt-2 p-2 bg-gray-700 rounded-lg">
+                      <img src={sponsorLogoUrl} alt="Logo preview" className="h-12 w-auto object-contain" onError={(e) => e.currentTarget.style.display = 'none'} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Prize Amount */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Prize Amount (₹):
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="100"
+                    value={prizeAmount}
+                    onChange={(e) => setPrizeAmount(Math.max(0, Number(e.target.value)))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="e.g., 50000"
+                  />
+                  <p className="text-xs text-gray-400 mt-2">Users will see "Win Up To ₹{prizeAmount.toLocaleString()}"</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Participation Fee Input */}
+            {festPaymentEnabled && (
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Participation Fee (₹):
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={festParticipationFee}
+                    onChange={(e) => setFestParticipationFee(Math.max(0, Number(e.target.value)))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter fee amount..."
+                  />
+                  <p className="text-xs text-gray-400 mt-2">Users must pay ₹{festParticipationFee} to answer questions</p>
+                </div>
+              )}
 
             {/* Messages */}
             {error && (
