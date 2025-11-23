@@ -217,7 +217,14 @@ router.post('/:contentId/submit', async (req, res) => {
 router.post('/admin/:contentId', async (req, res) => {
   try {
     const { contentId } = req.params;
-    const { questions, festPaymentEnabled, festParticipationFee } = req.body;
+    const { 
+      questions, 
+      festPaymentEnabled, 
+      festParticipationFee,
+      sponsorName,          // ✅ NEW: Sponsor name
+      sponsorLogoUrl,       // ✅ NEW: Sponsor logo URL
+      prizeAmount           // ✅ NEW: Prize amount in Rs
+    } = req.body;
     
     // Create hash of new questions
     const newHash = getQuizHash(questions);
@@ -227,10 +234,13 @@ router.post('/admin/:contentId', async (req, res) => {
       newHash,
       questionsCount: questions?.length,
       festPaymentEnabled,
-      festParticipationFee
+      festParticipationFee,
+      sponsorName,
+      sponsorLogoUrl,
+      prizeAmount
     });
     
-    // Update Content model with payment settings
+    // Update Content model with payment settings AND sponsor info
     const Content = require('../models/Content.cjs');
     const mongoose = require('mongoose');
     
@@ -248,21 +258,23 @@ router.post('/admin/:contentId', async (req, res) => {
       updateFilter,
       { 
         festPaymentEnabled: festPaymentEnabled === true,
-        festParticipationFee: Number(festParticipationFee) || 0
+        festParticipationFee: Number(festParticipationFee) || 0,
+        sponsorName: sponsorName || '',           // ✅ Store sponsor name
+        sponsorLogoUrl: sponsorLogoUrl || '',     // ✅ Store sponsor logo
+        prizeAmount: Number(prizeAmount) || 0    // ✅ Store prize amount
       },
       { new: true }
     );
     
-    console.log('✅ Content updated with payment settings:', {
+    console.log('✅ Content updated with payment & sponsor settings:', {
       contentId,
       festPaymentEnabled,
       festParticipationFee,
+      sponsorName,
+      sponsorLogoUrl,
+      prizeAmount,
       updateFilter,
-      updated: !!updatedContent,
-      updatedData: updatedContent ? { 
-        festPaymentEnabled: updatedContent.festPaymentEnabled,
-        festParticipationFee: updatedContent.festParticipationFee
-      } : null
+      updated: !!updatedContent
     });
     
     if (!updatedContent) {

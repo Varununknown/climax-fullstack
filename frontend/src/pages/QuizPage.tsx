@@ -223,6 +223,59 @@ export const QuizPage: React.FC = () => {
             </div>
           )}
 
+          {/* ✅ Sponsored By Section */}
+          <div className="mb-8 sm:mb-12">
+            <div className="relative bg-gradient-to-r from-purple-900/20 via-blue-900/20 to-purple-900/20 border border-purple-500/30 rounded-xl p-6 sm:p-8 backdrop-blur-sm">
+              {/* Header */}
+              <div className="text-center mb-6">
+                <p className="text-xs sm:text-sm text-purple-300 font-semibold uppercase tracking-widest mb-2">
+                  🎁 Win Amazing Prizes
+                </p>
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
+                  Sponsored By
+                </h3>
+              </div>
+
+              {/* Sponsor Content - Flex for responsive layout */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-8">
+                {/* Sponsor Logo/Image */}
+                <div className="flex-shrink-0">
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-lg overflow-hidden border-2 border-purple-500/40 bg-slate-900/50 flex items-center justify-center">
+                    {content.thumbnail ? (
+                      <img
+                        src={content.thumbnail}
+                        alt="Sponsor"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="text-4xl">🏢</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Prize Info */}
+                <div className="flex-1 text-center sm:text-left">
+                  <p className="text-gray-300 text-sm sm:text-base mb-4">
+                    Participate in this exciting fan fest and stand a chance to win amazing prizes!
+                  </p>
+                  
+                  {/* Prize Amount - Highlighted */}
+                  <div className="inline-block sm:inline bg-gradient-to-r from-yellow-400 to-orange-400 px-4 sm:px-6 py-2 sm:py-3 rounded-lg">
+                    <p className="text-sm text-gray-900 font-semibold">Prize Pool:</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">₹50,000+</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-purple-500/20 mt-6 pt-4">
+                <p className="text-xs text-purple-300/70 text-center">
+                  ✨ Limited slots available • Participate now to secure your spot ✨
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Quiz Container - Direct Below Image/Sponsor */}
           <div className="relative">
             <QuizSystem 

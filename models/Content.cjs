@@ -20,6 +20,9 @@ const contentSchema = new mongoose.Schema({
   }, // ✅ Language field with all 10 languages
   festPaymentEnabled: { type: Boolean, default: false }, // ✅ Enable paid fest participation
   festParticipationFee: { type: Number, default: 0 }, // ✅ Fee for paid fest participation
+  sponsorName: { type: String, default: '' },           // ✅ Sponsor name for fan fest
+  sponsorLogoUrl: { type: String, default: '' },       // ✅ Sponsor logo URL
+  prizeAmount: { type: Number, default: 0 },           // ✅ Prize amount in Rs
   isActive: { type: Boolean, default: true },
   createdAt: {
     type: Date,
