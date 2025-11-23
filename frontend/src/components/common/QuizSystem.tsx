@@ -329,7 +329,7 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                     <div className="text-center">
                       <p className="text-xs font-bold text-amber-900 uppercase tracking-wide mb-0.5">🏆 Win Prize</p>
                       <p className="text-2xl sm:text-3xl font-black text-white drop-shadow-lg mb-0.5">₹{prizeAmount.toLocaleString()}</p>
-                      <p className="text-xs font-semibold text-amber-900">Your Reward</p>
+                      <p className="text-xs font-semibold text-amber-900">Participate Now & Get Your Reward</p>
                     </div>
                   </div>
                 )}
