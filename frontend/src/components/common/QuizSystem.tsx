@@ -312,16 +312,16 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
 
         {/* ✅ Sponsor Section - Show if sponsor info is available */}
         {sponsorName && (
-          <div className="relative mx-2 sm:mx-6 lg:mx-10 mb-6 sm:mb-8 bg-gradient-to-r from-purple-600/10 to-pink-600/10 border border-purple-500/30 rounded-lg p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
-              {/* Sponsor Logo and Info */}
-              <div className="flex items-center gap-4 sm:gap-5 flex-1">
+          <div className="relative mx-2 sm:mx-6 lg:mx-10 mb-6 sm:mb-8 bg-gradient-to-r from-purple-600/15 via-purple-500/10 to-indigo-600/15 border border-purple-400/30 rounded-xl p-5 sm:p-7 backdrop-blur-sm">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-8">
+              {/* Sponsor Logo and "Presented by" */}
+              <div className="flex items-center gap-4 sm:gap-6 flex-1">
                 {sponsorLogoUrl && (
                   <div className="flex-shrink-0">
                     <img 
                       src={sponsorLogoUrl} 
                       alt={sponsorName}
-                      className="h-12 sm:h-16 w-auto object-contain"
+                      className="h-14 sm:h-20 w-auto object-contain drop-shadow-lg"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
                       }}
@@ -329,16 +329,16 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                   </div>
                 )}
                 <div className="text-left">
-                  <p className="text-xs sm:text-sm text-purple-300 mb-1">Presented by</p>
-                  <h3 className="text-base sm:text-lg font-bold text-purple-100">{sponsorName}</h3>
+                  <p className="text-xs sm:text-sm font-semibold text-purple-300 uppercase tracking-wider mb-1">Presented by</p>
+                  <h3 className="text-lg sm:text-2xl font-bold text-white">{sponsorName}</h3>
                 </div>
               </div>
               
-              {/* Prize Amount */}
+              {/* Prize Amount - Right Side */}
               {prizeAmount > 0 && (
-                <div className="text-center sm:text-right bg-gradient-to-r from-yellow-500/20 to-amber-500/20 px-4 py-3 sm:px-5 sm:py-3 rounded-lg border border-yellow-500/30">
-                  <p className="text-xs sm:text-sm text-yellow-300 mb-1">Win Up To</p>
-                  <p className="text-xl sm:text-2xl font-bold text-yellow-100">₹{prizeAmount.toLocaleString()}</p>
+                <div className="text-center sm:text-right bg-gradient-to-br from-amber-400/30 to-yellow-500/20 px-5 py-4 sm:px-7 sm:py-5 rounded-xl border border-amber-400/50 shadow-lg">
+                  <p className="text-xs sm:text-sm font-semibold text-amber-200 uppercase tracking-wide mb-2">Win Up To</p>
+                  <p className="text-2xl sm:text-3xl font-black text-yellow-100">₹{prizeAmount.toLocaleString()}</p>
                 </div>
               )}
             </div>
