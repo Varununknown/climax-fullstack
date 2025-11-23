@@ -309,35 +309,44 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
 
         {/* ✅ Sponsor Section - Show if sponsor info is available */}
         {sponsorName && (
-          <div className="relative mx-2 sm:mx-6 lg:mx-10 mb-6 sm:mb-8 bg-gradient-to-r from-purple-600/15 via-purple-500/10 to-indigo-600/15 border border-purple-400/30 rounded-xl p-5 sm:p-7 backdrop-blur-sm">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-8">
-              {/* Sponsor Logo and "Presented by" */}
-              <div className="flex items-center gap-4 sm:gap-6 flex-1">
-                {sponsorLogoUrl && (
-                  <div className="flex-shrink-0">
-                    <img 
-                      src={sponsorLogoUrl} 
-                      alt={sponsorName}
-                      className="h-14 sm:h-20 w-auto object-contain drop-shadow-lg"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
+          <div className="relative mx-2 sm:mx-6 lg:mx-10 mb-8 sm:mb-10">
+            {/* Background Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-900/40 via-purple-900/30 to-slate-900/40 rounded-2xl blur-xl opacity-50"></div>
+            
+            {/* Main Container */}
+            <div className="relative bg-gradient-to-br from-slate-800/80 via-purple-900/50 to-slate-800/80 border border-purple-500/40 rounded-2xl p-6 sm:p-8 lg:p-10 backdrop-blur-md shadow-2xl">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-10">
+                {/* Left: Sponsor Logo and Info */}
+                <div className="flex items-center gap-5 sm:gap-7 flex-1">
+                  {sponsorLogoUrl && (
+                    <div className="flex-shrink-0 bg-gradient-to-br from-white/10 to-white/5 p-4 sm:p-5 rounded-xl border border-purple-400/30 backdrop-blur-sm">
+                      <img 
+                        src={sponsorLogoUrl} 
+                        alt={sponsorName}
+                        className="h-20 sm:h-28 w-auto object-contain drop-shadow-xl"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <p className="text-xs sm:text-sm font-bold text-purple-300 uppercase tracking-widest mb-2">Presented by</p>
+                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white drop-shadow-lg">{sponsorName}</h3>
+                  </div>
+                </div>
+                
+                {/* Right: Prize Box */}
+                {prizeAmount > 0 && (
+                  <div className="w-full sm:w-auto bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400 rounded-2xl p-6 sm:p-7 shadow-2xl border border-yellow-300/50 transform hover:scale-105 transition-transform duration-300">
+                    <div className="text-center">
+                      <p className="text-xs sm:text-sm font-bold text-amber-900 uppercase tracking-wider mb-2">🏆 Win Prize</p>
+                      <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-white drop-shadow-lg mb-1">₹{prizeAmount.toLocaleString()}</p>
+                      <p className="text-xs sm:text-sm font-semibold text-amber-800">Prize Amount</p>
+                    </div>
                   </div>
                 )}
-                <div className="text-left">
-                  <p className="text-xs sm:text-sm font-semibold text-purple-300 uppercase tracking-wider mb-1">Presented by</p>
-                  <h3 className="text-lg sm:text-2xl font-bold text-white">{sponsorName}</h3>
-                </div>
               </div>
-              
-              {/* Prize Amount - Right Side */}
-              {prizeAmount > 0 && (
-                <div className="text-center sm:text-right bg-gradient-to-br from-amber-400/30 to-yellow-500/20 px-5 py-4 sm:px-7 sm:py-5 rounded-xl border border-amber-400/50 shadow-lg">
-                  <p className="text-xs sm:text-sm font-semibold text-amber-200 uppercase tracking-wide mb-2">Win Up To</p>
-                  <p className="text-2xl sm:text-3xl font-black text-yellow-100">₹{prizeAmount.toLocaleString()}</p>
-                </div>
-              )}
             </div>
           </div>
         )}
