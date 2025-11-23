@@ -122,31 +122,31 @@ export const QuizPage: React.FC = () => {
       {/* Main Content - Flex grow to push footer down */}
       <div className="relative flex-1">
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-          {/* Hero Section - Clean and Subtle */}
-          <div className="mb-8 sm:mb-12">
+          {/* Hero Section - Compact */}
+          <div className="mb-6 sm:mb-8">
             <div className="relative">
-              <div className="relative bg-slate-800/40 border border-slate-700/50 rounded-xl p-6 sm:p-8 lg:p-10">
+              <div className="relative bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 sm:p-5 lg:p-6">
                 {/* Title */}
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 text-center">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-1 text-center">
                   {content.title}
                 </h2>
                 
                 {/* Subtitle - Fan Fest Tagline */}
-                <p className="text-center text-sm sm:text-base text-blue-300 font-semibold mb-4 tracking-wide">
+                <p className="text-center text-xs sm:text-sm text-blue-300 font-semibold mb-2 tracking-wide">
                   Test Your Knowledge • Win Exciting Prizes • Powered by Climax
                 </p>
                 
                 {/* Description */}
                 {content.description && (
-                  <p className="text-base sm:text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed text-center mb-8">
+                  <p className="text-sm sm:text-base text-gray-300 max-w-3xl mx-auto leading-relaxed text-center mb-4">
                     {content.description}
                   </p>
                 )}
 
                 {/* Image - Simple Display */}
                 {content.thumbnail && (
-                  <div className="mb-8 sm:mb-10 flex justify-center">
-                    <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-slate-700/50">
+                  <div className="mb-4 sm:mb-5 flex justify-center">
+                    <div className="w-full max-w-xl overflow-hidden rounded-lg border border-slate-700/50">
                       <img
                         src={content.thumbnail}
                         alt={content.title}
