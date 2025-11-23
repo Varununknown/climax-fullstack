@@ -146,7 +146,7 @@ export const QuizPage: React.FC = () => {
                 {/* Image - Small Display */}
                 {content.thumbnail && (
                   <div className="mb-3 flex justify-center">
-                    <div className="w-full max-w-xs overflow-hidden rounded-lg border border-slate-700/50">
+                    <div className="w-full max-w-[200px] sm:max-w-xs overflow-hidden rounded-lg border border-slate-700/50">
                       <img
                         src={content.thumbnail}
                         alt={content.title}
