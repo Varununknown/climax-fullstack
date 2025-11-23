@@ -325,10 +325,10 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                 
                 {/* Right: Prize Box - Wide */}
                 {prizeAmount > 0 && (
-                  <div className="w-full sm:w-72 bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400 rounded-xl px-6 py-5 sm:px-8 sm:py-6 shadow-xl border border-yellow-300/50 transform hover:scale-102 transition-transform duration-300">
+                  <div className="w-full sm:w-72 bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400 rounded-xl px-6 py-3 sm:px-8 sm:py-4 shadow-xl border border-yellow-300/50 transform hover:scale-102 transition-transform duration-300">
                     <div className="text-center">
-                      <p className="text-xs font-bold text-amber-900 uppercase tracking-wide mb-1">🏆 Win Prize</p>
-                      <p className="text-2xl sm:text-3xl font-black text-white drop-shadow-lg mb-1">₹{prizeAmount.toLocaleString()}</p>
+                      <p className="text-xs font-bold text-amber-900 uppercase tracking-wide mb-0.5">🏆 Win Prize</p>
+                      <p className="text-2xl sm:text-3xl font-black text-white drop-shadow-lg mb-0.5">₹{prizeAmount.toLocaleString()}</p>
                       <p className="text-xs font-semibold text-amber-900">Your Reward</p>
                     </div>
                   </div>
