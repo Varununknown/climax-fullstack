@@ -300,12 +300,9 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
             </div>
             
             <div className="text-center">
-              <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-slate-100 mb-3">
+              <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-slate-100">
                 {contentTitle}
               </h3>
-              <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto">
-                Share your thoughts about this content
-              </p>
             </div>
           </div>
         </div>
