@@ -287,27 +287,14 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
       
       {/* Professional Glass Container */}
       <div className="relative bg-white/5 border border-white/20 rounded-2xl shadow-xl">
-        {/* Professional Header */}
-        <div className="relative bg-slate-900/60 border-b border-slate-700/50 p-8 sm:p-10 lg:p-12 rounded-t-2xl">
-          <div className="relative z-10">
-            <div className="flex items-center justify-center mb-8">
-              <div className="bg-slate-700/40 border border-slate-600/40 rounded-lg p-3">
-                <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm2.5 4a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100-2 1 1 0 000 2zm-1 4h2v-1a1 1 0 00-1-1h-1v2z" clipRule="evenodd"/>
-                </svg>
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-slate-100">
-                {contentTitle}
-              </h3>
-            </div>
+        {/* Compact Title - Only if no sponsor */}
+        {!sponsorName && (
+          <div className="relative bg-slate-900/40 border-b border-slate-700/50 p-4 sm:p-5">
+            <h3 className="text-center text-base sm:text-lg font-semibold text-slate-100">{contentTitle}</h3>
           </div>
-        </div>
+        )}
 
-        {/* ✅ Sponsor Section - Show if sponsor info is available */}
+        {/* Sponsor Section - Direct at top */}
         {sponsorName && (
           <div className="relative mx-2 sm:mx-6 lg:mx-10 mb-8 sm:mb-10">
             {/* Background Gradient */}
