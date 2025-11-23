@@ -304,13 +304,13 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
             <div className="relative bg-gradient-to-br from-slate-800/80 via-purple-900/50 to-slate-800/80 border border-purple-500/40 rounded-2xl p-6 sm:p-8 lg:p-10 backdrop-blur-md shadow-2xl">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-10">
                 {/* Left: Sponsor Logo and Info */}
-                <div className="flex items-center gap-5 sm:gap-7 flex-1">
+                <div className="flex items-center gap-6 sm:gap-8 flex-1">
                   {sponsorLogoUrl && (
-                    <div className="flex-shrink-0 bg-gradient-to-br from-white/10 to-white/5 p-4 sm:p-5 rounded-xl border border-purple-400/30 backdrop-blur-sm">
+                    <div className="flex-shrink-0 bg-gradient-to-br from-white/10 to-white/5 p-5 sm:p-6 rounded-xl border border-purple-400/30 backdrop-blur-sm">
                       <img 
                         src={sponsorLogoUrl} 
                         alt={sponsorName}
-                        className="h-20 sm:h-28 w-auto object-contain drop-shadow-xl"
+                        className="h-24 sm:h-32 w-auto object-contain drop-shadow-xl"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                         }}
@@ -323,13 +323,13 @@ const QuizSystem: React.FC<QuizSystemProps> = ({ contentId, contentTitle }) => {
                   </div>
                 </div>
                 
-                {/* Right: Prize Box */}
+                {/* Right: Prize Box - Compact */}
                 {prizeAmount > 0 && (
-                  <div className="w-full sm:w-auto bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400 rounded-2xl p-6 sm:p-7 shadow-2xl border border-yellow-300/50 transform hover:scale-105 transition-transform duration-300">
+                  <div className="bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400 rounded-xl px-5 py-4 sm:px-6 sm:py-5 shadow-xl border border-yellow-300/50 transform hover:scale-102 transition-transform duration-300">
                     <div className="text-center">
-                      <p className="text-xs sm:text-sm font-bold text-amber-900 uppercase tracking-wider mb-2">🏆 Win Prize</p>
-                      <p className="text-3xl sm:text-4xl lg:text-5xl font-black text-white drop-shadow-lg mb-1">₹{prizeAmount.toLocaleString()}</p>
-                      <p className="text-xs sm:text-sm font-semibold text-amber-800">Prize Amount</p>
+                      <p className="text-xs font-bold text-amber-900 uppercase tracking-wide mb-1">🏆 Win Prize</p>
+                      <p className="text-2xl sm:text-3xl font-black text-white drop-shadow-lg mb-1">₹{prizeAmount.toLocaleString()}</p>
+                      <p className="text-xs font-semibold text-amber-900">Your Reward</p>
                     </div>
                   </div>
                 )}
