@@ -38,43 +38,52 @@ export const Analytics: React.FC = () => {
   const loadAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await API.get('/contents');
+      // Fetch real analytics from backend
+      const response = await API.get('/contents/admin/all-analytics', {
+        params: { days: dateRange === 'week' ? 7 : dateRange === 'month' ? 30 : dateRange === 'quarter' ? 90 : 365 }
+      });
       
-      if (response.data) {
-        // Process content data to generate analytics
-        const analyticsData = response.data.map((content: any) => ({
-          contentId: content._id,
-          title: content.title,
-          views: Math.floor(Math.random() * 50000) + 1000, // Generate realistic view counts
-          avgWatchTime: Math.floor(Math.random() * 120) + 10,
-          completion: Math.floor(Math.random() * 50) + 40,
-          revenue: Math.floor(Math.random() * 50000) + 5000,
-          category: content.category || 'Entertainment',
-          uploadDate: content.createdAt ? new Date(content.createdAt).toLocaleDateString() : 'Unknown',
-          ratings: (Math.random() * 5).toFixed(1),
-          downloads: Math.floor(Math.random() * 5000) + 100
-        }));
+      if (response.data.success) {
+        const { platformStats, contentMetrics } = response.data;
 
-        setContentAnalytics(analyticsData);
-
-        // Calculate platform stats
-        const totalViews = analyticsData.reduce((sum: number, item: ContentAnalytics) => sum + item.views, 0);
-        const totalRevenue = analyticsData.reduce((sum: number, item: ContentAnalytics) => sum + item.revenue, 0);
-        const avgCompletion = Math.round(
-          analyticsData.reduce((sum: number, item: ContentAnalytics) => sum + item.completion, 0) / analyticsData.length
-        );
-
+        // Set platform stats
         setPlatformStats({
-          totalViews,
-          totalRevenue,
-          activeUsers: Math.floor(Math.random() * 5000) + 1000,
-          totalContent: analyticsData.length,
-          avgCompletion,
+          totalViews: platformStats.totalViews,
+          totalRevenue: platformStats.totalRevenue,
+          activeUsers: platformStats.activeUsers,
+          totalContent: platformStats.totalContent,
+          avgCompletion: platformStats.avgCompletion,
           topCategory: 'Entertainment'
         });
+
+        // Set content analytics (now with REAL data!)
+        const formattedAnalytics = contentMetrics.map((content: any) => ({
+          contentId: content.contentId,
+          title: content.title,
+          views: content.views,
+          avgWatchTime: content.avgWatchTime,
+          completion: content.completion,
+          revenue: content.revenue,
+          category: content.category,
+          uploadDate: new Date().toLocaleDateString(),
+          ratings: content.rating || 0,
+          downloads: Math.floor(content.views * 0.15) // Estimate downloads as 15% of views
+        }));
+
+        setContentAnalytics(formattedAnalytics);
       }
     } catch (error) {
       console.error('Error loading analytics:', error);
+      // Fallback if API fails
+      setContentAnalytics([]);
+      setPlatformStats({
+        totalViews: 0,
+        totalRevenue: 0,
+        activeUsers: 0,
+        totalContent: 0,
+        avgCompletion: 0,
+        topCategory: 'Entertainment'
+      });
     } finally {
       setLoading(false);
     }
