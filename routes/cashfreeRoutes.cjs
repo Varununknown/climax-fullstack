@@ -21,30 +21,54 @@ const log = (...args) => console.log('[💳 Cashfree]', ...args);
 // 1️⃣ INITIATE PAYMENT - Create order and return payment token
 // ═══════════════════════════════════════════════════════════════
 router.post('/initiate', async (req, res) => {
-  console.log('\n🔥🔥🔥 CASHFREE INITIATE CALLED 🔥🔥🔥');
+  console.log('\n🔥🔥🔥 CASHFREE /initiate CALLED 🔥🔥🔥');
+  console.log('Full Request Body:', JSON.stringify(req.body, null, 2));
+  console.log('Request Headers:', req.headers);
+  
   try {
     const { userId, contentId, amount, email, phone, userName } = req.body;
 
-    console.log('📥 Received Cashfree Request:', { userId, contentId, amount, email, phone, userName });
-    console.log('🔑 Env Check:', { 
-      appId: process.env.CASHFREE_APP_ID ? '✅ SET' : '❌ MISSING',
-      secret: process.env.CASHFREE_SECRET_KEY ? '✅ SET' : '❌ MISSING',
-      clientId: process.env.CASHFREE_CLIENT_ID ? '✅ SET' : '❌ MISSING'
-    });
+    console.log('\n📥 Parsed Fields:');
+    console.log('  userId:', userId, typeof userId);
+    console.log('  contentId:', contentId, typeof contentId);
+    console.log('  amount:', amount, typeof amount);
+    console.log('  email:', email, typeof email);
+    console.log('  phone:', phone, typeof phone);
+    console.log('  userName:', userName, typeof userName);
 
-    if (!userId || !contentId || !amount || !email || !phone || !userName) {
-      const missing = [];
-      if (!userId) missing.push('userId');
-      if (!contentId) missing.push('contentId');
-      if (!amount) missing.push('amount');
-      if (!email) missing.push('email');
-      if (!phone) missing.push('phone');
-      if (!userName) missing.push('userName');
-      console.log('❌ Missing fields:', missing);
-      return res.status(400).json({ message: 'Missing required fields', missing, received: { userId, contentId, amount, email, phone, userName } });
+    console.log('\n🔑 Environment Variables:');
+    console.log('  CASHFREE_APP_ID:', process.env.CASHFREE_APP_ID ? '✅ SET' : '❌ NOT SET');
+    console.log('  CASHFREE_SECRET_KEY:', process.env.CASHFREE_SECRET_KEY ? '✅ SET' : '❌ NOT SET');
+    console.log('  CASHFREE_CLIENT_ID:', process.env.CASHFREE_CLIENT_ID ? '✅ SET' : '❌ NOT SET');
+
+    // RELAXED VALIDATION - accept any truthy values
+    if (!userId || !contentId || !amount) {
+      console.log('\n❌ VALIDATION FAILED - Missing critical fields');
+      console.log('  Missing: userId:', !userId, 'contentId:', !contentId, 'amount:', !amount);
+      return res.status(400).json({ 
+        message: 'Missing required fields', 
+        received: req.body,
+        missing: {
+          userId: !userId,
+          contentId: !contentId,
+          amount: !amount,
+          email: !email,
+          phone: !phone,
+          userName: !userName
+        }
+      });
     }
 
-    log('📝 Initiating payment for:', { userId, contentId, amount });
+    // Use fallback values for optional fields
+    const finalEmail = email || 'user@climax.com';
+    const finalPhone = phone || '9999999999';
+    const finalUserName = userName || 'User';
+    const finalAmount = parseFloat(amount) || 1;
+
+    console.log('\n✅ VALIDATION PASSED');
+    console.log('Final values:', { userId, contentId, email: finalEmail, phone: finalPhone, userName: finalUserName, amount: finalAmount });
+
+    log('📝 Initiating Cashfree payment for:', { userId, contentId, finalAmount });
 
     // Generate unique order ID
     const orderId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -52,13 +76,13 @@ router.post('/initiate', async (req, res) => {
     // Prepare Cashfree payload
     const payload = {
       orderId: orderId,
-      orderAmount: parseFloat(amount),
+      orderAmount: finalAmount,
       orderCurrency: 'INR',
       customerDetails: {
         customerId: userId,
-        customerEmail: email,
-        customerPhone: phone,
-        customerName: userName
+        customerEmail: finalEmail,
+        customerPhone: finalPhone,
+        customerName: finalUserName
       },
       orderMeta: {
         returnUrl: `${process.env.FRONTEND_URL || 'https://climax-fullstack.onrender.com'}/payment-status?orderId=${orderId}&contentId=${contentId}`,
@@ -71,7 +95,7 @@ router.post('/initiate', async (req, res) => {
       }
     };
 
-    log('Sending to Cashfree:', JSON.stringify(payload));
+    log('📤 Sending to Cashfree API:', JSON.stringify(payload));
 
     // Call Cashfree API to create order
     const response = await axios.post(
@@ -93,7 +117,7 @@ router.post('/initiate', async (req, res) => {
     const payment = new Payment({
       userId,
       contentId,
-      amount,
+      amount: finalAmount,
       transactionId: orderId,
       method: 'cashfree',
       status: 'pending',
@@ -112,19 +136,21 @@ router.post('/initiate', async (req, res) => {
       success: true,
       orderId: orderId,
       paymentSessionId: response.data.paymentSessionId,
-      amount: amount,
+      amount: finalAmount,
       message: 'Payment initiated successfully'
     });
 
   } catch (error) {
-    console.log('❌ Cashfree Error Details:');
+    console.log('\n❌ CASHFREE ERROR:');
     console.log('Status:', error.response?.status);
-    console.log('Data:', error.response?.data);
+    console.log('Response Data:', error.response?.data);
     console.log('Message:', error.message);
+    console.log('Stack:', error.stack);
     
     res.status(error.response?.status || 500).json({ 
       message: 'Failed to initiate payment',
       details: error.response?.data || error.message,
+      requestBody: req.body,
       error: error.message
     });
   }
