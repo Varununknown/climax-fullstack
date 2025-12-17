@@ -953,35 +953,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </>
             )}
 
-                {/* Success Step */}
-                {paymentStep === 'success' && (
-                  <>
-                    <div style={{ 
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      minHeight: '300px',
-                      textAlign: 'center', 
-                      padding: '40px 20px',
-                      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1))',
-                      borderRadius: '12px'
-                    }}>
-                      <CheckCircle size={64} style={{ color: '#10b981', marginBottom: '20px', filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))' }} />
-                      <h3 style={{ color: '#10b981', fontSize: '24px', fontWeight: '800', margin: '16px 0', letterSpacing: '0.5px' }}>
-                        ✅ Payment Successful!
-                      </h3>
-                      <p style={{ color: '#9ca3af', fontSize: '15px', margin: '12px 0', fontWeight: '500' }}>
-                        {paymentType === 'fest-participation' 
-                          ? 'Your fest participation is now unlocked' 
-                          : 'Content unlocked. Enjoy!'}
-                      </p>
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-
             {/* CASHFREE SECTION */}
             {paymentMethod === 'cashfree' && (
               <>
