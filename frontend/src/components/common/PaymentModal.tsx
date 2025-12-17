@@ -213,14 +213,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       setCashfreeError('');
 
       // Ensure all required fields have values
+      const userId = user._id || user.id || 'unknown-user';
+      const contentId = content._id || content.id || 'unknown-content';
       const email = user.email || 'user@climax.com';
       const phone = user.phone || '9999999999';
       const userName = user.name || user.username || 'User';
       const amount = content.premiumPrice || 1;
 
       const payloadData = {
-        userId: user._id,
-        contentId: content._id,
+        userId,
+        contentId,
         email,
         phone,
         userName,
@@ -228,12 +230,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       };
 
       console.log('💳 Cashfree Payment Payload:', payloadData);
-      console.log('User object:', user);
-      console.log('Content object:', content);
+      console.log('User object keys:', Object.keys(user));
+      console.log('Content object keys:', Object.keys(content));
 
       const paymentResponse = await CashfreeService.initiatePayment(
-        user._id,
-        content._id,
+        userId,
+        contentId,
         amount,
         email,
         phone,
