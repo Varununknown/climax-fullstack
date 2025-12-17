@@ -21,11 +21,16 @@ const log = (...args) => console.log('[💳 Cashfree]', ...args);
 // 1️⃣ INITIATE PAYMENT - Create order and return payment token
 // ═══════════════════════════════════════════════════════════════
 router.post('/initiate', async (req, res) => {
+  console.log('\n🔥🔥🔥 CASHFREE INITIATE CALLED 🔥🔥🔥');
   try {
     const { userId, contentId, amount, email, phone, userName } = req.body;
 
     console.log('📥 Received Cashfree Request:', { userId, contentId, amount, email, phone, userName });
-    console.log('🔑 Config Check:', { appId: !!CASHFREE_CONFIG.APP_ID, secret: !!CASHFREE_CONFIG.SECRET_KEY, clientId: !!CASHFREE_CONFIG.CLIENT_ID });
+    console.log('🔑 Env Check:', { 
+      appId: process.env.CASHFREE_APP_ID ? '✅ SET' : '❌ MISSING',
+      secret: process.env.CASHFREE_SECRET_KEY ? '✅ SET' : '❌ MISSING',
+      clientId: process.env.CASHFREE_CLIENT_ID ? '✅ SET' : '❌ MISSING'
+    });
 
     if (!userId || !contentId || !amount || !email || !phone || !userName) {
       const missing = [];
@@ -36,7 +41,7 @@ router.post('/initiate', async (req, res) => {
       if (!phone) missing.push('phone');
       if (!userName) missing.push('userName');
       console.log('❌ Missing fields:', missing);
-      return res.status(400).json({ message: 'Missing required fields', missing });
+      return res.status(400).json({ message: 'Missing required fields', missing, received: { userId, contentId, amount, email, phone, userName } });
     }
 
     log('📝 Initiating payment for:', { userId, contentId, amount });
