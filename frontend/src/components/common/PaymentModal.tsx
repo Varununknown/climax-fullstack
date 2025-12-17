@@ -212,13 +212,21 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       setIsProcessing(true);
       setCashfreeError('');
 
+      // Ensure all required fields have values
+      const email = user.email || 'user@climax.com';
+      const phone = user.phone || '9999999999';
+      const userName = user.name || user.username || 'User';
+      const amount = content.premiumPrice || 1;
+
+      console.log('💳 Cashfree Payment Initiating:', { userId: user._id, contentId: content._id, email, phone, userName, amount });
+
       const paymentResponse = await CashfreeService.initiatePayment(
         user._id,
         content._id,
-        content.premiumPrice,
-        user.email,
-        user.phone || '9999999999',
-        user.name
+        amount,
+        email,
+        phone,
+        userName
       );
 
       if (paymentResponse.success) {
