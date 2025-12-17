@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, QrCode, CheckCircle, Copy, CreditCard } from 'lucide-react';
+import { X, QrCode, CheckCircle, Copy, CreditCard, Loader2 } from 'lucide-react';
 import { Content } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import CashfreeService from '../../services/cashfreeService';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -28,13 +29,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   paymentType = 'premium-content' // ✅ Default to premium-content
 }) => {
   const { user } = useAuth();
-  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'upi-deeplink'>('qr');
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'upi-deeplink'>('upi'); // Default to QR Code
+  const [paymentStep, setPaymentStep] = useState<'qr' | 'waiting' | 'success' | 'upi-deeplink' | 'cashfree'>('qr');
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'upi-deeplink' | 'cashfree'>('upi'); // Default to QR Code
   const [transactionId, setTransactionId] = useState('');
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [upiDeepLinkTxnId, setUpiDeepLinkTxnId] = useState(''); // For UPI deep link transaction ID input
+  const [cashfreeError, setCashfreeError] = useState('');
 
   console.log('💳 PaymentModal rendered:', content.title);
 
@@ -194,6 +196,50 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     } catch (err) {
       console.error('❌ Verification error:', err);
       setTxnError('Error verifying payment. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // ✅ CASHFREE PAYMENT HANDLER
+  const handleCashfreePayment = async () => {
+    if (!user) {
+      setCashfreeError('Please login to make payment');
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      setCashfreeError('');
+
+      const paymentResponse = await CashfreeService.initiatePayment(
+        user._id,
+        content._id,
+        content.premiumPrice,
+        user.email,
+        user.phone || '9999999999',
+        user.name
+      );
+
+      if (paymentResponse.success) {
+        sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
+        sessionStorage.setItem('cashfreeContentId', content._id);
+
+        if (window.Cashfree) {
+          const checkoutOptions = {
+            paymentSessionId: paymentResponse.paymentSessionId,
+            redirectTarget: '_self'
+          };
+          window.Cashfree.checkout(checkoutOptions);
+        } else {
+          setCashfreeError('Cashfree checkout not available. Please refresh the page.');
+        }
+      } else {
+        setCashfreeError(paymentResponse.message || 'Failed to initiate payment');
+      }
+    } catch (err: any) {
+      console.error('💳 Cashfree error:', err);
+      setCashfreeError(err.response?.data?.message || err.message || 'Payment failed');
     } finally {
       setIsProcessing(false);
     }
@@ -502,33 +548,55 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             onClick={() => {
               setPaymentMethod('upi');
               setPaymentStep('qr');
+              setCashfreeError('');
             }}
             onTouchStart={(e) => {
               e.preventDefault();
               setPaymentMethod('upi');
               setPaymentStep('qr');
+              setCashfreeError('');
             }}
             onMouseDown={(e) => e.preventDefault()}
             style={paymentMethod === 'upi' ? tabButtonActiveStyle : tabButtonInactiveStyle}
           >
             <QrCode size={16} style={{ display: 'inline', marginRight: '6px' }} />
-            QR Code
+            QR
           </button>
           <button
             onClick={() => {
               setPaymentMethod('upi-deeplink');
               setPaymentStep('upi-deeplink');
+              setCashfreeError('');
             }}
             onTouchStart={(e) => {
               e.preventDefault();
               setPaymentMethod('upi-deeplink');
               setPaymentStep('upi-deeplink');
+              setCashfreeError('');
             }}
             onMouseDown={(e) => e.preventDefault()}
             style={paymentMethod === 'upi-deeplink' ? tabButtonActiveStyle : tabButtonInactiveStyle}
           >
             <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
             UPI
+          </button>
+          <button
+            onClick={() => {
+              setPaymentMethod('cashfree');
+              setPaymentStep('cashfree');
+              setTxnError('');
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              setPaymentMethod('cashfree');
+              setPaymentStep('cashfree');
+              setTxnError('');
+            }}
+            onMouseDown={(e) => e.preventDefault()}
+            style={paymentMethod === 'cashfree' ? tabButtonActiveStyle : tabButtonInactiveStyle}
+          >
+            <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
+            Cashfree
           </button>
         </div>
 
@@ -805,6 +873,87 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     </button>
                   </>
                 )}
+              </>
+            )}
+
+            {/* CASHFREE SECTION */}
+            {paymentMethod === 'cashfree' && (
+              <>
+                {/* Cashfree Payment Info */}
+                <div style={{
+                  backgroundColor: 'rgb(243, 244, 246)',
+                  padding: '16px',
+                  borderRadius: '8px',
+                  border: '1px solid rgb(229, 231, 235)',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                    <CreditCard size={18} style={{ color: '#1f2937', marginRight: '8px' }} />
+                    <span style={{ color: '#1f2937', fontWeight: '700', fontSize: '15px' }}>Cashfree Payment</span>
+                  </div>
+                  
+                  <p style={{ color: '#374151', fontSize: '14px', margin: '8px 0', fontWeight: '500' }}>
+                    Amount: ₹{content.premiumPrice}
+                  </p>
+                  
+                  <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '10px 12px', borderRadius: '8px', margin: '12px 0', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
+                    <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
+                      • Secure payment via Cashfree gateway
+                    </p>
+                    <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
+                      • Supports multiple payment methods
+                    </p>
+                  </div>
+                </div>
+
+                {/* Error Message */}
+                {cashfreeError && (
+                  <div style={{ marginBottom: '12px', padding: '10px 12px', background: 'rgba(220, 38, 38, 0.08)', borderLeft: '3px solid #dc2626', borderRadius: '4px' }}>
+                    <p style={{ color: '#991b1b', fontSize: '13px', margin: '0', fontWeight: '600' }}>
+                      {cashfreeError}
+                    </p>
+                  </div>
+                )}
+
+                {/* Pay with Cashfree Button */}
+                <button
+                  onClick={handleCashfreePayment}
+                  onTouchStart={(e) => {
+                    if (isProcessing) return;
+                    e.preventDefault();
+                    handleCashfreePayment();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  disabled={isProcessing}
+                  style={isProcessing ? disabledButtonStyle : submitButtonStyle}
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 size={16} style={{ display: 'inline', marginRight: '8px', animation: 'spin 0.6s linear infinite' }} />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard size={16} style={{ display: 'inline', marginRight: '8px' }} />
+                      Pay with Cashfree
+                    </>
+                  )}
+                </button>
+
+                {/* Cancel Button */}
+                <button 
+                  onClick={onClose}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    onClose();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  style={cancelButtonStyle}
+                >
+                  Cancel
+                </button>
+              </>
+            )}
 
                 {/* Success Step */}
                 {paymentStep === 'success' && (

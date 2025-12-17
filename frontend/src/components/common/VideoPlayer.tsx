@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Play, Pause, ArrowLeft, Volume2, Maximize, Minimize, VolumeX, Lock, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { PaymentModal } from './PaymentModal';
-import PaymentTabs from './PaymentTabs';
 import { Content } from '../../types';
 import API from '../../services/api';
 
@@ -17,7 +16,6 @@ export const VideoPlayer: React.FC = () => {
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [paymentChecked, setPaymentChecked] = useState(false); // Prevent multiple checks
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showPaymentTabs, setShowPaymentTabs] = useState(false); // New Cashfree + UPI tabs
   
   // Video states
   const [isPlaying, setIsPlaying] = useState(false);
@@ -362,29 +360,6 @@ export const VideoPlayer: React.FC = () => {
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
           
-          {/* Unlock Button - NEW PAY TAB (Cashfree) */}
-          {!hasPaid && content.premiumPrice > 0 && (
-            <button
-              onClick={() => setShowPaymentTabs(true)}
-              className="flex items-center bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded space-x-1 transition-colors"
-            >
-              <CreditCard size={16} />
-              <span>Pay Now</span>
-            </button>
-          )}
-
-          {/* DEBUG: Always show Pay button for testing */}
-          {!hasPaid && (
-            <button
-              onClick={() => setShowPaymentTabs(true)}
-              className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded space-x-1 transition-colors ml-2"
-              title="Test Payment Button"
-            >
-              <CreditCard size={16} />
-              <span>💳 Test Pay</span>
-            </button>
-          )}
-          
           {/* Quality Menu */}
           <div className="relative">
             <button
@@ -476,22 +451,6 @@ export const VideoPlayer: React.FC = () => {
           onSuccess={handlePaymentSuccess}
           onClose={() => setShowPaymentModal(false)}
         />
-      )}
-
-      {/* NEW Payment Tabs Modal (Cashfree + UPI) */}
-      {showPaymentTabs && content && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <PaymentTabs
-            contentId={content._id}
-            contentTitle={content.title}
-            amount={content.premiumPrice || 1}
-            onPaymentSuccess={() => {
-              setShowPaymentTabs(false);
-              handlePaymentSuccess();
-            }}
-            onClose={() => setShowPaymentTabs(false)}
-          />
-        </div>
       )}
     </div>
   );
