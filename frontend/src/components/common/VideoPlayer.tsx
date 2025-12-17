@@ -372,6 +372,18 @@ export const VideoPlayer: React.FC = () => {
               <span>Pay Now</span>
             </button>
           )}
+
+          {/* DEBUG: Always show Pay button for testing */}
+          {!hasPaid && (
+            <button
+              onClick={() => setShowPaymentTabs(true)}
+              className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded space-x-1 transition-colors ml-2"
+              title="Test Payment Button"
+            >
+              <CreditCard size={16} />
+              <span>💳 Test Pay</span>
+            </button>
+          )}
           
           {/* Quality Menu */}
           <div className="relative">
