@@ -218,7 +218,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const userName = user.name || user.username || 'User';
       const amount = content.premiumPrice || 1;
 
-      console.log('💳 Cashfree Payment Initiating:', { userId: user._id, contentId: content._id, email, phone, userName, amount });
+      const payloadData = {
+        userId: user._id,
+        contentId: content._id,
+        email,
+        phone,
+        userName,
+        amount
+      };
+
+      console.log('💳 Cashfree Payment Payload:', payloadData);
+      console.log('User object:', user);
+      console.log('Content object:', content);
 
       const paymentResponse = await CashfreeService.initiatePayment(
         user._id,
