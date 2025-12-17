@@ -875,8 +875,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 )}
               </>
             )}
-
-            {/* CASHFREE SECTION */}
             {paymentMethod === 'cashfree' && (
               <>
                 {/* Cashfree Payment Info */}
@@ -981,6 +979,85 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     </div>
                   </>
                 )}
+              </>
+            )}
+
+            {/* CASHFREE SECTION */}
+            {paymentMethod === 'cashfree' && (
+              <>
+                {/* Cashfree Payment Info */}
+                <div style={{
+                  backgroundColor: 'rgb(243, 244, 246)',
+                  padding: '16px',
+                  borderRadius: '8px',
+                  border: '1px solid rgb(229, 231, 235)',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                    <CreditCard size={18} style={{ color: '#1f2937', marginRight: '8px' }} />
+                    <span style={{ color: '#1f2937', fontWeight: '700', fontSize: '15px' }}>Cashfree Payment</span>
+                  </div>
+                  
+                  <p style={{ color: '#374151', fontSize: '14px', margin: '8px 0', fontWeight: '500' }}>
+                    Amount: ₹{content.premiumPrice}
+                  </p>
+                  
+                  <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '10px 12px', borderRadius: '8px', margin: '12px 0', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
+                    <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
+                      • Secure payment via Cashfree gateway
+                    </p>
+                    <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0', lineHeight: '1.5' }}>
+                      • Supports multiple payment methods
+                    </p>
+                  </div>
+                </div>
+
+                {/* Error Message */}
+                {cashfreeError && (
+                  <div style={{ marginBottom: '12px', padding: '10px 12px', background: 'rgba(220, 38, 38, 0.08)', borderLeft: '3px solid #dc2626', borderRadius: '4px' }}>
+                    <p style={{ color: '#991b1b', fontSize: '13px', margin: '0', fontWeight: '600' }}>
+                      {cashfreeError}
+                    </p>
+                  </div>
+                )}
+
+                {/* Pay with Cashfree Button */}
+                <button
+                  onClick={handleCashfreePayment}
+                  onTouchStart={(e) => {
+                    if (isProcessing) return;
+                    e.preventDefault();
+                    handleCashfreePayment();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  disabled={isProcessing}
+                  style={isProcessing ? disabledButtonStyle : submitButtonStyle}
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 size={16} style={{ display: 'inline', marginRight: '8px', animation: 'spin 0.6s linear infinite' }} />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard size={16} style={{ display: 'inline', marginRight: '8px' }} />
+                      Pay with Cashfree
+                    </>
+                  )}
+                </button>
+
+                {/* Cancel Button */}
+                <button 
+                  onClick={onClose}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    onClose();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  style={cancelButtonStyle}
+                >
+                  Cancel
+                </button>
               </>
             )}
 
