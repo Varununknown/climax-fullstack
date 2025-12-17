@@ -24,8 +24,19 @@ router.post('/initiate', async (req, res) => {
   try {
     const { userId, contentId, amount, email, phone, userName } = req.body;
 
+    console.log('📥 Received Cashfree Request:', { userId, contentId, amount, email, phone, userName });
+    console.log('🔑 Config Check:', { appId: !!CASHFREE_CONFIG.APP_ID, secret: !!CASHFREE_CONFIG.SECRET_KEY, clientId: !!CASHFREE_CONFIG.CLIENT_ID });
+
     if (!userId || !contentId || !amount || !email || !phone || !userName) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      const missing = [];
+      if (!userId) missing.push('userId');
+      if (!contentId) missing.push('contentId');
+      if (!amount) missing.push('amount');
+      if (!email) missing.push('email');
+      if (!phone) missing.push('phone');
+      if (!userName) missing.push('userName');
+      console.log('❌ Missing fields:', missing);
+      return res.status(400).json({ message: 'Missing required fields', missing });
     }
 
     log('📝 Initiating payment for:', { userId, contentId, amount });
@@ -49,14 +60,13 @@ router.post('/initiate', async (req, res) => {
         notifyUrl: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`,
         paymentMethods: 'cc,dc,netbanking,upi'
       },
-      // Custom metadata for our app
       customMetadata: {
         contentId: contentId,
         userId: userId
       }
     };
 
-    log('Sending to Cashfree:', payload);
+    log('Sending to Cashfree:', JSON.stringify(payload));
 
     // Call Cashfree API to create order
     const response = await axios.post(
@@ -102,10 +112,15 @@ router.post('/initiate', async (req, res) => {
     });
 
   } catch (error) {
-    log('❌ Error initiating payment:', error.response?.data || error.message);
-    res.status(500).json({ 
+    console.log('❌ Cashfree Error Details:');
+    console.log('Status:', error.response?.status);
+    console.log('Data:', error.response?.data);
+    console.log('Message:', error.message);
+    
+    res.status(error.response?.status || 500).json({ 
       message: 'Failed to initiate payment',
-      error: error.response?.data || error.message 
+      details: error.response?.data || error.message,
+      error: error.message
     });
   }
 });
