@@ -113,23 +113,28 @@ router.post('/initiate', async (req, res) => {
 
     log('✅ Order created:', response.data);
 
-    // Save payment record in our DB
-    const payment = new Payment({
-      userId,
-      contentId,
-      amount: finalAmount,
-      transactionId: orderId,
-      method: 'cashfree',
-      status: 'pending',
-      metadata: {
-        orderId: orderId,
-        cashfreeOrderId: response.data.orderId,
-        cashfreePaymentSessionId: response.data.paymentSessionId
-      }
-    });
+    // Save or update payment record in our DB (upsert to handle retries)
+    const payment = await Payment.findOneAndUpdate(
+      { userId, contentId },
+      {
+        $set: {
+          userId,
+          contentId,
+          amount: finalAmount,
+          transactionId: orderId,
+          method: 'cashfree',
+          status: 'pending',
+          metadata: {
+            orderId: orderId,
+            cashfreeOrderId: response.data.cf_order_id,
+            cashfreePaymentSessionId: response.data.payment_session_id
+          }
+        }
+      },
+      { upsert: true, new: true }
+    );
 
-    await payment.save();
-    log('✅ Payment record saved');
+    log('✅ Payment record saved/updated');
 
     // Return payment token for frontend
     res.json({
