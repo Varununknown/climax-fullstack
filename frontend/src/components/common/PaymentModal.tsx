@@ -3,7 +3,6 @@ import { X, QrCode, CheckCircle, Copy, CreditCard, Loader2 } from 'lucide-react'
 import { Content } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import CashfreeService from '../../services/cashfreeService';
-import { loadCashfreeSDK, waitForCashfree } from '../../utils/cashfreeLoader';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -223,15 +222,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       console.log('💳 Initiating Cashfree payment...');
 
-      // Step 1: Make sure SDK is loaded
-      console.log('📥 Loading Cashfree SDK...');
-      const sdkLoaded = await loadCashfreeSDK();
-      
-      if (!sdkLoaded) {
-        console.warn('⚠️ SDK load returned false, but trying anyway...');
-      }
-
-      // Step 2: Call backend to create order
+      // Call backend to create order
       console.log('📤 Calling backend /initiate endpoint...');
       const paymentResponse = await CashfreeService.initiatePayment(
         userId,
@@ -249,33 +240,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         return;
       }
 
+      // Store order details for verification later
       sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // Step 3: Wait for Cashfree SDK to be fully ready
-      console.log('⏳ Waiting for Cashfree.checkout() to be ready...');
-      const isReady = await waitForCashfree(10000);
+      // Redirect to Cashfree hosted checkout page
+      // Format: https://sandbox.cashfree.com/checkout/post/?token=<paymentSessionId>
+      const cashfreeCheckoutUrl = `https://checkout.cashfree.com/post/submit/?token=${paymentResponse.paymentSessionId}`;
+      
+      console.log('🚀 Redirecting to Cashfree checkout:', cashfreeCheckoutUrl);
+      window.location.href = cashfreeCheckoutUrl;
 
-      if (!isReady) {
-        console.error('❌ Cashfree SDK not ready after timeout');
-        setCashfreeError('Payment gateway is not responding. Please try again.');
-        return;
-      }
-
-      // Step 4: Open Cashfree checkout
-      console.log('🚀 Opening Cashfree checkout...');
-      const checkoutOptions = {
-        paymentSessionId: paymentResponse.paymentSessionId,
-        redirectTarget: '_self'
-      };
-
-      try {
-        window.Cashfree.checkout(checkoutOptions);
-        console.log('✅ Cashfree checkout opened successfully');
-      } catch (checkoutErr) {
-        console.error('❌ Error opening checkout:', checkoutErr);
-        setCashfreeError('Error opening payment modal. Please try again.');
-      }
     } catch (err: any) {
       console.error('💳 Cashfree Payment Error:', err);
       setCashfreeError(err.response?.data?.message || err.message || 'Payment failed');
