@@ -241,26 +241,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       }
 
       // Store order details for verification later
-      sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
-      sessionStorage.setItem('cashfreeSessionId', paymentResponse.paymentSessionId);
+      sessionStorage.setItem('cashfreeOrderId', paymentResponse.linkId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // Cashfree PG 2.0 doesn't have a simple hosted checkout URL
-      // Instead, show a helpful message and guide user to QR/UPI methods
-      setCashfreeError(
-        `✅ Payment Order Created Successfully!\n\n` +
-        `Order ID: ${paymentResponse.orderId}\n` +
-        `Amount: ₹${paymentResponse.amount}\n\n` +
-        `📱 Next Step:\n` +
-        `Please use the QR Code or UPI tabs above to complete your payment.\n\n` +
-        `Your payment session is valid for 30 minutes.`
-      );
-      
-      // Switch to QR tab to show payment options
-      setPaymentMethod('upi');
-      setPaymentStep('qr');
-      
-      console.log('💳 Payment order created:', paymentResponse.orderId);
+      // Redirect directly to Cashfree Payment Link
+      // User will see: pre-filled amount, all payment methods (card, UPI, bank, wallet, etc.)
+      console.log('🚀 Redirecting to payment link:', paymentResponse.linkUrl);
+      window.location.href = paymentResponse.linkUrl;
 
     } catch (err: any) {
       console.error('💳 Cashfree Payment Error:', err);
