@@ -140,7 +140,7 @@ router.post('/initiate', async (req, res) => {
     res.json({
       success: true,
       orderId: orderId,
-      paymentSessionId: response.data.paymentSessionId,
+      paymentSessionId: response.data.payment_session_id,
       amount: finalAmount,
       message: 'Payment initiated successfully'
     });
