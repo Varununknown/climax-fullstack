@@ -241,13 +241,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       }
 
       // Store order details for verification later
-      sessionStorage.setItem('cashfreeOrderId', paymentResponse.linkId);
+      sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // Redirect to Cashfree Payment Link
+      // Redirect to Cashfree hosted checkout
       // Amount is pre-filled automatically on the Cashfree page
-      console.log('🚀 Redirecting to Cashfree Payment Link:', paymentResponse.linkUrl);
-      window.location.href = paymentResponse.linkUrl;
+      console.log('🚀 Redirecting to Cashfree Hosted Checkout:', paymentResponse.checkoutUrl);
+      window.location.href = paymentResponse.checkoutUrl;
 
     } catch (err: any) {
       console.error('💳 Cashfree Payment Error:', err);

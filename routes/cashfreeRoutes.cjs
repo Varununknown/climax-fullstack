@@ -21,7 +21,7 @@ const log = (...args) => console.log('[💳 Cashfree]', ...args);
 // 1️⃣ INITIATE PAYMENT - Create Payment Link and redirect URL
 // ═══════════════════════════════════════════════════════════════
 router.post('/initiate', async (req, res) => {
-  console.log('\n🔥🔥🔥 CASHFREE /initiate (PAYMENT LINKS) CALLED 🔥🔥🔥');
+  console.log('\n🔥🔥🔥 CASHFREE /initiate (ORDERS API) CALLED 🔥🔥🔥');
   console.log('Full Request Body:', JSON.stringify(req.body, null, 2));
   
   try {
@@ -39,38 +39,35 @@ router.post('/initiate', async (req, res) => {
       });
     }
 
-    log('📝 Creating Cashfree Payment Link for:', { userId, contentId, finalAmount });
+    log('📝 Creating Cashfree Order for:', { userId, contentId, finalAmount });
 
-    // Generate unique link ID
-    const linkId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate unique order ID
+    const orderId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Prepare Payment Link payload (v2023-08-01)
+    // Prepare Cashfree Orders API payload (v2023-08-01)
+    // For hosted checkout, we use the order API with payment_session_id
     const payload = {
-      link_id: linkId,
-      link_amount: finalAmount,
-      link_currency: 'INR',
-      link_purpose: `Climax OTT Premium Content - ${contentId}`,
+      order_id: orderId,
+      order_amount: finalAmount,
+      order_currency: 'INR',
       customer_details: {
         customer_id: userId,
         customer_email: finalEmail,
         customer_phone: finalPhone,
         customer_name: finalUserName
       },
-      link_notify: {
-        send_sms: false,
-        send_email: false
-      },
-      link_meta: {
-        return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.vercel.app'}/payment-status?linkId=${linkId}&contentId=${contentId}`,
-        notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`
+      order_meta: {
+        return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.vercel.app'}/payment-status?orderId=${orderId}&contentId=${contentId}`,
+        notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`,
+        payment_methods: 'cc,dc,nb,upi'
       }
     };
 
-    log('📤 Sending Payment Link request to Cashfree API');
+    log('📤 Sending Order creation request to Cashfree API');
 
-    // Call Cashfree API to create payment link
+    // Call Cashfree API to create order
     const response = await axios.post(
-      `${CASHFREE_CONFIG.API_BASE}/links`,
+      `${CASHFREE_CONFIG.API_BASE}/orders`,
       payload,
       {
         headers: {
@@ -82,7 +79,12 @@ router.post('/initiate', async (req, res) => {
       }
     );
 
-    log('✅ Payment Link created:', response.data);
+    log('✅ Order created:', response.data);
+
+    // Build hosted checkout URL using payment session ID
+    // Cashfree PG 2.0 uses this format for hosted checkout
+    const paymentSessionId = response.data.payment_session_id;
+    const hostedCheckoutUrl = `${CASHFREE_CONFIG.API_BASE}/orders/${orderId}/checkout?cf_token=${paymentSessionId}`;
 
     // Save or update payment record in our DB (upsert to handle retries)
     const payment = await Payment.findOneAndUpdate(
@@ -92,13 +94,14 @@ router.post('/initiate', async (req, res) => {
           userId,
           contentId,
           amount: finalAmount,
-          transactionId: linkId,
+          transactionId: orderId,
           method: 'cashfree',
           status: 'pending',
           metadata: {
-            linkId: linkId,
-            linkUrl: response.data.link_url,
-            cfLinkId: response.data.cf_link_id
+            orderId: orderId,
+            cfOrderId: response.data.cf_order_id,
+            paymentSessionId: paymentSessionId,
+            checkoutUrl: hostedCheckoutUrl
           }
         }
       },
@@ -107,14 +110,15 @@ router.post('/initiate', async (req, res) => {
 
     log('✅ Payment record saved/updated');
 
-    // Return the payment link URL for direct redirect
+    // Return both the payment session ID and checkout URL
     res.json({
       success: true,
-      linkId: linkId,
-      linkUrl: response.data.link_url,
-      cfLinkId: response.data.cf_link_id,
+      orderId: orderId,
+      cfOrderId: response.data.cf_order_id,
+      paymentSessionId: paymentSessionId,
+      checkoutUrl: hostedCheckoutUrl,
       amount: finalAmount,
-      message: 'Payment link created successfully'
+      message: 'Payment initiated successfully'
     });
 
   } catch (error) {
@@ -124,7 +128,7 @@ router.post('/initiate', async (req, res) => {
     console.log('Message:', error.message);
     
     res.status(error.response?.status || 500).json({ 
-      message: 'Failed to create payment link',
+      message: 'Failed to initiate payment',
       details: error.response?.data || error.message,
       error: error.message
     });
