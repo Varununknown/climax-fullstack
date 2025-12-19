@@ -235,19 +235,23 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       console.log('💳 Backend Response:', paymentResponse);
 
-      if (!paymentResponse.success || !paymentResponse.paymentSessionId) {
-        setCashfreeError(paymentResponse.message || 'Failed to create payment');
+      if (!paymentResponse.success || !paymentResponse.linkUrl) {
+        setCashfreeError('Failed: ' + (paymentResponse.message || 'No payment URL received'));
+        setIsProcessing(false);
         return;
       }
 
       // Store order details for verification later
-      sessionStorage.setItem('cashfreeOrderId', paymentResponse.linkId);
+      sessionStorage.setItem('cashfreeOrderId', paymentResponse.linkId || paymentResponse.orderId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // Redirect directly to Cashfree Payment Link
-      // User will see: pre-filled amount, all payment methods (card, UPI, bank, wallet, etc.)
-      console.log('🚀 Redirecting to payment link:', paymentResponse.linkUrl);
+      console.log('📱 Payment Response:', paymentResponse);
+      console.log('🚀 Redirecting to:', paymentResponse.linkUrl);
+      
+      // Redirect to Cashfree Payment
       window.location.href = paymentResponse.linkUrl;
+      
+      // Don't set isProcessing to false since we're redirecting away
 
     } catch (err: any) {
       console.error('💳 Cashfree Payment Error:', err);
