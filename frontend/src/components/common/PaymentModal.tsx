@@ -244,13 +244,22 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // Redirect to Cashfree hosted checkout page
-      // Sandbox URL (for testing): https://sandbox.cashfree.com/checkout/post/?token=<paymentSessionId>
-      // Production URL: https://checkout.cashfree.com/post/?token=<paymentSessionId>
-      const cashfreeCheckoutUrl = `https://sandbox.cashfree.com/checkout/post/?token=${paymentResponse.paymentSessionId}`;
+      // Use form-based POST redirect to Cashfree checkout
+      // This is the standard way for Cashfree PG 2.0 API
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://sandbox.cashfree.com/checkout/post/';
       
-      console.log('🚀 Redirecting to Cashfree checkout:', cashfreeCheckoutUrl);
-      window.location.href = cashfreeCheckoutUrl;
+      const tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.name = 'token';
+      tokenInput.value = paymentResponse.paymentSessionId;
+      
+      form.appendChild(tokenInput);
+      document.body.appendChild(form);
+      
+      console.log('🚀 Submitting form to Cashfree checkout...');
+      form.submit();
 
     } catch (err: any) {
       console.error('💳 Cashfree Payment Error:', err);
