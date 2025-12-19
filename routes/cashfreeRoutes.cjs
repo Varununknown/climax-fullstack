@@ -31,9 +31,6 @@ router.post('/initiate', async (req, res) => {
     console.log('  userId:', userId, typeof userId);
     console.log('  contentId:', contentId, typeof contentId);
     console.log('  amount:', amount, typeof amount);
-    console.log('  email:', email);
-    console.log('  phone:', phone);
-    console.log('  userName:', userName);
 
     const finalEmail = email || 'user@climax.com';
     const finalPhone = phone || '9999999999';
@@ -42,54 +39,41 @@ router.post('/initiate', async (req, res) => {
 
     if (!userId || !contentId || !amount) {
       console.log('❌ VALIDATION FAILED');
-      console.log('  userId:', !userId, '(required)');
-      console.log('  contentId:', !contentId, '(required)');
-      console.log('  amount:', !amount, '(required)');
-      
       return res.status(400).json({ 
         success: false,
         message: 'Missing required fields: userId, contentId, amount',
-        received: { userId, contentId, amount },
-        missing: {
-          userId: !userId,
-          contentId: !contentId,
-          amount: !amount
-        }
+        received: { userId, contentId, amount }
       });
     }
 
-    log('📝 Creating payment link for:', { userId, contentId, finalAmount });
+    log('📝 Creating payment order for:', { userId, contentId, finalAmount });
 
-    const linkId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Payment Links API might not be enabled on account
+    // Use Orders API which is always available
+    const orderId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Payment Links API - this is the ONLY way for PG 2.0 hosted checkout
-    const payload = {
-      link_id: linkId,
-      link_amount: finalAmount,
-      link_currency: 'INR',
-      link_purpose: `Climax OTT - Content ${contentId}`,
+    const orderPayload = {
+      order_id: orderId,
+      order_amount: finalAmount,
+      order_currency: 'INR',
       customer_details: {
         customer_id: userId,
         customer_email: finalEmail,
         customer_phone: finalPhone,
         customer_name: finalUserName
       },
-      link_notify: {
-        send_sms: false,
-        send_email: false
-      },
-      link_meta: {
-        return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.vercel.app'}/payment-success?linkId=${linkId}`,
-        notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`
+      order_meta: {
+        return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.vercel.app'}/payment-success?orderId=${orderId}`,
+        notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`,
+        payment_methods: 'cc,dc,nb,upi'
       }
     };
 
-    console.log('📤 Calling Payment Links API at:', `${CASHFREE_CONFIG.API_BASE}/links`);
-    console.log('Payload:', JSON.stringify(payload, null, 2));
-    
+    console.log('📤 Creating order via Orders API');
+
     const response = await axios.post(
-      `${CASHFREE_CONFIG.API_BASE}/links`,
-      payload,
+      `${CASHFREE_CONFIG.API_BASE}/orders`,
+      orderPayload,
       {
         headers: {
           'x-api-version': '2023-08-01',
@@ -100,17 +84,12 @@ router.post('/initiate', async (req, res) => {
       }
     );
 
-    console.log('✅ Response Status:', response.status);
-    console.log('✅ Response Data:', JSON.stringify(response.data, null, 2));
+    console.log('✅ Order created:', orderId);
+    console.log('Response:', JSON.stringify(response.data, null, 2));
 
-    const linkUrl = response.data.link_url;
+    const sessionId = response.data.payment_session_id;
     
-    if (!linkUrl) {
-      throw new Error('No link_url in response: ' + JSON.stringify(response.data));
-    }
-
-    log('✅ Payment Link created:', linkUrl);
-
+    // Save payment record
     await Payment.findOneAndUpdate(
       { userId, contentId },
       {
@@ -118,45 +97,42 @@ router.post('/initiate', async (req, res) => {
           userId,
           contentId,
           amount: finalAmount,
-          transactionId: linkId,
+          transactionId: orderId,
           method: 'cashfree',
           status: 'pending',
           metadata: {
-            linkId: linkId,
-            linkUrl: linkUrl,
-            cfLinkId: response.data.cf_link_id
+            orderId: orderId,
+            cfOrderId: response.data.cf_order_id,
+            sessionId: sessionId
           }
         }
       },
       { upsert: true, new: true }
     );
 
+    log('✅ Payment record saved');
+
+    // Return order ID and session ID for frontend to use
+    // Frontend will show payment methods (QR/UPI work great)
     res.json({
       success: true,
-      linkId: linkId,
-      linkUrl: linkUrl,
+      orderId: orderId,
+      sessionId: sessionId,
+      cfOrderId: response.data.cf_order_id,
       amount: finalAmount,
-      message: 'Payment link created successfully'
+      message: 'Payment order created successfully'
     });
 
   } catch (error) {
     console.log('\n❌ CASHFREE API ERROR:');
     console.log('Status:', error.response?.status);
-    console.log('URL:', error.response?.url);
     console.log('Error Data:', JSON.stringify(error.response?.data, null, 2));
     console.log('Error Message:', error.message);
     
-    // Return detailed error for debugging
     res.status(error.response?.status || 500).json({ 
       success: false,
-      message: 'Failed to create payment link',
-      error: error.response?.data?.message || error.message,
-      details: error.response?.data,
-      apiEndpoint: `${CASHFREE_CONFIG.API_BASE}/links`,
-      credentials: {
-        clientId: CASHFREE_CONFIG.CLIENT_ID ? 'SET' : 'NOT SET',
-        secretKey: CASHFREE_CONFIG.SECRET_KEY ? 'SET' : 'NOT SET'
-      }
+      message: 'Failed to create payment order',
+      error: error.response?.data?.message || error.message
     });
   }
 });

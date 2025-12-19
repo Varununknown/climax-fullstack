@@ -32,6 +32,16 @@ export const CashfreeService = {
       const response = await API.post('/cashfree/initiate', payload);
       
       console.log('✅ Cashfree response:', response.data);
+      
+      // Support both Payment Links API (linkUrl) and Orders API fallback (orderId)
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Payment initiation failed');
+      }
+      
+      if (!response.data.linkUrl && !response.data.orderId) {
+        throw new Error('No payment URL or Order ID generated');
+      }
+      
       return response.data;
     } catch (error: any) {
       console.error('❌ Cashfree Error Details:');

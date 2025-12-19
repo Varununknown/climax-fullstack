@@ -235,28 +235,44 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       console.log('💳 Backend Response:', paymentResponse);
 
-      if (!paymentResponse.success || !paymentResponse.linkUrl) {
-        setCashfreeError('Failed: ' + (paymentResponse.message || 'No payment URL received'));
+      if (!paymentResponse.success) {
+        setCashfreeError('Failed: ' + (paymentResponse.message || 'Payment initiation failed'));
         setIsProcessing(false);
         return;
       }
 
-      // Store order details for verification later
-      sessionStorage.setItem('cashfreeOrderId', paymentResponse.linkId || paymentResponse.orderId);
-      sessionStorage.setItem('cashfreeContentId', contentId);
+      // Check for Payment Links API response (linkUrl)
+      if (paymentResponse.linkUrl) {
+        console.log('✅ Payment Links API available - redirecting to hosted checkout');
+        sessionStorage.setItem('cashfreeOrderId', paymentResponse.linkId);
+        sessionStorage.setItem('cashfreeContentId', contentId);
+        window.location.href = paymentResponse.linkUrl;
+        return;
+      }
 
-      console.log('📱 Payment Response:', paymentResponse);
-      console.log('🚀 Redirecting to:', paymentResponse.linkUrl);
-      
-      // Redirect to Cashfree Payment
-      window.location.href = paymentResponse.linkUrl;
-      
-      // Don't set isProcessing to false since we're redirecting away
+      // Fallback: Orders API response (orderId) - show payment methods
+      if (paymentResponse.orderId) {
+        console.log('✅ Order created via Orders API - showing payment methods');
+        sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
+        sessionStorage.setItem('cashfreeSessionId', paymentResponse.sessionId);
+        sessionStorage.setItem('cashfreeContentId', contentId);
+        
+        // Show success message and offer options
+        setPaymentStep('cashfree');
+        setCashfreeError(
+          `Order #${paymentResponse.orderId.substring(0, 12)}... created! ` +
+          `You can use UPI or QR code methods above to pay, or wait for Cashfree payment methods.`
+        );
+        setIsProcessing(false);
+        return;
+      }
 
+      setCashfreeError('No payment method available');
+      setIsProcessing(false);
+      
     } catch (err: any) {
       console.error('💳 Cashfree Payment Error:', err);
       setCashfreeError(err.response?.data?.message || err.message || 'Payment failed');
-    } finally {
       setIsProcessing(false);
     }
   };
