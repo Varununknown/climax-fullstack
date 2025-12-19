@@ -87,7 +87,7 @@ router.post('/initiate', async (req, res) => {
       order_meta: {
         return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.onrender.com'}/payment-status?orderId=${orderId}&contentId=${contentId}`,
         notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`,
-        payment_methods: 'cc,dc,netbanking,upi'
+        payment_methods: 'cc,dc,nb,upi'
       },
       custom_metadata: {
         contentId: contentId,
