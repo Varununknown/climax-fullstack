@@ -136,19 +136,55 @@ router.post('/initiate', async (req, res) => {
 
     log('✅ Payment record saved/updated');
 
-    // Build checkout URL for sandbox
-    // Try: https://sandbox.cashfree.com/post/?token=...
-    const checkoutUrl = `https://sandbox.cashfree.com/post/?token=${response.data.payment_session_id}`;
+    // For Cashfree PG 2.0 (v2023-08-01), we need to redirect to payment link
+    // The payment_session_id is used in the SDK, but for web redirect we use a different approach
+    // We'll create a payment link for the order
+    
+    try {
+      const linkPayload = {
+        upiLink: false,
+        whatsappLink: false,
+        smsLink: false
+      };
 
-    // Return payment token for frontend
-    res.json({
-      success: true,
-      orderId: orderId,
-      paymentSessionId: response.data.payment_session_id,
-      checkoutUrl: checkoutUrl,
-      amount: finalAmount,
-      message: 'Payment initiated successfully'
-    });
+      // Create payment link for this order
+      const linkResponse = await axios.post(
+        `${CASHFREE_CONFIG.API_BASE}/orders/${orderId}/payment_link`,
+        linkPayload,
+        {
+          headers: {
+            'x-api-version': '2023-08-01',
+            'x-client-id': CASHFREE_CONFIG.CLIENT_ID,
+            'x-client-secret': CASHFREE_CONFIG.SECRET_KEY,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      log('✅ Payment link created:', linkResponse.data);
+      const checkoutUrl = linkResponse.data.paymentLink || linkResponse.data.payment_link;
+
+      // Return payment info for frontend
+      res.json({
+        success: true,
+        orderId: orderId,
+        paymentSessionId: response.data.payment_session_id,
+        checkoutUrl: checkoutUrl || `https://sandbox.cashfree.com/pg/pay/${orderId}`,
+        amount: finalAmount,
+        message: 'Payment initiated successfully'
+      });
+    } catch (linkError) {
+      log('⚠️ Error creating payment link, using fallback URL');
+      // Fallback to direct payment URL
+      res.json({
+        success: true,
+        orderId: orderId,
+        paymentSessionId: response.data.payment_session_id,
+        checkoutUrl: `https://sandbox.cashfree.com/pg/pay/${orderId}`,
+        amount: finalAmount,
+        message: 'Payment initiated successfully'
+      });
+    }
 
   } catch (error) {
     console.log('\n❌ CASHFREE ERROR:');
