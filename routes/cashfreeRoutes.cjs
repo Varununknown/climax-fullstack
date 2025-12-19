@@ -136,16 +136,13 @@ router.post('/initiate', async (req, res) => {
 
     log('✅ Payment record saved/updated');
 
-    // For Cashfree PG 2.0 (v2023-08-01), use the cf_token parameter
-    // This is the correct way to redirect to checkout
-    const checkoutUrl = `https://sandbox.cashfree.com/pg/checkout/post/submit/?cf_token=${response.data.payment_session_id}`;
-
-    // Return payment info for frontend
+    // For Cashfree PG 2.0 (v2023-08-01), return the session ID
+    // Frontend will handle the checkout form submission
     res.json({
       success: true,
       orderId: orderId,
       paymentSessionId: response.data.payment_session_id,
-      checkoutUrl: checkoutUrl,
+      cfOrderId: response.data.cf_order_id,
       amount: finalAmount,
       message: 'Payment initiated successfully'
     });
@@ -294,6 +291,41 @@ router.get('/status/:userId/:contentId', async (req, res) => {
   } catch (error) {
     log('❌ Error checking payment status:', error.message);
     res.status(500).json({ message: 'Error checking payment status' });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Endpoint: Checkout Form (serves HTML that submits to Cashfree)
+// ═══════════════════════════════════════════════════════════════
+router.post('/checkout', (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ success: false, message: 'Token required' });
+    }
+
+    // Return HTML form that auto-submits to Cashfree
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Processing Payment...</title>
+      </head>
+      <body>
+        <form id="cf" method="post" action="https://sandbox.cashfree.com/pg/post/">
+          <input type="hidden" name="token" value="${token.replace(/"/g, '&quot;')}">
+        </form>
+        <script>document.getElementById('cf').submit();</script>
+      </body>
+      </html>
+    `;
+
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  } catch (error) {
+    console.error('❌ Error in /checkout:', error);
+    res.status(500).json({ success: false, message: 'Error processing checkout' });
   }
 });
 

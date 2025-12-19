@@ -244,13 +244,27 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // Redirect directly to Cashfree checkout using the URL from backend
-      if (paymentResponse.checkoutUrl) {
-        console.log('🚀 Redirecting to Cashfree checkout:', paymentResponse.checkoutUrl);
-        window.location.href = paymentResponse.checkoutUrl;
-      } else {
-        setCashfreeError('Checkout URL not provided by backend');
-      }
+      // For Cashfree PG 2.0, use server-side form submission
+      // Create a form and submit it from the backend to avoid CORS issues
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `${BACKEND_URL || 'https://climax-fullstack.onrender.com'}/api/cashfree/checkout`;
+      
+      const inputs = {
+        token: paymentResponse.paymentSessionId
+      };
+      
+      Object.keys(inputs).forEach(key => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = inputs[key];
+        form.appendChild(input);
+      });
+      
+      document.body.appendChild(form);
+      console.log('🚀 Submitting to Cashfree checkout...');
+      form.submit();
 
     } catch (err: any) {
       console.error('💳 Cashfree Payment Error:', err);
