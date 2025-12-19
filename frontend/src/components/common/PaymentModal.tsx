@@ -245,8 +245,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       sessionStorage.setItem('cashfreeContentId', contentId);
 
       // Redirect to Cashfree hosted checkout page
-      // Format: https://sandbox.cashfree.com/checkout/post/?token=<paymentSessionId>
-      const cashfreeCheckoutUrl = `https://checkout.cashfree.com/post/submit/?token=${paymentResponse.paymentSessionId}`;
+      // Production URL: https://checkout.cashfree.com/post/?token=<paymentSessionId>
+      const cashfreeCheckoutUrl = `https://checkout.cashfree.com/post/?token=${paymentResponse.paymentSessionId}`;
       
       console.log('🚀 Redirecting to Cashfree checkout:', cashfreeCheckoutUrl);
       window.location.href = cashfreeCheckoutUrl;
