@@ -296,33 +296,53 @@ router.get('/status/:userId/:contentId', async (req, res) => {
 // Endpoint: Get Checkout Form (serves HTML that auto-submits to Cashfree)
 // ═══════════════════════════════════════════════════════════════
 router.post('/checkout-form', (req, res) => {
-  const { paymentSessionId } = req.body;
+  try {
+    const { paymentSessionId } = req.body;
 
-  if (!paymentSessionId) {
-    return res.status(400).json({ success: false, message: 'Payment session ID required' });
+    console.log('📋 /checkout-form called with sessionId:', paymentSessionId?.substring(0, 50));
+
+    if (!paymentSessionId) {
+      console.error('❌ Missing paymentSessionId');
+      return res.status(400).json({ success: false, message: 'Payment session ID required' });
+    }
+
+    // Safely escape the session ID for HTML
+    const safeSessionId = paymentSessionId
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;');
+
+    // Return HTML form that auto-submits to Cashfree
+    const htmlForm = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Processing Payment...</title>
+</head>
+<body>
+  <form id="cashfreeForm" method="POST" action="https://sandbox.cashfree.com/checkout/post/">
+    <input type="hidden" name="token" value="${safeSessionId}">
+  </form>
+  <script>
+    document.getElementById('cashfreeForm').submit();
+  </script>
+  <p>Redirecting to payment gateway...</p>
+</body>
+</html>`;
+
+    console.log('✅ Sending checkout form to frontend');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(htmlForm);
+
+  } catch (error) {
+    console.error('❌ Error in /checkout-form:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error generating checkout form',
+      error: error.message 
+    });
   }
-
-  // Return HTML form that auto-submits to Cashfree
-  const htmlForm = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Processing Payment...</title>
-    </head>
-    <body>
-      <form id="cashfreeForm" method="POST" action="https://sandbox.cashfree.com/checkout/post/">
-        <input type="hidden" name="token" value="${paymentSessionId}">
-      </form>
-      <script>
-        document.getElementById('cashfreeForm').submit();
-      </script>
-      <p>Redirecting to payment gateway...</p>
-    </body>
-    </html>
-  `;
-
-  res.setHeader('Content-Type', 'text/html');
-  res.send(htmlForm);
 });
 
 // ═══════════════════════════════════════════════════════════════
