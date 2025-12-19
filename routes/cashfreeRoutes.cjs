@@ -75,21 +75,21 @@ router.post('/initiate', async (req, res) => {
 
     // Prepare Cashfree payload
     const payload = {
-      orderId: orderId,
-      orderAmount: finalAmount,
-      orderCurrency: 'INR',
-      customerDetails: {
-        customerId: userId,
-        customerEmail: finalEmail,
-        customerPhone: finalPhone,
-        customerName: finalUserName
+      order_id: orderId,
+      order_amount: finalAmount,
+      order_currency: 'INR',
+      customer_details: {
+        customer_id: userId,
+        customer_email: finalEmail,
+        customer_phone: finalPhone,
+        customer_name: finalUserName
       },
-      orderMeta: {
-        returnUrl: `${process.env.FRONTEND_URL || 'https://climax-fullstack.onrender.com'}/payment-status?orderId=${orderId}&contentId=${contentId}`,
-        notifyUrl: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`,
-        paymentMethods: 'cc,dc,netbanking,upi'
+      order_meta: {
+        return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.onrender.com'}/payment-status?orderId=${orderId}&contentId=${contentId}`,
+        notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`,
+        payment_methods: 'cc,dc,netbanking,upi'
       },
-      customMetadata: {
+      custom_metadata: {
         contentId: contentId,
         userId: userId
       }
