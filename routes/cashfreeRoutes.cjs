@@ -299,11 +299,15 @@ router.get('/status/:userId/:contentId', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 router.post('/checkout', (req, res) => {
   try {
-    console.log('📋 /checkout called, req.body:', req.body);
-    const { token } = req.body;
+    console.log('📋 /checkout called');
+    console.log('   req.body:', req.body);
+    console.log('   req.query:', req.query);
+    
+    // Support both JSON and form-encoded data
+    let token = req.body?.token || req.query?.token;
 
     if (!token) {
-      console.error('❌ Missing token in request body');
+      console.error('❌ Missing token in request');
       return res.status(400).json({ success: false, message: 'Token required' });
     }
 

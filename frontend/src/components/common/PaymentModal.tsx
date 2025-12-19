@@ -244,27 +244,37 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // For Cashfree PG 2.0, use server-side form submission
-      // Create a form and submit it from the backend to avoid CORS issues
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = `${BACKEND_URL || 'https://climax-fullstack.onrender.com'}/api/cashfree/checkout`;
+      // For Cashfree PG 2.0, get checkout form from backend
+      const backendUrl = BACKEND_URL || 'https://climax-fullstack.onrender.com';
       
-      const inputs = {
-        token: paymentResponse.paymentSessionId
-      };
-      
-      Object.keys(inputs).forEach(key => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = inputs[key];
-        form.appendChild(input);
-      });
-      
-      document.body.appendChild(form);
-      console.log('🚀 Submitting to Cashfree checkout...');
-      form.submit();
+      try {
+        console.log('🚀 Getting checkout form from backend...');
+        const checkoutResponse = await fetch(`${backendUrl}/api/cashfree/checkout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            token: paymentResponse.paymentSessionId
+          })
+        });
+
+        if (!checkoutResponse.ok) {
+          throw new Error(`Backend returned ${checkoutResponse.status}`);
+        }
+
+        // Get the HTML and submit it
+        const html = await checkoutResponse.text();
+        
+        // Write HTML directly to create new page with auto-submit form
+        const newWindow = window.open();
+        newWindow?.document.write(html);
+        newWindow?.document.close();
+
+      } catch (error) {
+        console.error('❌ Error getting checkout form:', error);
+        setCashfreeError('Failed to process checkout. Please try again.');
+      }
 
     } catch (err: any) {
       console.error('💳 Cashfree Payment Error:', err);
