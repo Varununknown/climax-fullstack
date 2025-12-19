@@ -242,21 +242,30 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         userName
       );
 
-      if (paymentResponse.success) {
-        sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
-        sessionStorage.setItem('cashfreeContentId', content._id);
+      console.log('💳 Cashfree Response:', paymentResponse);
 
+      if (paymentResponse.success && paymentResponse.paymentSessionId) {
+        sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
+        sessionStorage.setItem('cashfreeContentId', contentId);
+
+        // Initialize Cashfree if not already done
         if (window.Cashfree) {
+          console.log('💳 Opening Cashfree checkout with sessionId:', paymentResponse.paymentSessionId);
+          
           const checkoutOptions = {
             paymentSessionId: paymentResponse.paymentSessionId,
             redirectTarget: '_self'
           };
+          
+          console.log('💳 Checkout Options:', checkoutOptions);
           window.Cashfree.checkout(checkoutOptions);
         } else {
-          setCashfreeError('Cashfree checkout not available. Please refresh the page.');
+          setCashfreeError('Cashfree SDK not loaded. Please refresh the page and try again.');
+          console.error('💳 window.Cashfree not available');
         }
       } else {
         setCashfreeError(paymentResponse.message || 'Failed to initiate payment');
+        console.error('💳 Payment initiation failed:', paymentResponse);
       }
     } catch (err: any) {
       console.error('💳 Cashfree error:', err);
