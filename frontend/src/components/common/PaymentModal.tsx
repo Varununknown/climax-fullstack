@@ -250,21 +250,37 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const backendUrl = BACKEND_URL || 'https://climax-fullstack.onrender.com';
       const checkoutFormUrl = `${backendUrl}/api/cashfree/checkout-form`;
       
-      // Create a form to POST to our backend
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = checkoutFormUrl;
+      // Send JSON to backend
+      const checkoutResponse = await fetch(checkoutFormUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          paymentSessionId: paymentResponse.paymentSessionId
+        })
+      });
+
+      if (!checkoutResponse.ok) {
+        const error = await checkoutResponse.json();
+        throw new Error(error.message || 'Failed to get checkout form');
+      }
+
+      // Get the HTML form and parse it
+      const htmlForm = await checkoutResponse.text();
       
-      const tokenInput = document.createElement('input');
-      tokenInput.type = 'hidden';
-      tokenInput.name = 'paymentSessionId';
-      tokenInput.value = paymentResponse.paymentSessionId;
+      // Create a temporary document to hold the form
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlForm, 'text/html');
+      const form = doc.querySelector('#cashfreeForm') as HTMLFormElement;
       
-      form.appendChild(tokenInput);
-      document.body.appendChild(form);
-      
-      console.log('🚀 Submitting checkout form...');
-      form.submit();
+      if (form) {
+        document.body.appendChild(form);
+        console.log('🚀 Submitting checkout form...');
+        form.submit();
+      } else {
+        throw new Error('Checkout form not found in response');
+      }
 
     } catch (err: any) {
       console.error('💳 Cashfree Payment Error:', err);
