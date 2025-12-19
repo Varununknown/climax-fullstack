@@ -244,21 +244,26 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // Use form-based POST redirect to Cashfree checkout
-      // This is the standard way for Cashfree PG 2.0 API
+      // Call backend to get the checkout form (which will auto-submit to Cashfree)
+      // This avoids cross-origin POST restrictions
+      console.log('🚀 Getting checkout form from backend...');
+      const backendUrl = BACKEND_URL || 'https://climax-fullstack.onrender.com';
+      const checkoutFormUrl = `${backendUrl}/api/cashfree/checkout-form`;
+      
+      // Create a form to POST to our backend
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = 'https://sandbox.cashfree.com/checkout/post/';
+      form.action = checkoutFormUrl;
       
       const tokenInput = document.createElement('input');
       tokenInput.type = 'hidden';
-      tokenInput.name = 'token';
+      tokenInput.name = 'paymentSessionId';
       tokenInput.value = paymentResponse.paymentSessionId;
       
       form.appendChild(tokenInput);
       document.body.appendChild(form);
       
-      console.log('🚀 Submitting form to Cashfree checkout...');
+      console.log('🚀 Submitting checkout form...');
       form.submit();
 
     } catch (err: any) {

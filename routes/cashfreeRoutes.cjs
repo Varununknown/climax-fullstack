@@ -297,8 +297,39 @@ router.get('/status/:userId/:contentId', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 function verifyWebhookSignature(payload, signature) {
   try {
-    // Cashfree signature verification
-    const message = JSON.stringify(payload);
+// Endpoint to get checkout form (serves HTML that auto-submits to Cashfree)
+router.post('/checkout-form', (req, res) => {
+  const { paymentSessionId } = req.body;
+
+  if (!paymentSessionId) {
+    return res.status(400).json({ success: false, message: 'Payment session ID required' });
+  }
+
+  // Return HTML form that auto-submits to Cashfree
+  const htmlForm = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Processing Payment...</title>
+    </head>
+    <body>
+      <form id="cashfreeForm" method="POST" action="https://sandbox.cashfree.com/checkout/post/">
+        <input type="hidden" name="token" value="${paymentSessionId}">
+      </form>
+      <script>
+        document.getElementById('cashfreeForm').submit();
+      </script>
+      <p>Redirecting to payment gateway...</p>
+    </body>
+    </html>
+  `;
+
+  res.setHeader('Content-Type', 'text/html');
+  res.send(htmlForm);
+});
+
+// Cashfree signature verification
+const message = JSON.stringify(payload);
     const hash = crypto
       .createHmac('sha256', CASHFREE_CONFIG.SECRET_KEY)
       .update(message)
