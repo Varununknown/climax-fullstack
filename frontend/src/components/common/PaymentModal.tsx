@@ -246,11 +246,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
         sessionStorage.setItem('cashfreeContentId', contentId);
 
+        console.log('✅ Cashfree Response received successfully');
+        console.log('🔍 Checking window.Cashfree:', typeof window.Cashfree);
+        console.log('🔍 Checking window.Cashfree.checkout:', typeof window.Cashfree?.checkout);
+
         // Wait for Cashfree SDK to be available
         let attempts = 0;
-        const maxAttempts = 20; // 2 seconds total
+        const maxAttempts = 50; // 5 seconds total (100ms * 50)
         
         const checkAndOpenCheckout = () => {
+          console.log(`🔍 Attempt ${attempts + 1}/${maxAttempts}: window.Cashfree=${typeof window.Cashfree}`);
+          
           if (window.Cashfree && window.Cashfree.checkout) {
             console.log('✅ Cashfree SDK ready, opening checkout...');
             console.log('💳 Payment Session ID:', paymentResponse.paymentSessionId);
@@ -270,11 +276,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             }
           } else if (attempts < maxAttempts) {
             attempts++;
-            console.log(`⏳ Waiting for Cashfree SDK... attempt ${attempts}/${maxAttempts}`);
             setTimeout(checkAndOpenCheckout, 100);
           } else {
             console.error('❌ Cashfree SDK not available after waiting');
-            setCashfreeError('Payment gateway not loaded. Please refresh and try again.');
+            console.log('🔍 window object:', typeof window);
+            console.log('🔍 window.Cashfree:', window.Cashfree);
+            setCashfreeError('Payment gateway SDK not loaded. Try refreshing the page.');
           }
         };
         
