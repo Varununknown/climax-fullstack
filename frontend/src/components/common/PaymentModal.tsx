@@ -3,6 +3,7 @@ import { X, QrCode, CheckCircle, Copy, CreditCard, Loader2 } from 'lucide-react'
 import { Content } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import CashfreeService from '../../services/cashfreeService';
+import { loadCashfreeSDK, waitForCashfree } from '../../utils/cashfreeLoader';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -220,17 +221,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const userName = user.name || user.username || 'User';
       const amount = content.premiumPrice || 1;
 
-      const payloadData = {
-        userId,
-        contentId,
-        email,
-        phone,
-        userName,
-        amount
-      };
+      console.log('💳 Initiating Cashfree payment...');
 
-      console.log('💳 Cashfree Payment Payload:', payloadData);
+      // Step 1: Make sure SDK is loaded
+      console.log('📥 Loading Cashfree SDK...');
+      const sdkLoaded = await loadCashfreeSDK();
+      
+      if (!sdkLoaded) {
+        console.warn('⚠️ SDK load returned false, but trying anyway...');
+      }
 
+      // Step 2: Call backend to create order
+      console.log('📤 Calling backend /initiate endpoint...');
       const paymentResponse = await CashfreeService.initiatePayment(
         userId,
         contentId,
@@ -240,58 +242,42 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         userName
       );
 
-      console.log('💳 Cashfree Response:', paymentResponse);
+      console.log('💳 Backend Response:', paymentResponse);
 
-      if (paymentResponse.success && paymentResponse.paymentSessionId) {
-        sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
-        sessionStorage.setItem('cashfreeContentId', contentId);
+      if (!paymentResponse.success || !paymentResponse.paymentSessionId) {
+        setCashfreeError(paymentResponse.message || 'Failed to create payment');
+        return;
+      }
 
-        console.log('✅ Cashfree Response received successfully');
-        console.log('🔍 Checking window.Cashfree:', typeof window.Cashfree);
-        console.log('🔍 Checking window.Cashfree.checkout:', typeof window.Cashfree?.checkout);
+      sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
+      sessionStorage.setItem('cashfreeContentId', contentId);
 
-        // Wait for Cashfree SDK to be available
-        let attempts = 0;
-        const maxAttempts = 50; // 5 seconds total (100ms * 50)
-        
-        const checkAndOpenCheckout = () => {
-          console.log(`🔍 Attempt ${attempts + 1}/${maxAttempts}: window.Cashfree=${typeof window.Cashfree}`);
-          
-          if (window.Cashfree && window.Cashfree.checkout) {
-            console.log('✅ Cashfree SDK ready, opening checkout...');
-            console.log('💳 Payment Session ID:', paymentResponse.paymentSessionId);
-            
-            try {
-              const checkoutOptions = {
-                paymentSessionId: paymentResponse.paymentSessionId,
-                redirectTarget: '_self'
-              };
-              
-              console.log('💳 Calling Cashfree.checkout()...');
-              window.Cashfree.checkout(checkoutOptions);
-              console.log('✅ Cashfree checkout called successfully');
-            } catch (err) {
-              console.error('❌ Error calling Cashfree.checkout():', err);
-              setCashfreeError('Error opening payment page. Please try again.');
-            }
-          } else if (attempts < maxAttempts) {
-            attempts++;
-            setTimeout(checkAndOpenCheckout, 100);
-          } else {
-            console.error('❌ Cashfree SDK not available after waiting');
-            console.log('🔍 window object:', typeof window);
-            console.log('🔍 window.Cashfree:', window.Cashfree);
-            setCashfreeError('Payment gateway SDK not loaded. Try refreshing the page.');
-          }
-        };
-        
-        checkAndOpenCheckout();
-      } else {
-        setCashfreeError(paymentResponse.message || 'Failed to initiate payment');
-        console.error('💳 Payment initiation failed:', paymentResponse);
+      // Step 3: Wait for Cashfree SDK to be fully ready
+      console.log('⏳ Waiting for Cashfree.checkout() to be ready...');
+      const isReady = await waitForCashfree(10000);
+
+      if (!isReady) {
+        console.error('❌ Cashfree SDK not ready after timeout');
+        setCashfreeError('Payment gateway is not responding. Please try again.');
+        return;
+      }
+
+      // Step 4: Open Cashfree checkout
+      console.log('🚀 Opening Cashfree checkout...');
+      const checkoutOptions = {
+        paymentSessionId: paymentResponse.paymentSessionId,
+        redirectTarget: '_self'
+      };
+
+      try {
+        window.Cashfree.checkout(checkoutOptions);
+        console.log('✅ Cashfree checkout opened successfully');
+      } catch (checkoutErr) {
+        console.error('❌ Error opening checkout:', checkoutErr);
+        setCashfreeError('Error opening payment modal. Please try again.');
       }
     } catch (err: any) {
-      console.error('💳 Cashfree error:', err);
+      console.error('💳 Cashfree Payment Error:', err);
       setCashfreeError(err.response?.data?.message || err.message || 'Payment failed');
     } finally {
       setIsProcessing(false);
