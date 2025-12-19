@@ -18,46 +18,14 @@ const CASHFREE_CONFIG = {
 const log = (...args) => console.log('[💳 Cashfree]', ...args);
 
 // ═══════════════════════════════════════════════════════════════
-// 1️⃣ INITIATE PAYMENT - Create order and return payment token
+// 1️⃣ INITIATE PAYMENT - Create Payment Link and redirect URL
 // ═══════════════════════════════════════════════════════════════
 router.post('/initiate', async (req, res) => {
-  console.log('\n🔥🔥🔥 CASHFREE /initiate CALLED 🔥🔥🔥');
+  console.log('\n🔥🔥🔥 CASHFREE /initiate (PAYMENT LINKS) CALLED 🔥🔥🔥');
   console.log('Full Request Body:', JSON.stringify(req.body, null, 2));
-  console.log('Request Headers:', req.headers);
   
   try {
     const { userId, contentId, amount, email, phone, userName } = req.body;
-
-    console.log('\n📥 Parsed Fields:');
-    console.log('  userId:', userId, typeof userId);
-    console.log('  contentId:', contentId, typeof contentId);
-    console.log('  amount:', amount, typeof amount);
-    console.log('  email:', email, typeof email);
-    console.log('  phone:', phone, typeof phone);
-    console.log('  userName:', userName, typeof userName);
-
-    console.log('\n🔑 Environment Variables:');
-    console.log('  CASHFREE_APP_ID:', process.env.CASHFREE_APP_ID ? '✅ SET' : '❌ NOT SET');
-    console.log('  CASHFREE_SECRET_KEY:', process.env.CASHFREE_SECRET_KEY ? '✅ SET' : '❌ NOT SET');
-    console.log('  CASHFREE_CLIENT_ID:', process.env.CASHFREE_CLIENT_ID ? '✅ SET' : '❌ NOT SET');
-
-    // RELAXED VALIDATION - accept any truthy values
-    if (!userId || !contentId || !amount) {
-      console.log('\n❌ VALIDATION FAILED - Missing critical fields');
-      console.log('  Missing: userId:', !userId, 'contentId:', !contentId, 'amount:', !amount);
-      return res.status(400).json({ 
-        message: 'Missing required fields', 
-        received: req.body,
-        missing: {
-          userId: !userId,
-          contentId: !contentId,
-          amount: !amount,
-          email: !email,
-          phone: !phone,
-          userName: !userName
-        }
-      });
-    }
 
     // Use fallback values for optional fields
     const finalEmail = email || 'user@climax.com';
@@ -65,41 +33,44 @@ router.post('/initiate', async (req, res) => {
     const finalUserName = userName || 'User';
     const finalAmount = parseFloat(amount) || 1;
 
-    console.log('\n✅ VALIDATION PASSED');
-    console.log('Final values:', { userId, contentId, email: finalEmail, phone: finalPhone, userName: finalUserName, amount: finalAmount });
+    if (!userId || !contentId || !amount) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: userId, contentId, amount' 
+      });
+    }
 
-    log('📝 Initiating Cashfree payment for:', { userId, contentId, finalAmount });
+    log('📝 Creating Cashfree Payment Link for:', { userId, contentId, finalAmount });
 
-    // Generate unique order ID
-    const orderId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate unique link ID
+    const linkId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Prepare Cashfree payload
+    // Prepare Payment Link payload (v2023-08-01)
     const payload = {
-      order_id: orderId,
-      order_amount: finalAmount,
-      order_currency: 'INR',
+      link_id: linkId,
+      link_amount: finalAmount,
+      link_currency: 'INR',
+      link_purpose: `Climax OTT Premium Content - ${contentId}`,
       customer_details: {
         customer_id: userId,
         customer_email: finalEmail,
         customer_phone: finalPhone,
         customer_name: finalUserName
       },
-      order_meta: {
-        return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.onrender.com'}/payment-status?orderId=${orderId}&contentId=${contentId}`,
-        notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`,
-        payment_methods: 'cc,dc,nb,upi'
+      link_notify: {
+        send_sms: false,
+        send_email: false
       },
-      custom_metadata: {
-        contentId: contentId,
-        userId: userId
+      link_meta: {
+        return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.vercel.app'}/payment-status?linkId=${linkId}&contentId=${contentId}`,
+        notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`
       }
     };
 
-    log('📤 Sending to Cashfree API:', JSON.stringify(payload));
+    log('📤 Sending Payment Link request to Cashfree API');
 
-    // Call Cashfree API to create order
+    // Call Cashfree API to create payment link
     const response = await axios.post(
-      `${CASHFREE_CONFIG.API_BASE}/orders`,
+      `${CASHFREE_CONFIG.API_BASE}/links`,
       payload,
       {
         headers: {
@@ -111,7 +82,7 @@ router.post('/initiate', async (req, res) => {
       }
     );
 
-    log('✅ Order created:', response.data);
+    log('✅ Payment Link created:', response.data);
 
     // Save or update payment record in our DB (upsert to handle retries)
     const payment = await Payment.findOneAndUpdate(
@@ -121,13 +92,13 @@ router.post('/initiate', async (req, res) => {
           userId,
           contentId,
           amount: finalAmount,
-          transactionId: orderId,
+          transactionId: linkId,
           method: 'cashfree',
           status: 'pending',
           metadata: {
-            orderId: orderId,
-            cashfreeOrderId: response.data.cf_order_id,
-            cashfreePaymentSessionId: response.data.payment_session_id
+            linkId: linkId,
+            linkUrl: response.data.link_url,
+            cfLinkId: response.data.cf_link_id
           }
         }
       },
@@ -136,15 +107,14 @@ router.post('/initiate', async (req, res) => {
 
     log('✅ Payment record saved/updated');
 
-    // For Cashfree PG 2.0 (v2023-08-01), return the session ID
-    // Frontend will handle the checkout form submission
+    // Return the payment link URL for direct redirect
     res.json({
       success: true,
-      orderId: orderId,
-      paymentSessionId: response.data.payment_session_id,
-      cfOrderId: response.data.cf_order_id,
+      linkId: linkId,
+      linkUrl: response.data.link_url,
+      cfLinkId: response.data.cf_link_id,
       amount: finalAmount,
-      message: 'Payment initiated successfully'
+      message: 'Payment link created successfully'
     });
 
   } catch (error) {
@@ -152,12 +122,10 @@ router.post('/initiate', async (req, res) => {
     console.log('Status:', error.response?.status);
     console.log('Response Data:', error.response?.data);
     console.log('Message:', error.message);
-    console.log('Stack:', error.stack);
     
     res.status(error.response?.status || 500).json({ 
-      message: 'Failed to initiate payment',
+      message: 'Failed to create payment link',
       details: error.response?.data || error.message,
-      requestBody: req.body,
       error: error.message
     });
   }

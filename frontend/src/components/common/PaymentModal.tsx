@@ -241,16 +241,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       }
 
       // Store order details for verification later
-      sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
+      sessionStorage.setItem('cashfreeOrderId', paymentResponse.linkId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // Note: Cashfree PG 2.0 requires SDK integration for checkout
-      // Since the SDK isn't loading from CDN, we provide a fallback
-      setCashfreeError(
-        '⚠️ Cashfree Gateway: To complete payment, please use the QR Code or UPI options above. ' +
-        'Cashfree PG 2.0 requires SDK initialization which is currently unavailable. ' +
-        'Your payment order has been created (ID: ' + paymentResponse.orderId.substring(0, 20) + '...)'
-      );
+      // Redirect to Cashfree Payment Link
+      // Amount is pre-filled automatically on the Cashfree page
+      console.log('🚀 Redirecting to Cashfree Payment Link:', paymentResponse.linkUrl);
+      window.location.href = paymentResponse.linkUrl;
 
     } catch (err: any) {
       console.error('💳 Cashfree Payment Error:', err);
