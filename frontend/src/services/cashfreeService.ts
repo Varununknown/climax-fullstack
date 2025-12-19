@@ -18,17 +18,26 @@ export const CashfreeService = {
    */
   initiatePayment: async (userId, contentId, amount, email, phone, userName) => {
     try {
-      const response = await API.post('/cashfree/initiate', {
+      const payload = {
         userId,
         contentId,
         amount,
         email,
         phone,
         userName
-      });
+      };
+      
+      console.log('📤 Sending Cashfree request:', payload);
+      
+      const response = await API.post('/cashfree/initiate', payload);
+      
+      console.log('✅ Cashfree response:', response.data);
       return response.data;
-    } catch (error) {
-      console.error('❌ Error initiating payment:', error);
+    } catch (error: any) {
+      console.error('❌ Cashfree Error Details:');
+      console.error('Status:', error.response?.status);
+      console.error('Data:', error.response?.data);
+      console.error('Message:', error.message);
       throw error;
     }
   },

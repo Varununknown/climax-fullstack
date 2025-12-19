@@ -22,10 +22,18 @@ const log = (...args) => console.log('[💳 Cashfree]', ...args);
 // ═══════════════════════════════════════════════════════════════
 router.post('/initiate', async (req, res) => {
   console.log('\n🔥🔥🔥 CASHFREE /initiate 🔥🔥🔥');
-  console.log('Request:', JSON.stringify(req.body, null, 2));
+  console.log('Request Body:', JSON.stringify(req.body, null, 2));
   
   try {
     const { userId, contentId, amount, email, phone, userName } = req.body;
+
+    console.log('Extracted fields:');
+    console.log('  userId:', userId, typeof userId);
+    console.log('  contentId:', contentId, typeof contentId);
+    console.log('  amount:', amount, typeof amount);
+    console.log('  email:', email);
+    console.log('  phone:', phone);
+    console.log('  userName:', userName);
 
     const finalEmail = email || 'user@climax.com';
     const finalPhone = phone || '9999999999';
@@ -33,8 +41,20 @@ router.post('/initiate', async (req, res) => {
     const finalAmount = parseFloat(amount) || 1;
 
     if (!userId || !contentId || !amount) {
+      console.log('❌ VALIDATION FAILED');
+      console.log('  userId:', !userId, '(required)');
+      console.log('  contentId:', !contentId, '(required)');
+      console.log('  amount:', !amount, '(required)');
+      
       return res.status(400).json({ 
-        message: 'Missing required fields: userId, contentId, amount' 
+        success: false,
+        message: 'Missing required fields: userId, contentId, amount',
+        received: { userId, contentId, amount },
+        missing: {
+          userId: !userId,
+          contentId: !contentId,
+          amount: !amount
+        }
       });
     }
 
