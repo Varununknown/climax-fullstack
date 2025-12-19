@@ -38,162 +38,105 @@ router.post('/initiate', async (req, res) => {
       });
     }
 
-    log('📝 Creating payment for:', { userId, contentId, finalAmount });
+    log('📝 Creating payment link for:', { userId, contentId, finalAmount });
 
-    // Try Payment Links first, fallback to Orders API
-    let linkUrl = null;
-    let linkId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const linkId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    try {
-      log('📤 Attempting Payment Links API...');
-      
-      const linkPayload = {
-        link_id: linkId,
-        link_amount: finalAmount,
-        link_currency: 'INR',
-        link_purpose: `Climax OTT - ${contentId}`,
-        customer_details: {
-          customer_id: userId,
-          customer_email: finalEmail,
-          customer_phone: finalPhone,
-          customer_name: finalUserName
-        },
-        link_notify: {
-          send_sms: false,
-          send_email: false
-        },
-        link_meta: {
-          return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.vercel.app'}/payment-success?linkId=${linkId}`,
-          notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`
+    // Payment Links API - this is the ONLY way for PG 2.0 hosted checkout
+    const payload = {
+      link_id: linkId,
+      link_amount: finalAmount,
+      link_currency: 'INR',
+      link_purpose: `Climax OTT - Content ${contentId}`,
+      customer_details: {
+        customer_id: userId,
+        customer_email: finalEmail,
+        customer_phone: finalPhone,
+        customer_name: finalUserName
+      },
+      link_notify: {
+        send_sms: false,
+        send_email: false
+      },
+      link_meta: {
+        return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.vercel.app'}/payment-success?linkId=${linkId}`,
+        notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`
+      }
+    };
+
+    console.log('📤 Calling Payment Links API at:', `${CASHFREE_CONFIG.API_BASE}/links`);
+    console.log('Payload:', JSON.stringify(payload, null, 2));
+    
+    const response = await axios.post(
+      `${CASHFREE_CONFIG.API_BASE}/links`,
+      payload,
+      {
+        headers: {
+          'x-api-version': '2023-08-01',
+          'x-client-id': CASHFREE_CONFIG.CLIENT_ID,
+          'x-client-secret': CASHFREE_CONFIG.SECRET_KEY,
+          'Content-Type': 'application/json'
         }
-      };
+      }
+    );
 
-      const linkResponse = await axios.post(
-        `${CASHFREE_CONFIG.API_BASE}/links`,
-        linkPayload,
-        {
-          headers: {
-            'x-api-version': '2023-08-01',
-            'x-client-id': CASHFREE_CONFIG.CLIENT_ID,
-            'x-client-secret': CASHFREE_CONFIG.SECRET_KEY,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+    console.log('✅ Response Status:', response.status);
+    console.log('✅ Response Data:', JSON.stringify(response.data, null, 2));
 
-      linkUrl = linkResponse.data.link_url;
-      log('✅ Payment Link created:', linkUrl);
-
-      await Payment.findOneAndUpdate(
-        { userId, contentId },
-        {
-          $set: {
-            userId,
-            contentId,
-            amount: finalAmount,
-            transactionId: linkId,
-            method: 'cashfree',
-            status: 'pending',
-            metadata: {
-              linkId: linkId,
-              linkUrl: linkUrl,
-              cfLinkId: linkResponse.data.cf_link_id
-            }
-          }
-        },
-        { upsert: true, new: true }
-      );
-
-      return res.json({
-        success: true,
-        linkId: linkId,
-        linkUrl: linkUrl,
-        amount: finalAmount,
-        message: 'Payment link created'
-      });
-
-    } catch (linkError) {
-      log('⚠️ Payment Links failed, fallback to Orders API');
-      console.log('Links Error:', linkError.response?.data?.message || linkError.message);
-
-      // FALLBACK: Use Orders API
-      const orderId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
-      const orderPayload = {
-        order_id: orderId,
-        order_amount: finalAmount,
-        order_currency: 'INR',
-        customer_details: {
-          customer_id: userId,
-          customer_email: finalEmail,
-          customer_phone: finalPhone,
-          customer_name: finalUserName
-        },
-        order_meta: {
-          return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.vercel.app'}/payment-success?orderId=${orderId}`,
-          notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`,
-          payment_methods: 'cc,dc,nb,upi'
-        }
-      };
-
-      const orderResponse = await axios.post(
-        `${CASHFREE_CONFIG.API_BASE}/orders`,
-        orderPayload,
-        {
-          headers: {
-            'x-api-version': '2023-08-01',
-            'x-client-id': CASHFREE_CONFIG.CLIENT_ID,
-            'x-client-secret': CASHFREE_CONFIG.SECRET_KEY,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      log('✅ Order created (fallback):', orderId);
-      
-      // For Orders API, create checkout URL
-      const sessionId = orderResponse.data.payment_session_id;
-      const checkoutUrl = `https://payments-test.cashfree.com/pg/checkout/?token=${encodeURIComponent(sessionId)}`;
-
-      await Payment.findOneAndUpdate(
-        { userId, contentId },
-        {
-          $set: {
-            userId,
-            contentId,
-            amount: finalAmount,
-            transactionId: orderId,
-            method: 'cashfree',
-            status: 'pending',
-            metadata: {
-              orderId: orderId,
-              cfOrderId: orderResponse.data.cf_order_id,
-              sessionId: sessionId,
-              checkoutUrl: checkoutUrl
-            }
-          }
-        },
-        { upsert: true, new: true }
-      );
-
-      return res.json({
-        success: true,
-        orderId: orderId,
-        linkUrl: checkoutUrl,
-        amount: finalAmount,
-        message: 'Payment initiated'
-      });
+    const linkUrl = response.data.link_url;
+    
+    if (!linkUrl) {
+      throw new Error('No link_url in response: ' + JSON.stringify(response.data));
     }
 
+    log('✅ Payment Link created:', linkUrl);
+
+    await Payment.findOneAndUpdate(
+      { userId, contentId },
+      {
+        $set: {
+          userId,
+          contentId,
+          amount: finalAmount,
+          transactionId: linkId,
+          method: 'cashfree',
+          status: 'pending',
+          metadata: {
+            linkId: linkId,
+            linkUrl: linkUrl,
+            cfLinkId: response.data.cf_link_id
+          }
+        }
+      },
+      { upsert: true, new: true }
+    );
+
+    res.json({
+      success: true,
+      linkId: linkId,
+      linkUrl: linkUrl,
+      amount: finalAmount,
+      message: 'Payment link created successfully'
+    });
+
   } catch (error) {
-    console.log('\n❌ FATAL ERROR:');
+    console.log('\n❌ CASHFREE API ERROR:');
     console.log('Status:', error.response?.status);
-    console.log('Error:', JSON.stringify(error.response?.data, null, 2));
-    console.log('Message:', error.message);
+    console.log('URL:', error.response?.url);
+    console.log('Error Data:', JSON.stringify(error.response?.data, null, 2));
+    console.log('Error Message:', error.message);
     
+    // Return detailed error for debugging
     res.status(error.response?.status || 500).json({ 
-      message: 'Failed to initiate payment',
-      error: error.response?.data?.message || error.message
+      success: false,
+      message: 'Failed to create payment link',
+      error: error.response?.data?.message || error.message,
+      details: error.response?.data,
+      apiEndpoint: `${CASHFREE_CONFIG.API_BASE}/links`,
+      credentials: {
+        clientId: CASHFREE_CONFIG.CLIENT_ID ? 'SET' : 'NOT SET',
+        secretKey: CASHFREE_CONFIG.SECRET_KEY ? 'SET' : 'NOT SET'
+      }
     });
   }
 });
