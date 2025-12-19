@@ -244,36 +244,32 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // For Cashfree PG 2.0, get checkout form from backend
-      const backendUrl = BACKEND_URL || 'https://climax-fullstack.onrender.com';
+      // Call backend /checkout endpoint to get redirect page
+      // The backend will try the correct Cashfree checkout URL
+      console.log('🎫 Calling backend /checkout endpoint...');
       
-      try {
-        console.log('🚀 Getting checkout form from backend...');
-        const checkoutResponse = await fetch(`${backendUrl}/api/cashfree/checkout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            token: paymentResponse.paymentSessionId
-          })
-        });
+      const checkoutResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/cashfree/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: paymentResponse.paymentSessionId
+        })
+      });
 
-        if (!checkoutResponse.ok) {
-          throw new Error(`Backend returned ${checkoutResponse.status}`);
-        }
+      if (!checkoutResponse.ok) {
+        throw new Error(`Checkout request failed: ${checkoutResponse.statusText}`);
+      }
 
-        // Get the HTML and submit it
-        const html = await checkoutResponse.text();
-        
-        // Write HTML directly to create new page with auto-submit form
-        const newWindow = window.open();
-        newWindow?.document.write(html);
-        newWindow?.document.close();
-
-      } catch (error) {
-        console.error('❌ Error getting checkout form:', error);
-        setCashfreeError('Failed to process checkout. Please try again.');
+      // Get the HTML redirect page and open it in a new window
+      const checkoutHtml = await checkoutResponse.text();
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.write(checkoutHtml);
+        newWindow.document.close();
+      } else {
+        setCashfreeError('Unable to open payment window. Please check popup settings.');
       }
 
     } catch (err: any) {

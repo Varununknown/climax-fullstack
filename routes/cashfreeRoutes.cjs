@@ -313,21 +313,31 @@ router.post('/checkout', (req, res) => {
 
     console.log('✅ Token received, generating HTML form...');
 
-    // Return HTML form that auto-submits to Cashfree
+    // Try multiple Cashfree checkout endpoints (in order of priority)
+    const checkoutEndpoints = [
+      // Try 1: Direct checkout URL with token parameter (most likely)
+      `https://sandbox.cashfree.com/pg/checkout/?token=${encodeURIComponent(token)}`,
+      // Try 2: Old form-based endpoint
+      'https://sandbox.cashfree.com/pg/post/'
+    ];
+
+    const checkoutUrl = checkoutEndpoints[0]; // Use the first endpoint
+    
     const html = `<!DOCTYPE html>
 <html>
 <head>
   <title>Processing Payment...</title>
+  <meta charset="UTF-8">
 </head>
 <body>
-  <form id="cf" method="post" action="https://sandbox.cashfree.com/pg/post/">
-    <input type="hidden" name="token" value="${token.replace(/"/g, '&quot;')}">
-  </form>
-  <script>
-    console.log('Submitting form to Cashfree...');
-    document.getElementById('cf').submit();
-  </script>
   <p>Redirecting to Cashfree payment gateway...</p>
+  <script>
+    console.log('🔗 Redirecting to:', '${checkoutUrl}');
+    window.location.href = '${checkoutUrl}';
+  </script>
+  <noscript>
+    <p><a href="${checkoutUrl}">Click here to continue to payment</a></p>
+  </noscript>
 </body>
 </html>`;
 
