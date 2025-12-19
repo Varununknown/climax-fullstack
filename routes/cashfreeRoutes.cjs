@@ -299,33 +299,40 @@ router.get('/status/:userId/:contentId', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 router.post('/checkout', (req, res) => {
   try {
+    console.log('📋 /checkout called, req.body:', req.body);
     const { token } = req.body;
 
     if (!token) {
+      console.error('❌ Missing token in request body');
       return res.status(400).json({ success: false, message: 'Token required' });
     }
 
-    // Return HTML form that auto-submits to Cashfree
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Processing Payment...</title>
-      </head>
-      <body>
-        <form id="cf" method="post" action="https://sandbox.cashfree.com/pg/post/">
-          <input type="hidden" name="token" value="${token.replace(/"/g, '&quot;')}">
-        </form>
-        <script>document.getElementById('cf').submit();</script>
-      </body>
-      </html>
-    `;
+    console.log('✅ Token received, generating HTML form...');
 
-    res.setHeader('Content-Type', 'text/html');
+    // Return HTML form that auto-submits to Cashfree
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Processing Payment...</title>
+</head>
+<body>
+  <form id="cf" method="post" action="https://sandbox.cashfree.com/pg/post/">
+    <input type="hidden" name="token" value="${token.replace(/"/g, '&quot;')}">
+  </form>
+  <script>
+    console.log('Submitting form to Cashfree...');
+    document.getElementById('cf').submit();
+  </script>
+  <p>Redirecting to Cashfree payment gateway...</p>
+</body>
+</html>`;
+
+    console.log('✅ Sending HTML form to client');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(html);
   } catch (error) {
-    console.error('❌ Error in /checkout:', error);
-    res.status(500).json({ success: false, message: 'Error processing checkout' });
+    console.error('❌ Error in /checkout:', error.message, error);
+    res.status(500).json({ success: false, message: 'Error processing checkout', error: error.message });
   }
 });
 
