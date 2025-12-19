@@ -244,33 +244,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // Call backend /checkout endpoint to get redirect page
-      // The backend will try the correct Cashfree checkout URL
-      console.log('🎫 Calling backend /checkout endpoint...');
-      
-      const checkoutResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/cashfree/checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token: paymentResponse.paymentSessionId
-        })
-      });
-
-      if (!checkoutResponse.ok) {
-        throw new Error(`Checkout request failed: ${checkoutResponse.statusText}`);
-      }
-
-      // Get the HTML redirect page and open it in a new window
-      const checkoutHtml = await checkoutResponse.text();
-      const newWindow = window.open();
-      if (newWindow) {
-        newWindow.document.write(checkoutHtml);
-        newWindow.document.close();
-      } else {
-        setCashfreeError('Unable to open payment window. Please check popup settings.');
-      }
+      // Note: Cashfree PG 2.0 requires SDK integration for checkout
+      // Since the SDK isn't loading from CDN, we provide a fallback
+      setCashfreeError(
+        '⚠️ Cashfree Gateway: To complete payment, please use the QR Code or UPI options above. ' +
+        'Cashfree PG 2.0 requires SDK initialization which is currently unavailable. ' +
+        'Your payment order has been created (ID: ' + paymentResponse.orderId.substring(0, 20) + '...)'
+      );
 
     } catch (err: any) {
       console.error('💳 Cashfree Payment Error:', err);
