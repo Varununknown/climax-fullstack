@@ -136,11 +136,15 @@ router.post('/initiate', async (req, res) => {
 
     log('✅ Payment record saved/updated');
 
+    // Build checkout URL for sandbox
+    const checkoutUrl = `https://sandbox.cashfree.com/checkout/post/?token=${response.data.payment_session_id}`;
+
     // Return payment token for frontend
     res.json({
       success: true,
       orderId: orderId,
       paymentSessionId: response.data.payment_session_id,
+      checkoutUrl: checkoutUrl,
       amount: finalAmount,
       message: 'Payment initiated successfully'
     });

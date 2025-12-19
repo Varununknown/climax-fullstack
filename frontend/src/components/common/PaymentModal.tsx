@@ -244,42 +244,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
       sessionStorage.setItem('cashfreeContentId', contentId);
 
-      // Call backend to get the checkout form (which will auto-submit to Cashfree)
-      // This avoids cross-origin POST restrictions
-      console.log('🚀 Getting checkout form from backend...');
-      const backendUrl = BACKEND_URL || 'https://climax-fullstack.onrender.com';
-      const checkoutFormUrl = `${backendUrl}/api/cashfree/checkout-form`;
-      
-      // Send JSON to backend
-      const checkoutResponse = await fetch(checkoutFormUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          paymentSessionId: paymentResponse.paymentSessionId
-        })
-      });
-
-      if (!checkoutResponse.ok) {
-        const error = await checkoutResponse.json();
-        throw new Error(error.message || 'Failed to get checkout form');
-      }
-
-      // Get the HTML form and parse it
-      const htmlForm = await checkoutResponse.text();
-      
-      // Create a temporary document to hold the form
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlForm, 'text/html');
-      const form = doc.querySelector('#cashfreeForm') as HTMLFormElement;
-      
-      if (form) {
-        document.body.appendChild(form);
-        console.log('🚀 Submitting checkout form...');
-        form.submit();
+      // Redirect directly to Cashfree checkout using the URL from backend
+      if (paymentResponse.checkoutUrl) {
+        console.log('🚀 Redirecting to Cashfree checkout:', paymentResponse.checkoutUrl);
+        window.location.href = paymentResponse.checkoutUrl;
       } else {
-        throw new Error('Checkout form not found in response');
+        setCashfreeError('Checkout URL not provided by backend');
       }
 
     } catch (err: any) {
