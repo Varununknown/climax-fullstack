@@ -230,8 +230,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       };
 
       console.log('💳 Cashfree Payment Payload:', payloadData);
-      console.log('User object keys:', Object.keys(user));
-      console.log('Content object keys:', Object.keys(content));
 
       const paymentResponse = await CashfreeService.initiatePayment(
         userId,
@@ -248,21 +246,39 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
         sessionStorage.setItem('cashfreeContentId', contentId);
 
-        // Initialize Cashfree if not already done
-        if (window.Cashfree) {
-          console.log('💳 Opening Cashfree checkout with sessionId:', paymentResponse.paymentSessionId);
-          
-          const checkoutOptions = {
-            paymentSessionId: paymentResponse.paymentSessionId,
-            redirectTarget: '_self'
-          };
-          
-          console.log('💳 Checkout Options:', checkoutOptions);
-          window.Cashfree.checkout(checkoutOptions);
-        } else {
-          setCashfreeError('Cashfree SDK not loaded. Please refresh the page and try again.');
-          console.error('💳 window.Cashfree not available');
-        }
+        // Wait for Cashfree SDK to be available
+        let attempts = 0;
+        const maxAttempts = 20; // 2 seconds total
+        
+        const checkAndOpenCheckout = () => {
+          if (window.Cashfree && window.Cashfree.checkout) {
+            console.log('✅ Cashfree SDK ready, opening checkout...');
+            console.log('💳 Payment Session ID:', paymentResponse.paymentSessionId);
+            
+            try {
+              const checkoutOptions = {
+                paymentSessionId: paymentResponse.paymentSessionId,
+                redirectTarget: '_self'
+              };
+              
+              console.log('💳 Calling Cashfree.checkout()...');
+              window.Cashfree.checkout(checkoutOptions);
+              console.log('✅ Cashfree checkout called successfully');
+            } catch (err) {
+              console.error('❌ Error calling Cashfree.checkout():', err);
+              setCashfreeError('Error opening payment page. Please try again.');
+            }
+          } else if (attempts < maxAttempts) {
+            attempts++;
+            console.log(`⏳ Waiting for Cashfree SDK... attempt ${attempts}/${maxAttempts}`);
+            setTimeout(checkAndOpenCheckout, 100);
+          } else {
+            console.error('❌ Cashfree SDK not available after waiting');
+            setCashfreeError('Payment gateway not loaded. Please refresh and try again.');
+          }
+        };
+        
+        checkAndOpenCheckout();
       } else {
         setCashfreeError(paymentResponse.message || 'Failed to initiate payment');
         console.error('💳 Payment initiation failed:', paymentResponse);
