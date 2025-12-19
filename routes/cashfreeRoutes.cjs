@@ -21,7 +21,7 @@ const log = (...args) => console.log('[💳 Cashfree]', ...args);
 // 1️⃣ INITIATE PAYMENT - Create Payment Link and redirect URL
 // ═══════════════════════════════════════════════════════════════
 router.post('/initiate', async (req, res) => {
-  console.log('\n🔥🔥🔥 CASHFREE /initiate - CREATE PAYMENT LINK 🔥🔥🔥');
+  console.log('\n🔥🔥🔥 CASHFREE /initiate 🔥🔥🔥');
   console.log('Request:', JSON.stringify(req.body, null, 2));
   
   try {
@@ -38,93 +38,161 @@ router.post('/initiate', async (req, res) => {
       });
     }
 
-    log('📝 Creating Cashfree Payment Link for:', { userId, contentId, finalAmount });
+    log('📝 Creating payment for:', { userId, contentId, finalAmount });
 
-    // Generate unique link ID
-    const linkId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Try Payment Links first, fallback to Orders API
+    let linkUrl = null;
+    let linkId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    // Cashfree Payment Links API Payload (v2023-08-01)
-    // This creates a shareable payment link with pre-filled amount
-    const payload = {
-      link_id: linkId,
-      link_amount: finalAmount,
-      link_currency: 'INR',
-      link_purpose: `Climax OTT - ${contentId}`,
-      customer_details: {
-        customer_id: userId,
-        customer_email: finalEmail,
-        customer_phone: finalPhone,
-        customer_name: finalUserName
-      },
-      link_notify: {
-        send_sms: false,
-        send_email: false
-      },
-      link_meta: {
-        return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.vercel.app'}/payment-success?linkId=${linkId}`,
-        notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`
-      }
-    };
-
-    log('📤 Sending to Cashfree Payment Links API...');
-
-    // Call Cashfree Payment Links API
-    const response = await axios.post(
-      `${CASHFREE_CONFIG.API_BASE}/links`,
-      payload,
-      {
-        headers: {
-          'x-api-version': '2023-08-01',
-          'x-client-id': CASHFREE_CONFIG.CLIENT_ID,
-          'x-client-secret': CASHFREE_CONFIG.SECRET_KEY,
-          'Content-Type': 'application/json'
+    try {
+      log('📤 Attempting Payment Links API...');
+      
+      const linkPayload = {
+        link_id: linkId,
+        link_amount: finalAmount,
+        link_currency: 'INR',
+        link_purpose: `Climax OTT - ${contentId}`,
+        customer_details: {
+          customer_id: userId,
+          customer_email: finalEmail,
+          customer_phone: finalPhone,
+          customer_name: finalUserName
+        },
+        link_notify: {
+          send_sms: false,
+          send_email: false
+        },
+        link_meta: {
+          return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.vercel.app'}/payment-success?linkId=${linkId}`,
+          notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`
         }
-      }
-    );
+      };
 
-    log('✅ Payment Link Created:', response.data.link_url);
-
-    // Save payment record
-    await Payment.findOneAndUpdate(
-      { userId, contentId },
-      {
-        $set: {
-          userId,
-          contentId,
-          amount: finalAmount,
-          transactionId: linkId,
-          method: 'cashfree',
-          status: 'pending',
-          metadata: {
-            linkId: linkId,
-            linkUrl: response.data.link_url,
-            cfLinkId: response.data.cf_link_id
+      const linkResponse = await axios.post(
+        `${CASHFREE_CONFIG.API_BASE}/links`,
+        linkPayload,
+        {
+          headers: {
+            'x-api-version': '2023-08-01',
+            'x-client-id': CASHFREE_CONFIG.CLIENT_ID,
+            'x-client-secret': CASHFREE_CONFIG.SECRET_KEY,
+            'Content-Type': 'application/json'
           }
         }
-      },
-      { upsert: true, new: true }
-    );
+      );
 
-    log('✅ Payment record saved');
+      linkUrl = linkResponse.data.link_url;
+      log('✅ Payment Link created:', linkUrl);
 
-    // Return payment link for direct redirect
-    res.json({
-      success: true,
-      linkId: linkId,
-      linkUrl: response.data.link_url,
-      cfLinkId: response.data.cf_link_id,
-      amount: finalAmount,
-      message: 'Payment link created - redirecting to Cashfree'
-    });
+      await Payment.findOneAndUpdate(
+        { userId, contentId },
+        {
+          $set: {
+            userId,
+            contentId,
+            amount: finalAmount,
+            transactionId: linkId,
+            method: 'cashfree',
+            status: 'pending',
+            metadata: {
+              linkId: linkId,
+              linkUrl: linkUrl,
+              cfLinkId: linkResponse.data.cf_link_id
+            }
+          }
+        },
+        { upsert: true, new: true }
+      );
+
+      return res.json({
+        success: true,
+        linkId: linkId,
+        linkUrl: linkUrl,
+        amount: finalAmount,
+        message: 'Payment link created'
+      });
+
+    } catch (linkError) {
+      log('⚠️ Payment Links failed, fallback to Orders API');
+      console.log('Links Error:', linkError.response?.data?.message || linkError.message);
+
+      // FALLBACK: Use Orders API
+      const orderId = `CLX-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      const orderPayload = {
+        order_id: orderId,
+        order_amount: finalAmount,
+        order_currency: 'INR',
+        customer_details: {
+          customer_id: userId,
+          customer_email: finalEmail,
+          customer_phone: finalPhone,
+          customer_name: finalUserName
+        },
+        order_meta: {
+          return_url: `${process.env.FRONTEND_URL || 'https://climax-fullstack.vercel.app'}/payment-success?orderId=${orderId}`,
+          notify_url: `${process.env.BACKEND_URL || 'https://climax-fullstack.onrender.com/api'}/cashfree/webhook`,
+          payment_methods: 'cc,dc,nb,upi'
+        }
+      };
+
+      const orderResponse = await axios.post(
+        `${CASHFREE_CONFIG.API_BASE}/orders`,
+        orderPayload,
+        {
+          headers: {
+            'x-api-version': '2023-08-01',
+            'x-client-id': CASHFREE_CONFIG.CLIENT_ID,
+            'x-client-secret': CASHFREE_CONFIG.SECRET_KEY,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      log('✅ Order created (fallback):', orderId);
+      
+      // For Orders API, create checkout URL
+      const sessionId = orderResponse.data.payment_session_id;
+      const checkoutUrl = `https://payments-test.cashfree.com/pg/checkout/?token=${encodeURIComponent(sessionId)}`;
+
+      await Payment.findOneAndUpdate(
+        { userId, contentId },
+        {
+          $set: {
+            userId,
+            contentId,
+            amount: finalAmount,
+            transactionId: orderId,
+            method: 'cashfree',
+            status: 'pending',
+            metadata: {
+              orderId: orderId,
+              cfOrderId: orderResponse.data.cf_order_id,
+              sessionId: sessionId,
+              checkoutUrl: checkoutUrl
+            }
+          }
+        },
+        { upsert: true, new: true }
+      );
+
+      return res.json({
+        success: true,
+        orderId: orderId,
+        linkUrl: checkoutUrl,
+        amount: finalAmount,
+        message: 'Payment initiated'
+      });
+    }
 
   } catch (error) {
-    console.log('\n❌ ERROR:');
+    console.log('\n❌ FATAL ERROR:');
     console.log('Status:', error.response?.status);
-    console.log('Data:', error.response?.data);
+    console.log('Error:', JSON.stringify(error.response?.data, null, 2));
     console.log('Message:', error.message);
     
     res.status(error.response?.status || 500).json({ 
-      message: 'Failed to create payment link',
+      message: 'Failed to initiate payment',
       error: error.response?.data?.message || error.message
     });
   }
