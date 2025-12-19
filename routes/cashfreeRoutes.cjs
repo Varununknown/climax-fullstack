@@ -293,11 +293,8 @@ router.get('/status/:userId/:contentId', async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════════════
-// HELPER: Verify Webhook Signature
+// Endpoint: Get Checkout Form (serves HTML that auto-submits to Cashfree)
 // ═══════════════════════════════════════════════════════════════
-function verifyWebhookSignature(payload, signature) {
-  try {
-// Endpoint to get checkout form (serves HTML that auto-submits to Cashfree)
 router.post('/checkout-form', (req, res) => {
   const { paymentSessionId } = req.body;
 
@@ -328,8 +325,13 @@ router.post('/checkout-form', (req, res) => {
   res.send(htmlForm);
 });
 
-// Cashfree signature verification
-const message = JSON.stringify(payload);
+// ═══════════════════════════════════════════════════════════════
+// HELPER: Verify Webhook Signature
+// ═══════════════════════════════════════════════════════════════
+function verifyWebhookSignature(payload, signature) {
+  try {
+    // Cashfree signature verification
+    const message = JSON.stringify(payload);
     const hash = crypto
       .createHmac('sha256', CASHFREE_CONFIG.SECRET_KEY)
       .update(message)
