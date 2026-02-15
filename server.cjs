@@ -112,23 +112,56 @@ app.get('/api/health', (req, res) => {
     process.env.MONGO_URI
   );
   
+  const cashfreeConfigured = !!(
+    process.env.CASHFREE_CLIENT_ID &&
+    process.env.CASHFREE_SECRET_KEY
+  );
+  
   res.json({
     status: 'healthy',
     version: '2.0-participation-enabled', // Version identifier
     timestamp: new Date().toISOString(),
     googleConfigured,
+    cashfreeConfigured,
     mongoConnected: mongoose.connection.readyState === 1,
     routes: {
       participation: 'enabled',
-      quiz: 'enabled'
+      quiz: 'enabled',
+      cashfree: 'enabled',
+      auth: 'enabled'
     },
     env: {
       googleClientId: process.env.GOOGLE_CLIENT_ID ? '✅ SET' : '❌ MISSING',
       googleSecret: process.env.GOOGLE_CLIENT_SECRET ? '✅ SET' : '❌ MISSING',
       googleRedirectUri: process.env.GOOGLE_REDIRECT_URI ? '✅ SET' : '❌ MISSING',
+      cashfreeClientId: process.env.CASHFREE_CLIENT_ID ? '✅ SET' : '❌ MISSING',
+      cashfreeSecret: process.env.CASHFREE_SECRET_KEY ? '✅ SET' : '❌ MISSING',
       jwtSecret: process.env.JWT_SECRET ? '✅ SET' : '❌ MISSING',
       mongoUri: process.env.MONGO_URI ? '✅ SET' : '❌ MISSING'
     }
+  });
+});
+
+// Diagnostics endpoint
+app.get('/api/diagnostics', (req, res) => {
+  res.json({
+    status: 'diagnostic',
+    mongoConnection: mongoose.connection.readyState,
+    mongoStates: { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' },
+    environment: {
+      node_env: process.env.NODE_ENV,
+      port: process.env.PORT,
+      has_mongo_uri: !!process.env.MONGO_URI,
+      has_jwt_secret: !!process.env.JWT_SECRET,
+      has_cashfree_config: !!process.env.CASHFREE_CLIENT_ID,
+      has_google_config: !!process.env.GOOGLE_CLIENT_ID
+    },
+    memory: {
+      heapUsed: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB',
+      heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + ' MB'
+    },
+    uptime: process.uptime() + ' seconds',
+    timestamp: new Date().toISOString()
   });
 });
 
