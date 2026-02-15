@@ -257,35 +257,29 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         sessionStorage.setItem('cashfreeSessionId', paymentResponse.sessionId);
         sessionStorage.setItem('cashfreeContentId', contentId);
         
-        // 🆕 Trigger automatic payment processing
-        console.log('💳 Triggering automatic payment processing...');
+        console.log('🔗 Payment Session ID:', paymentResponse.sessionId);
+        
+        // 🆕 DIRECT CHECKOUT - Open Cashfree hosted payment page
         try {
-          const processResponse = await CashfreeService.processPayment(
-            paymentResponse.orderId,
-            paymentResponse.sessionId,
-            'upi'
-          );
+          console.log('🌐 Opening Cashfree checkout...');
           
-          console.log('✅ Automatic payment triggered:', processResponse);
+          // Build checkout URL for Cashfree sandbox
+          const checkoutUrl = `https://sandbox.cashfree.com/pg/checkout/?sessionId=${encodeURIComponent(paymentResponse.sessionId)}`;
           
-          if (processResponse.success) {
-            setCashfreeError(
-              `✅ Payment initiated! Transaction ID: ${processResponse.paymentId ? processResponse.paymentId.substring(0, 12) : 'Processing'}...`
-            );
-            // Wait a moment then verify payment status
-            setTimeout(() => {
-              window.location.href = `${process.env.REACT_APP_FRONTEND_URL || window.location.origin}/payment-success?orderId=${paymentResponse.orderId}`;
-            }, 2000);
-            return;
-          }
-        } catch (processError: any) {
-          console.log('ℹ️ Automatic payment processing fallback:', processError.message);
-          // Fallback: Show manual payment options
-          setPaymentStep('cashfree');
-          setCashfreeError(
-            `Order #${paymentResponse.orderId.substring(0, 12)}... created! ` +
-            `Use UPI or QR code above to complete payment.`
-          );
+          console.log('📍 Redirecting to:', checkoutUrl);
+          
+          // Show loading message before redirecting
+          setCashfreeError(`⏳ Opening Cashfree payment gateway...`);
+          
+          // Redirect to Cashfree checkout
+          setTimeout(() => {
+            window.location.href = checkoutUrl;
+          }, 1000);
+          
+          return;
+        } catch (checkoutError: any) {
+          console.error('❌ Checkout error:', checkoutError);
+          setCashfreeError('Failed to open payment gateway. Please try again.');
         }
         
         setIsProcessing(false);
