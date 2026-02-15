@@ -574,12 +574,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               const confirmed = window.confirm('Cancel payment?');
               if (confirmed) onClose();
             }}
-            onTouchStart={(e) => {
-              e.preventDefault();
+            onTouchStart={() => {
               const confirmed = window.confirm('Cancel payment?');
               if (confirmed) onClose();
             }}
-            onMouseDown={(e) => e.preventDefault()}
             style={closeButtonStyle}
           >
             <X size={24} />
@@ -600,13 +598,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               setPaymentStep('qr');
               setCashfreeError('');
             }}
-            onTouchStart={(e) => {
-              e.preventDefault();
+            onTouchStart={() => {
               setPaymentMethod('upi');
               setPaymentStep('qr');
               setCashfreeError('');
             }}
-            onMouseDown={(e) => e.preventDefault()}
             style={paymentMethod === 'upi' ? tabButtonActiveStyle : tabButtonInactiveStyle}
           >
             <QrCode size={16} style={{ display: 'inline', marginRight: '6px' }} />
@@ -618,13 +614,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               setPaymentStep('upi-deeplink');
               setCashfreeError('');
             }}
-            onTouchStart={(e) => {
-              e.preventDefault();
+            onTouchStart={() => {
               setPaymentMethod('upi-deeplink');
               setPaymentStep('upi-deeplink');
               setCashfreeError('');
             }}
-            onMouseDown={(e) => e.preventDefault()}
             style={paymentMethod === 'upi-deeplink' ? tabButtonActiveStyle : tabButtonInactiveStyle}
           >
             <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
@@ -636,13 +630,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               setPaymentStep('cashfree');
               setTxnError('');
             }}
-            onTouchStart={(e) => {
-              e.preventDefault();
+            onTouchStart={() => {
               setPaymentMethod('cashfree');
               setPaymentStep('cashfree');
               setTxnError('');
             }}
-            onMouseDown={(e) => e.preventDefault()}
             style={paymentMethod === 'cashfree' ? tabButtonActiveStyle : tabButtonInactiveStyle}
           >
             <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
@@ -696,11 +688,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                             <span>{qrCodeData.upiId}</span>
                             <button
                               onClick={() => copyToClipboard(qrCodeData.upiId)}
-                              onTouchStart={(e) => {
-                                e.preventDefault();
+                              onTouchStart={() => {
                                 copyToClipboard(qrCodeData.upiId);
                               }}
-                              onMouseDown={(e) => e.preventDefault()}
                               style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', zIndex: 100, pointerEvents: 'auto', position: 'relative' }}
                             >
                               <Copy size={14} />
@@ -734,12 +724,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
                     <button
                       onClick={handlePaymentSubmit}
-                      onTouchStart={(e) => {
+                      onTouchStart={() => {
                         if (!transactionId.trim()) return;
-                        e.preventDefault();
                         handlePaymentSubmit();
                       }}
-                      onMouseDown={(e) => e.preventDefault()}
                       disabled={!transactionId.trim()}
                       style={transactionId.trim() ? submitButtonStyle : disabledButtonStyle}
                     >
@@ -755,11 +743,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
                 <button 
                   onClick={onClose}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
+                  onTouchStart={() => {
                     onClose();
                   }}
-                  onMouseDown={(e) => e.preventDefault()}
                   style={cancelButtonStyle}
                 >
                   Cancel
@@ -802,12 +788,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     {/* Open UPI App Button */}
                     <button
                       onClick={handleUpiDeepLink}
-                      onTouchStart={(e) => {
+                      onTouchStart={() => {
                         if (isProcessing) return;
-                        e.preventDefault();
                         handleUpiDeepLink();
                       }}
-                      onMouseDown={(e) => e.preventDefault()}
                       disabled={isProcessing}
                       style={isProcessing ? disabledButtonStyle : submitButtonStyle}
                     >
@@ -882,12 +866,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                       {/* Verify Button */}
                       <button
                         onClick={handleVerifyUpiTransaction}
-                        onTouchStart={(e) => {
+                        onTouchStart={() => {
                           if (isProcessing || !upiDeepLinkTxnId.trim()) return;
-                          e.preventDefault();
                           handleVerifyUpiTransaction();
                         }}
-                        onMouseDown={(e) => e.preventDefault()}
                         disabled={isProcessing || !upiDeepLinkTxnId.trim()}
                         style={{
                           ...submitButtonStyle,
@@ -912,11 +894,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                     {/* Cancel Button */}
                     <button 
                       onClick={onClose}
-                      onTouchStart={(e) => {
-                        e.preventDefault();
+                      onTouchStart={() => {
                         onClose();
                       }}
-                      onMouseDown={(e) => e.preventDefault()}
                       style={cancelButtonStyle}
                     >
                       Cancel
@@ -966,12 +946,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 {/* Pay with Cashfree Button */}
                 <button
                   onClick={handleCashfreePayment}
-                  onTouchStart={(e) => {
+                  onTouchStart={() => {
                     if (isProcessing) return;
-                    e.preventDefault();
                     handleCashfreePayment();
                   }}
-                  onMouseDown={(e) => e.preventDefault()}
                   disabled={isProcessing}
                   style={isProcessing ? disabledButtonStyle : submitButtonStyle}
                 >
@@ -991,11 +969,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 {/* Cancel Button */}
                 <button 
                   onClick={onClose}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
+                  onTouchStart={() => {
                     onClose();
                   }}
-                  onMouseDown={(e) => e.preventDefault()}
                   style={cancelButtonStyle}
                 >
                   Cancel
@@ -1045,12 +1021,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 {/* Pay with Cashfree Button */}
                 <button
                   onClick={handleCashfreePayment}
-                  onTouchStart={(e) => {
+                  onTouchStart={() => {
                     if (isProcessing) return;
-                    e.preventDefault();
                     handleCashfreePayment();
                   }}
-                  onMouseDown={(e) => e.preventDefault()}
                   disabled={isProcessing}
                   style={isProcessing ? disabledButtonStyle : submitButtonStyle}
                 >
@@ -1070,11 +1044,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 {/* Cancel Button */}
                 <button 
                   onClick={onClose}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
+                  onTouchStart={() => {
                     onClose();
                   }}
-                  onMouseDown={(e) => e.preventDefault()}
                   style={cancelButtonStyle}
                 >
                   Cancel
