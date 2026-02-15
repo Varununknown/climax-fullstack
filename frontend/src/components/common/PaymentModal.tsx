@@ -253,36 +253,35 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       // Fallback: Orders API response (orderId) - show payment methods
       if (paymentResponse.orderId) {
         console.log('✅ Order created via Orders API');
+        console.log('📋 Full response:', JSON.stringify(paymentResponse, null, 2));
+        console.log('🔑 SessionId:', paymentResponse.sessionId);
+        
         sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
         sessionStorage.setItem('cashfreeSessionId', paymentResponse.sessionId);
         sessionStorage.setItem('cashfreeContentId', contentId);
         
-        console.log('🔗 Payment Session ID:', paymentResponse.sessionId);
-        
-        // 🆕 DIRECT CHECKOUT - Open Cashfree hosted payment page
-        try {
-          console.log('🌐 Opening Cashfree checkout...');
-          
-          // Build checkout URL for Cashfree sandbox
-          const checkoutUrl = `https://sandbox.cashfree.com/pg/checkout/?sessionId=${encodeURIComponent(paymentResponse.sessionId)}`;
-          
-          console.log('📍 Redirecting to:', checkoutUrl);
-          
-          // Show loading message before redirecting
-          setCashfreeError(`⏳ Opening Cashfree payment gateway...`);
-          
-          // Redirect to Cashfree checkout
-          setTimeout(() => {
-            window.location.href = checkoutUrl;
-          }, 1000);
-          
+        if (!paymentResponse.sessionId) {
+          console.error('❌ ERROR: No sessionId in response!');
+          setCashfreeError('❌ Payment session creation failed. Please try again.');
+          setIsProcessing(false);
           return;
-        } catch (checkoutError: any) {
-          console.error('❌ Checkout error:', checkoutError);
-          setCashfreeError('Failed to open payment gateway. Please try again.');
         }
         
-        setIsProcessing(false);
+        console.log('🌐 Building checkout URL...');
+        const checkoutUrl = `https://sandbox.cashfree.com/pg/checkout/?sessionId=${encodeURIComponent(paymentResponse.sessionId)}`;
+        
+        console.log('📍 Checkout URL:', checkoutUrl);
+        console.log('⏳ Redirecting to Cashfree in 1 second...');
+        
+        // Show loading message before redirecting
+        setCashfreeError(`⏳ Opening Cashfree payment gateway...`);
+        
+        // Redirect to Cashfree checkout
+        setTimeout(() => {
+          console.log('🚀 Executing redirect now...');
+          window.location.href = checkoutUrl;
+        }, 1000);
+        
         return;
       }
 

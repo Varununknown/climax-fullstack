@@ -87,7 +87,21 @@ router.post('/initiate', async (req, res) => {
     console.log('✅ Order created:', orderId);
     console.log('Response:', JSON.stringify(response.data, null, 2));
 
+    // ✅ Extract session ID - it's in payment_session_id from Cashfree response
     const sessionId = response.data.payment_session_id;
+    
+    if (!sessionId) {
+      console.error('❌ ERROR: No payment_session_id in response!');
+      console.error('   Response keys:', Object.keys(response.data));
+      console.error('   Full response:', JSON.stringify(response.data, null, 2));
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to get payment session ID from Cashfree',
+        response: response.data
+      });
+    }
+    
+    console.log('✅ Session ID extracted:', sessionId);
     
     // Save payment record
     await Payment.findOneAndUpdate(

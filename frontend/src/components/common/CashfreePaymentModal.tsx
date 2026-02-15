@@ -47,18 +47,28 @@ export const CashfreePaymentModal: React.FC<CashfreePaymentModalProps> = ({
       );
 
       if (paymentResponse.success) {
+        console.log('✅ Payment response:', JSON.stringify(paymentResponse, null, 2));
+        
         // Store order ID in session storage
         sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
         sessionStorage.setItem('cashfreeSessionId', paymentResponse.sessionId);
         sessionStorage.setItem('cashfreeContentId', contentId);
+
+        if (!paymentResponse.sessionId) {
+          setError('❌ Failed to get payment session. Please try again.');
+          return;
+        }
 
         // 🔗 Direct redirect to Cashfree hosted checkout
         const checkoutUrl = `https://sandbox.cashfree.com/pg/checkout/?sessionId=${encodeURIComponent(paymentResponse.sessionId)}`;
         
         console.log('🌐 Redirecting to Cashfree checkout:', checkoutUrl);
         
-        // Redirect immediately
-        window.location.href = checkoutUrl;
+        setError('⏳ Opening payment gateway...');
+        setTimeout(() => {
+          window.location.href = checkoutUrl;
+        }, 500);
+        
         setPaymentInitiated(true);
       } else {
         setError(paymentResponse.message || 'Failed to initiate payment');
