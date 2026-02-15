@@ -25,6 +25,15 @@ router.post('/initiate', async (req, res) => {
   console.log('Request Body:', JSON.stringify(req.body, null, 2));
   
   try {
+    // Check if Cashfree is configured
+    if (!CASHFREE_CONFIG.CLIENT_ID || !CASHFREE_CONFIG.SECRET_KEY) {
+      console.log('⚠️ Cashfree not configured - check environment variables');
+      return res.status(503).json({ 
+        success: false,
+        message: 'Payment gateway not configured'
+      });
+    }
+
     const { userId, contentId, amount, email, phone, userName } = req.body;
 
     console.log('Extracted fields:');
@@ -70,6 +79,7 @@ router.post('/initiate', async (req, res) => {
     };
 
     console.log('📤 Creating order via Orders API');
+    console.log('  API Base:', CASHFREE_CONFIG.API_BASE);
 
     const response = await axios.post(
       `${CASHFREE_CONFIG.API_BASE}/orders`,
@@ -88,43 +98,48 @@ router.post('/initiate', async (req, res) => {
     console.log('Response:', JSON.stringify(response.data, null, 2));
 
     // ✅ Extract session ID - it's in payment_session_id from Cashfree response
-    const sessionId = response.data.payment_session_id;
+    const sessionId = response.data.payment_session_id || response.data.session_id;
     
     if (!sessionId) {
-      console.error('❌ ERROR: No payment_session_id in response!');
+      console.error('❌ ERROR: No payment session ID in response!');
       console.error('   Response keys:', Object.keys(response.data));
       console.error('   Full response:', JSON.stringify(response.data, null, 2));
       return res.status(500).json({
         success: false,
-        message: 'Failed to get payment session ID from Cashfree',
-        response: response.data
+        message: 'Failed to get payment session from Cashfree',
+        details: 'Payment session ID not found in response'
       });
     }
     
     console.log('✅ Session ID extracted:', sessionId);
     
-    // Save payment record
-    await Payment.findOneAndUpdate(
-      { userId, contentId },
-      {
-        $set: {
-          userId,
-          contentId,
-          amount: finalAmount,
-          transactionId: orderId,
-          method: 'cashfree',
-          status: 'pending',
-          metadata: {
-            orderId: orderId,
-            cfOrderId: response.data.cf_order_id,
-            sessionId: sessionId
+    try {
+      // Save payment record
+      await Payment.findOneAndUpdate(
+        { userId, contentId },
+        {
+          $set: {
+            userId,
+            contentId,
+            amount: finalAmount,
+            transactionId: orderId,
+            method: 'cashfree',
+            status: 'pending',
+            metadata: {
+              orderId: orderId,
+              cfOrderId: response.data.cf_order_id || orderId,
+              sessionId: sessionId
+            }
           }
-        }
-      },
-      { upsert: true, new: true }
-    );
-
-    log('✅ Payment record saved');
+        },
+        { upsert: true, new: true }
+      );
+      
+      log('✅ Payment record saved');
+    } catch (dbError) {
+      console.error('⚠️ Database save error (non-blocking):', dbError.message);
+      // Continue anyway - payment record save failure shouldn't block response
+    }
 
     // Return order ID and session ID for frontend to use
     // Frontend will show payment methods (QR/UPI work great)
@@ -132,7 +147,7 @@ router.post('/initiate', async (req, res) => {
       success: true,
       orderId: orderId,
       sessionId: sessionId,
-      cfOrderId: response.data.cf_order_id,
+      cfOrderId: response.data.cf_order_id || orderId,
       amount: finalAmount,
       message: 'Payment order created successfully'
     });
@@ -142,11 +157,15 @@ router.post('/initiate', async (req, res) => {
     console.log('Status:', error.response?.status);
     console.log('Error Data:', JSON.stringify(error.response?.data, null, 2));
     console.log('Error Message:', error.message);
+    console.log('Error Stack:', error.stack);
+    
+    const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message;
     
     res.status(error.response?.status || 500).json({ 
       success: false,
       message: 'Failed to create payment order',
-      error: error.response?.data?.message || error.message
+      error: errorMessage,
+      timestamp: new Date().toISOString()
     });
   }
 });
@@ -156,10 +175,21 @@ router.post('/initiate', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 router.post('/verify', async (req, res) => {
   try {
+    // Check configuration
+    if (!CASHFREE_CONFIG.CLIENT_ID || !CASHFREE_CONFIG.SECRET_KEY) {
+      return res.status(503).json({ 
+        success: false,
+        message: 'Payment gateway not configured' 
+      });
+    }
+
     const { orderId } = req.body;
 
     if (!orderId) {
-      return res.status(400).json({ message: 'Order ID required' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Order ID required' 
+      });
     }
 
     log('🔍 Verifying payment for order:', orderId);
@@ -178,8 +208,8 @@ router.post('/verify', async (req, res) => {
 
     log('Cashfree response:', response.data);
 
-    const orderStatus = response.data.orderStatus;
-    const paymentStatus = response.data.paymentStatus;
+    const orderStatus = response.data.order_status || response.data.orderStatus;
+    const paymentStatus = response.data.payment_status || response.data.paymentStatus;
 
     // Update our payment record
     const payment = await Payment.findOne({ transactionId: orderId });
