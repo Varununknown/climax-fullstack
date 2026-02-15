@@ -16,11 +16,18 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const { register, isLoading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
+
+    if (!name.trim()) {
+      setError('Name is required');
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -33,21 +40,33 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
     }
 
     // If using phone, validate phone format (10 digits)
-    if (usePhone && !/^\d{10}$/.test(phone)) {
-      setError('Phone number must be 10 digits');
-      return;
+    if (usePhone) {
+      if (!phone.trim()) {
+        setError('Phone number is required');
+        return;
+      }
+      if (!/^\d{10}$/.test(phone)) {
+        setError('Phone number must be exactly 10 digits');
+        return;
+      }
+    } else {
+      // If using email, email is required
+      if (!email.trim()) {
+        setError('Email is required');
+        return;
+      }
     }
 
-    // If using email, email is required
-    if (!usePhone && !email) {
-      setError('Email is required');
-      return;
-    }
-
+    console.log('📝 Starting registration...');
+    setSuccess('Creating your account...');
     const success = await register(name, usePhone ? '' : email, password, usePhone ? phone : undefined);
     if (!success) {
-      setError('Registration failed. Please try again.');
+      setSuccess('');
+      setError('Registration failed. Please try again or use a different email/phone.');
+    } else {
+      console.log('✅ Registration successful!');
     }
+  };
   };
 
   return (
@@ -211,6 +230,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
 
         {/* Error */}
         {error && <div className="text-red-400 text-sm text-center">{error}</div>}
+
+        {/* Success Message */}
+        {success && <div className="text-green-400 text-sm text-center font-medium">{success}</div>}
 
         {/* Submit */}
         <button

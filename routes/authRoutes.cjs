@@ -11,12 +11,20 @@ router.post('/register', async (req, res) => {
   console.log('▶️ Register attempt:', { name, email, phone, role });
 
   try {
+    // ✅ Validate: either email or phone must be provided
+    if (!email && !phone) {
+      return res.status(400).json({ message: 'Email or phone number is required' });
+    }
+
+    // ✅ Generate unique email for phone-only registration
+    const finalEmail = email || `phone_${phone}_${Date.now()}@climax.local`;
+
     const existingUser = await User.findOne({ 
-      $or: [{ email }, ...(phone ? [{ phone }] : [])]
+      $or: [{ email: finalEmail }, ...(phone ? [{ phone }] : [])]
     });
     if (existingUser) {
-      console.log('⛔ User already exists:', email || phone);
-      return res.status(400).json({ message: 'User already exists' });
+      console.log('⛔ User already exists:', finalEmail || phone);
+      return res.status(400).json({ message: 'Email or phone already registered' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -31,7 +39,7 @@ router.post('/register', async (req, res) => {
 
     const newUser = new User({
       name,
-      email,
+      email: finalEmail,
       phone: phone || null,
       password: hashedPassword,
       role: finalRole
@@ -39,8 +47,8 @@ router.post('/register', async (req, res) => {
 
     await newUser.save();
 
-    console.log('✅ User created:', email, 'Role:', finalRole);
-    res.status(201).json({ message: 'User registered successfully' });
+    console.log('✅ User created:', finalEmail, 'Role:', finalRole);
+    res.status(201).json({ message: 'User registered successfully', registeredWith: phone ? 'phone' : 'email' });
   } catch (err) {
     console.error('❌ Registration error:', err.message);
     res.status(500).json({ error: err.message });

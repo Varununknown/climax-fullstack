@@ -84,10 +84,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (name: string, email: string, password: string, phone?: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await API.post('/auth/register', { name, email, password, phone });
-      return await login(email, password); // Auto-login with email after registration
-    } catch (error) {
-      console.error('Registration failed:', error);
+      console.log('📝 Registering user:', { name, email: email || 'N/A', phone: phone || 'N/A' });
+      const response = await API.post('/auth/register', { name, email: email || undefined, password, phone });
+      console.log('✅ Registration successful:', response.data);
+      
+      // ✅ Auto-login with phone if registered with phone, otherwise with email
+      const loginIdentifier = phone || email;
+      console.log('🔄 Auto-logging in with:', loginIdentifier);
+      return await login(loginIdentifier, password);
+    } catch (error: any) {
+      console.error('❌ Registration failed:', error.response?.data?.message || error.message);
       setIsLoading(false);
       return false;
     }

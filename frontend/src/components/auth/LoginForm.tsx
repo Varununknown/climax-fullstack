@@ -14,17 +14,26 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isPhoneMode, setIsPhoneMode] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
+    if (!identifier.trim()) {
+      setError('Email or phone is required');
+      return;
+    }
+
+    setSuccess('Signing in...');
     const success = await login(identifier, password);
     if (success) {
       navigate('/');
     } else {
+      setSuccess('');
       setError('Invalid email/phone or password');
     }
   };
@@ -117,6 +126,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
 
         {/* Error */}
         {error && <div className="text-red-400 text-sm text-center">{error}</div>}
+
+        {/* Success Message */}
+        {success && <div className="text-green-400 text-sm text-center font-medium">{success}</div>}
 
         {/* Submit */}
         <button
