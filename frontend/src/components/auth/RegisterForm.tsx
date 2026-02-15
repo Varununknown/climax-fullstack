@@ -10,6 +10,8 @@ interface RegisterFormProps {
 export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [usePhone, setUsePhone] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +32,19 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
       return;
     }
 
-    const success = await register(email, password, name);
+    // If using phone, validate phone format (10 digits)
+    if (usePhone && !/^\d{10}$/.test(phone)) {
+      setError('Phone number must be 10 digits');
+      return;
+    }
+
+    // If using email, email is required
+    if (!usePhone && !email) {
+      setError('Email is required');
+      return;
+    }
+
+    const success = await register(name, usePhone ? '' : email, password, usePhone ? phone : undefined);
     if (!success) {
       setError('Registration failed. Please try again.');
     }
@@ -80,23 +94,77 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
           </div>
         </div>
 
-        {/* Email */}
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Email Address
-          </label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent backdrop-blur-sm"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
+        {/* Email or Phone Toggle */}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setUsePhone(false);
+              setPhone('');
+            }}
+            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition ${
+              !usePhone
+                ? 'bg-red-600 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            Email
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setUsePhone(true);
+              setEmail('');
+            }}
+            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition ${
+              usePhone
+                ? 'bg-red-600 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            Phone
+          </button>
         </div>
+
+        {/* Email */}
+        {!usePhone && (
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Email Address
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent backdrop-blur-sm"
+                placeholder="Enter your email"
+                required={!usePhone}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Phone */}
+        {usePhone && (
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Phone Number (10 digits)
+            </label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent backdrop-blur-sm"
+                placeholder="Enter your 10-digit phone number"
+                required={usePhone}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Password */}
         <div>

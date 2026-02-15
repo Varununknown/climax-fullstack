@@ -4,8 +4,8 @@ import API from '../services/api';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string) => Promise<boolean>;
+  login: (identifier: string, password: string) => Promise<boolean>; // identifier = email or phone
+  register: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const normalizedUser: User = {
           id: parsedUser.id || parsedUser._id,
           email: parsedUser.email,
+          phone: parsedUser.phone,
           name: parsedUser.name,
           role: parsedUser.role,
           subscription: parsedUser.subscription || 'free',
@@ -52,16 +53,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (identifier: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      console.log('🔐 Attempting login with:', email);
-      const response = await API.post('/auth/login', { email, password });
+      console.log('🔐 Attempting login with:', identifier);
+      const response = await API.post('/auth/login', { identifier, password });
       console.log('✅ Login response:', response.data);
 
       const loggedInUser: User = {
         id: response.data.user.id,
         email: response.data.user.email,
+        phone: response.data.user.phone,
         name: response.data.user.name,
         role: response.data.user.role,
         subscription: 'free',
@@ -79,11 +81,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (email: string, password: string, name: string): Promise<boolean> => {
+  const register = async (name: string, email: string, password: string, phone?: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await API.post('/auth/register', { name, email, password });
-      return await login(email, password); // Optional auto-login
+      const response = await API.post('/auth/register', { name, email, password, phone });
+      return await login(email, password); // Auto-login with email after registration
     } catch (error) {
       console.error('Registration failed:', error);
       setIsLoading(false);

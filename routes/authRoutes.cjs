@@ -6,14 +6,16 @@ const User = require('../models/User.cjs');
 
 /* ----------  REGISTER  ---------- */
 router.post('/register', async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, phone } = req.body;
 
-  console.log('▶️ Register attempt:', { name, email, role });
+  console.log('▶️ Register attempt:', { name, email, phone, role });
 
   try {
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ 
+      $or: [{ email }, ...(phone ? [{ phone }] : [])]
+    });
     if (existingUser) {
-      console.log('⛔ User already exists:', email);
+      console.log('⛔ User already exists:', email || phone);
       return res.status(400).json({ message: 'User already exists' });
     }
 
@@ -30,6 +32,7 @@ router.post('/register', async (req, res) => {
     const newUser = new User({
       name,
       email,
+      phone: phone || null,
       password: hashedPassword,
       role: finalRole
     });
@@ -46,11 +49,17 @@ router.post('/register', async (req, res) => {
 
 /* ----------  LOGIN  ---------- */
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { identifier, password } = req.body; // identifier can be email or phone
 
   try {
-    const user = await User.findOne({ email });
-    console.log('👤 User from DB:', user);
+    // ✅ Support both email and phone login
+    const user = await User.findOne({
+      $or: [
+        { email: identifier },
+        { phone: identifier }
+      ]
+    });
+    console.log('👤 User from DB:', user ? `Found ${user.email || user.phone}` : 'Not found');
     if (!user)
       return res.status(400).json({ message: 'Invalid credentials' });
 
@@ -66,7 +75,7 @@ router.post('/login', async (req, res) => {
 
     res.json({
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: { id: user._id, name: user.name, email: user.email, phone: user.phone, role: user.role }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
