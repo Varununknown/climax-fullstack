@@ -12,7 +12,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onToggleMode }) => {
   const [identifier, setIdentifier] = useState(''); // Can be email or phone
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isPhoneMode, setIsPhoneMode] = useState(false);
+  const [isPhoneMode, setIsPhoneMode] = useState(true); // ✅ Default to phone
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const { login, isLoading } = useAuth();
