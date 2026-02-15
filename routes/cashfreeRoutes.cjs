@@ -395,5 +395,79 @@ function verifyWebhookSignature(payload, signature) {
     return false;
   }
 }
+// ═══════════════════════════════════════════════════════════════
+// 5️⃣ PROCESS PAYMENT AUTOMATICALLY - Use Order Pay API
+// ═══════════════════════════════════════════════════════════════
+router.post('/process-payment', async (req, res) => {
+  try {
+    const { orderId, paymentSessionId, method } = req.body;
+
+    if (!orderId || !paymentSessionId) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Order ID and Payment Session ID required' 
+      });
+    }
+
+    log('💳 Processing payment for order:', orderId);
+    log('📄 Payment method:', method || 'upi');
+
+    // Use Order Pay API to process the payment
+    // This triggers automatic payment processing
+    const paymentPayload = {
+      order_id: orderId,
+      payment_session_id: paymentSessionId,
+      payment_method: {
+        // Default to UPI for automatic processing
+        // Can be overridden: upi, netbanking, card, wallet, paylater
+        upi: {
+          channel: 'link'
+        }
+      }
+    };
+
+    log('📤 Calling Order Pay API...');
+
+    const response = await axios.post(
+      `${CASHFREE_CONFIG.API_BASE}/orders/${orderId}/pay`,
+      paymentPayload,
+      {
+        headers: {
+          'x-api-version': '2023-08-01',
+          'x-client-id': CASHFREE_CONFIG.CLIENT_ID,
+          'x-client-secret': CASHFREE_CONFIG.SECRET_KEY,
+          'Content-Type': 'application/json',
+          'x-idempotency-key': `${orderId}-${Date.now()}`
+        }
+      }
+    );
+
+    log('✅ Payment processing initiated:', response.data);
+
+    const payment = await Payment.findOne({ transactionId: orderId });
+    if (payment) {
+      payment.metadata.paymentProcessingId = response.data.cf_payment_id;
+      await payment.save();
+    }
+
+    res.json({
+      success: true,
+      message: 'Payment processing initiated',
+      paymentId: response.data.cf_payment_id,
+      status: response.data.payment_status,
+      data: response.data
+    });
+
+  } catch (error) {
+    log('❌ Payment processing error:', error.response?.status);
+    log('   Error data:', error.response?.data);
+    
+    res.status(error.response?.status || 500).json({ 
+      success: false,
+      message: 'Failed to process payment',
+      error: error.response?.data?.message || error.message
+    });
+  }
+});
 
 module.exports = router;

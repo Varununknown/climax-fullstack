@@ -252,17 +252,42 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       // Fallback: Orders API response (orderId) - show payment methods
       if (paymentResponse.orderId) {
-        console.log('✅ Order created via Orders API - showing payment methods');
+        console.log('✅ Order created via Orders API');
         sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
         sessionStorage.setItem('cashfreeSessionId', paymentResponse.sessionId);
         sessionStorage.setItem('cashfreeContentId', contentId);
         
-        // Show success message and offer options
-        setPaymentStep('cashfree');
-        setCashfreeError(
-          `Order #${paymentResponse.orderId.substring(0, 12)}... created! ` +
-          `You can use UPI or QR code methods above to pay, or wait for Cashfree payment methods.`
-        );
+        // 🆕 Trigger automatic payment processing
+        console.log('💳 Triggering automatic payment processing...');
+        try {
+          const processResponse = await CashfreeService.processPayment(
+            paymentResponse.orderId,
+            paymentResponse.sessionId,
+            'upi'
+          );
+          
+          console.log('✅ Automatic payment triggered:', processResponse);
+          
+          if (processResponse.success) {
+            setCashfreeError(
+              `✅ Payment initiated! Transaction ID: ${processResponse.paymentId ? processResponse.paymentId.substring(0, 12) : 'Processing'}...`
+            );
+            // Wait a moment then verify payment status
+            setTimeout(() => {
+              window.location.href = `${process.env.REACT_APP_FRONTEND_URL || window.location.origin}/payment-success?orderId=${paymentResponse.orderId}`;
+            }, 2000);
+            return;
+          }
+        } catch (processError: any) {
+          console.log('ℹ️ Automatic payment processing fallback:', processError.message);
+          // Fallback: Show manual payment options
+          setPaymentStep('cashfree');
+          setCashfreeError(
+            `Order #${paymentResponse.orderId.substring(0, 12)}... created! ` +
+            `Use UPI or QR code above to complete payment.`
+          );
+        }
+        
         setIsProcessing(false);
         return;
       }

@@ -81,6 +81,29 @@ export const CashfreeService = {
       console.error('❌ Error checking payment status:', error);
       throw error;
     }
+  },
+
+  /**
+   * Process payment automatically using Order Pay API
+   * @param {string} orderId - Order ID from initiation
+   * @param {string} paymentSessionId - Payment session ID
+   * @param {string} method - Payment method (upi, netbanking, card, wallet, paylater)
+   * @returns {Promise} - Payment processing response
+   */
+  processPayment: async (orderId, paymentSessionId, method = 'upi') => {
+    try {
+      console.log('💳 Triggering automatic payment processing:', { orderId, method });
+      const response = await API.post('/cashfree/process-payment', { 
+        orderId, 
+        paymentSessionId,
+        method 
+      });
+      console.log('✅ Payment processing response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Error processing payment:', error.response?.data || error.message);
+      throw error;
+    }
   }
 };
 
