@@ -488,11 +488,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         <div style={tabsContainerStyle}>
           <button
             onClick={() => {
+              console.log('📱 Razorpay tab clicked');
               setPaymentMethod('razorpay');
               setPaymentStep('razorpay');
               setTxnError('');
             }}
             style={paymentMethod === 'razorpay' ? tabButtonActiveStyle : tabButtonInactiveStyle}
+            onTouchStart={() => console.log('📱 Razorpay tab touched')}
           >
             <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
             Razorpay
@@ -558,6 +560,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               onClick={handleRazorpayPayment}
               disabled={isProcessing}
               style={isProcessing ? disabledButtonStyle : submitButtonStyle}
+              onTouchStart={() => console.log('📱 Razorpay button touched')}
+              onTouchEnd={() => console.log('📱 Razorpay touch ended')}
             >
               {isProcessing ? (
                 <>
