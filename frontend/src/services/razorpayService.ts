@@ -130,13 +130,36 @@ class RazorpayService {
       return;
     }
 
-    // Disable background scroll on mobile
+    // Create invisible overlay to block background touches
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'transparent';
+    overlay.style.zIndex = '999999';
+    overlay.style.pointerEvents = 'auto';
+    overlay.id = 'razorpay-overlay';
+    
+    // Prevent default touch behaviors on overlay
+    overlay.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    overlay.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+    
+    document.body.appendChild(overlay);
+
+    // Disable scroll on body
     const body = document.body;
     const originalOverflow = body.style.overflow;
-    const originalPosition = body.style.position;
     body.style.overflow = 'hidden';
-    body.style.position = 'fixed';
-    body.style.width = '100%';
+
+    const cleanupOverlay = () => {
+      const existingOverlay = document.getElementById('razorpay-overlay');
+      if (existingOverlay) {
+        existingOverlay.remove();
+      }
+      body.style.overflow = originalOverflow;
+    };
 
     const options = {
       key: this.keyId,
@@ -155,19 +178,13 @@ class RazorpayService {
       },
       handler: function (response: any) {
         console.log('✅ Payment successful:', response);
-        // Restore background
-        body.style.overflow = originalOverflow;
-        body.style.position = originalPosition;
-        body.style.width = 'auto';
+        cleanupOverlay();
         onSuccess(response);
       },
       modal: {
         ondismiss: function () {
           console.log('❌ Payment cancelled');
-          // Restore background
-          body.style.overflow = originalOverflow;
-          body.style.position = originalPosition;
-          body.style.width = 'auto';
+          cleanupOverlay();
           onError(new Error('Payment cancelled by user'));
         }
       }
@@ -178,10 +195,7 @@ class RazorpayService {
       razorpay.open();
     } catch (err) {
       console.error('❌ Error opening Razorpay:', err);
-      // Restore background on error
-      body.style.overflow = originalOverflow;
-      body.style.position = originalPosition;
-      body.style.width = 'auto';
+      cleanupOverlay();
       onError(err);
     }
   }
