@@ -67,7 +67,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onToggleMode }) => {
       console.log('✅ Registration successful!');
     }
   };
-  };
 
   return (
     <div className="w-full max-w-md mx-auto">
