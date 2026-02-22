@@ -57,7 +57,7 @@ router.post('/create-order', async (req, res) => {
     const options = {
       amount: Math.round(amount * 100), // Convert to paise
       currency: 'INR',
-      receipt: `order_${contentId}_${userId}_${Date.now()}`,
+      receipt: `order_${Date.now().toString().slice(-8)}`, // Max 40 chars: "order_" (6) + timestamp (8) = 14 chars
       payment_capture: 1,
       notes: {
         userId,
