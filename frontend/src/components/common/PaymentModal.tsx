@@ -323,7 +323,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     pointerEvents: 'auto',
     touchAction: 'pan-y',
   };
-  };
 
   const buttonStyle: React.CSSProperties = {
     flex: 1,
