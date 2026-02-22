@@ -20,8 +20,10 @@ const cashfreeRoutes = require('./routes/cashfreeRoutes.cjs'); // ✅ NEW - Cash
 let razorpayRoutes = null;
 try {
   razorpayRoutes = require('./routes/razorpayRoutes.cjs'); // ✅ NEW - Razorpay Payment Gateway
+  console.log('✅ Razorpay routes loaded successfully');
 } catch (err) {
   console.warn('⚠️  Razorpay routes not available:', err.message);
+  console.warn('   Stack:', err.stack);
 }
 // DISABLED: Old participation/quiz routes - keeping for backward compatibility but not mounted
 // const participationRoutes = require('./routes/participationRoutes.cjs'); // ✅ DISABLED
