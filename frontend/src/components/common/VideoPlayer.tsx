@@ -307,7 +307,6 @@ export const VideoPlayer: React.FC = () => {
       ref={containerRef}
       className="relative bg-black min-h-screen flex items-center justify-center"
       onMouseMove={handleMouseMove}
-      style={showPaymentModal ? { pointerEvents: 'none' } : {}}
     >
       {/* Video Element */}
       <video
@@ -318,10 +317,11 @@ export const VideoPlayer: React.FC = () => {
         playsInline
         onClick={togglePlayPause}
         crossOrigin="anonymous"
+        style={showPaymentModal ? { pointerEvents: 'none' } : {}}
       />
 
       {/* Header */}
-      <div className={`absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/70 to-transparent z-10 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/70 to-transparent z-10 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`} style={showPaymentModal ? { pointerEvents: 'none' } : {}}>
         <div className="flex items-center justify-between">
           <button
             onClick={() => navigate('/')}
@@ -354,7 +354,7 @@ export const VideoPlayer: React.FC = () => {
       </div>
 
       {/* Bottom Controls */}
-      <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent z-10 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent z-10 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`} style={showPaymentModal ? { pointerEvents: 'none' } : {}}>
         <div className="flex items-center justify-between mb-2">
           {/* Time */}
           <div className="text-white text-sm">
