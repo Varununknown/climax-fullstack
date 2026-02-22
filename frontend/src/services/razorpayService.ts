@@ -123,46 +123,11 @@ class RazorpayService {
     onSuccess: (response: any) => void,
     onError: (error: any) => void
   ): void {
-    // Ensure Razorpay is loaded
     if (!(window as any).Razorpay) {
       console.error('❌ Razorpay SDK not loaded');
       onError(new Error('Razorpay SDK not loaded'));
       return;
     }
-
-    const body = document.body;
-    const html = document.documentElement;
-    const originalOverflow = body.style.overflow;
-    const originalHtmlOverflow = html.style.overflow;
-
-    // Prevent scrolling
-    body.style.overflow = 'hidden';
-    html.style.overflow = 'hidden';
-
-    // Prevent scroll events
-    const preventScroll = (e: Event) => {
-      if ((e.target as HTMLElement).closest('.razorpay-container')) {
-        return; // Allow Razorpay modal to handle events
-      }
-      // Only prevent if it's a scroll-related event on background
-      if (e.type === 'touchmove' && (e as TouchEvent).touches.length > 0) {
-        const touch = (e as TouchEvent).touches[0];
-        const element = document.elementFromPoint(touch.clientX, touch.clientY);
-        if (!element?.closest('.razorpay')) {
-          (e as TouchEvent).preventDefault();
-        }
-      }
-    };
-
-    document.addEventListener('touchmove', preventScroll, { passive: false });
-    document.addEventListener('wheel', preventScroll, { passive: false });
-
-    const cleanup = () => {
-      body.style.overflow = originalOverflow;
-      html.style.overflow = originalHtmlOverflow;
-      document.removeEventListener('touchmove', preventScroll);
-      document.removeEventListener('wheel', preventScroll);
-    };
 
     const options = {
       key: this.keyId,
@@ -181,13 +146,11 @@ class RazorpayService {
       },
       handler: function (response: any) {
         console.log('✅ Payment successful:', response);
-        cleanup();
         onSuccess(response);
       },
       modal: {
         ondismiss: function () {
           console.log('❌ Payment cancelled');
-          cleanup();
           onError(new Error('Payment cancelled by user'));
         }
       }
@@ -198,7 +161,6 @@ class RazorpayService {
       razorpay.open();
     } catch (err) {
       console.error('❌ Error opening Razorpay:', err);
-      cleanup();
       onError(err);
     }
   }

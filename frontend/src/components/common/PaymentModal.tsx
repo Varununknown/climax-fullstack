@@ -34,6 +34,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [upiDeepLinkTxnId, setUpiDeepLinkTxnId] = useState('');
+  const [razorpayActive, setRazorpayActive] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -92,6 +93,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         userName: user.name || 'User'
       });
 
+      // Hide our modal so it doesn't block Razorpay on mobile
+      setRazorpayActive(true);
+
       // Open Razorpay checkout
       RazorpayService.openCheckout(
         order,
@@ -110,12 +114,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             );
 
             if (verifyResponse.success) {
+              setRazorpayActive(false);
               setPaymentStep('success');
               setTimeout(() => {
                 onSuccess();
                 onClose();
               }, 3000);
             } else {
+              setRazorpayActive(false);
               setTxnError(verifyResponse.message || 'Payment verification failed');
               setIsProcessing(false);
             }
@@ -127,6 +133,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         },
         (error: any) => {
           console.error('Payment error:', error);
+          setRazorpayActive(false);
           setTxnError(error.message || 'Payment failed. Please try again.');
           setIsProcessing(false);
         }
@@ -293,7 +300,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     position: 'fixed',
     inset: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    display: 'flex',
+    display: razorpayActive ? 'none' : 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 9999,
