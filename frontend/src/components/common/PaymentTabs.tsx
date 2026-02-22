@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Loader2, AlertCircle, X } from 'lucide-react';
+import RazorpayService from '../../services/razorpayService';
+import { AlertCircle, X } from 'lucide-react';
 
 interface PaymentTabsProps {
   contentId: string;
@@ -9,7 +10,7 @@ interface PaymentTabsProps {
   onClose: () => void;
 }
 
-type PaymentMethod = 'cashfree' | 'upi' | 'phonepe' | 'cards' | 'wallet' | 'banking';
+type PaymentMethod = 'razorpay' | 'upi' | 'upi-deeplink' | 'cards' | 'wallet' | 'banking';
 
 export const PaymentTabs: React.FC<PaymentTabsProps> = ({
   contentId,
@@ -18,43 +19,81 @@ export const PaymentTabs: React.FC<PaymentTabsProps> = ({
   onClose
 }) => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<PaymentMethod>('cashfree');
+  const [activeTab, setActiveTab] = useState<PaymentMethod>('razorpay');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const paymentMethods = [
-    { id: 'cashfree', label: '💳 Cashfree', icon: '💳' },
-    { id: 'upi', label: '📱 UPI', icon: '📱' },
-    { id: 'cards', label: '🏧 Cards', icon: '🏧' },
-    { id: 'wallet', label: '👛 Wallet', icon: '👛' },
-    { id: 'banking', label: '🏦 Banking', icon: '🏦' },
-    { id: 'phonepe', label: '📞 PhonePe', icon: '📞' }
+    { id: 'razorpay', label: '💳 Razorpay', icon: '💳' },
+    { id: 'upi', label: '📲 UPI QR', icon: '📲' },
+    { id: 'upi-deeplink', label: '📱 UPI App', icon: '📱' },
+    { id: 'cards', label: '🏦 Cards', icon: '🏦' },
+    { id: 'wallet', label: '💰 Wallet', icon: '💰' },
+    { id: 'banking', label: '🏧 Banking', icon: '🏧' }
   ];
 
-  const handleCashfreePayment = () => {
-    setLoading(true);
-    setError('');
-    
+  const handleRazorpayPayment = async () => {
+    if (!user) {
+      setError('Please login to make payment');
+      return;
+    }
+
     try {
-      // 🔗 Cashfree Payment Link - Direct redirect
-      const paymentLink = 'https://payments.cashfree.com/links?code=s9vueqivuecg_AAAAAAARY5Y';
-      
-      console.log('💳 Opening Cashfree Payment Link...');
-      console.log('📋 Amount:', amount, 'Content:', contentId, 'User:', user?.id);
-      
-      // Store context for post-payment
-      sessionStorage.setItem('cashfreeContentId', contentId);
-      sessionStorage.setItem('cashfreeAmount', String(amount));
-      sessionStorage.setItem('cashfreeUserId', user?.id || '');
-      
-      // Redirect to payment link
-      setError('⏳ Opening Cashfree payment...');
-      setTimeout(() => {
-        window.location.href = paymentLink;
-      }, 300);
+      setLoading(true);
+      setError('');
+
+      // Create Razorpay order
+      const order = await RazorpayService.createOrder({
+        userId: user.id,
+        contentId,
+        amount,
+        email: user.email,
+        phone: user.phone || '9999999999',
+        userName: user.name
+      });
+
+      // Open Razorpay checkout
+      RazorpayService.openCheckout(
+        order,
+        user.email,
+        user.name,
+        user.phone || '9999999999',
+        async (response: any) => {
+          // Payment successful - verify on backend
+          try {
+            const verifyResponse = await RazorpayService.verifyPayment(
+              order.id,
+              response.razorpay_payment_id,
+              response.razorpay_signature,
+              user.id,
+              contentId,
+              amount
+            );
+
+            if (verifyResponse.success) {
+              setError('✅ Payment successful! Access granted.');
+              setTimeout(() => {
+                onClose();
+              }, 2000);
+            } else {
+              setError(verifyResponse.message || 'Payment verification failed');
+            }
+          } catch (err: any) {
+            console.error('Verification error:', err);
+            setError('Payment verified but access update failed. Please refresh.');
+          } finally {
+            setLoading(false);
+          }
+        },
+        (error: any) => {
+          console.error('Payment error:', error);
+          setError(error.message || 'Payment failed. Please try again.');
+          setLoading(false);
+        }
+      );
     } catch (err: any) {
-      console.error('❌ Payment error:', err);
-      setError('Failed to open payment. Please try again.');
+      console.error('Payment error:', err);
+      setError(err.message || 'Failed to initiate payment');
       setLoading(false);
     }
   };
@@ -109,27 +148,26 @@ export const PaymentTabs: React.FC<PaymentTabsProps> = ({
     };
 
     switch (activeTab) {
-      case 'cashfree':
+      case 'razorpay':
         return (
           <div style={baseStyle}>
             <div style={{ ...infoBoxStyle, backgroundColor: '#eff6ff', border: '1px solid #bfdbfe' }}>
               <p style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', margin: 0 }}>
-                💳 Cashfree All-in-One Payment
+                💳 Razorpay Secure Payment
               </p>
               <ul style={{ fontSize: '14px', color: '#666', margin: '8px 0 0 0', paddingLeft: '20px' }}>
                 <li>✓ Credit/Debit Cards</li>
-                <li>✓ UPI & Wallets</li>
-                <li>✓ Net Banking</li>
-                <li>✓ Instant Verification</li>
+                <li>✓ UPI & Net Banking</li>
+                <li>✓ Digital Wallets</li>
+                <li>✓ Instant Settlement</li>
               </ul>
             </div>
             <div style={{ textAlign: 'center', fontSize: '14px', color: '#999' }}>
-              🔒 Secured by Cashfree - PCI DSS Compliant
+              🔒 PCI DSS Compliant - 100% Secure
             </div>
             <div style={buttonContainerStyle}>
               <button onClick={onClose} disabled={loading} style={cancelBtnStyle}>Cancel</button>
-              <button onClick={handleCashfreePayment} disabled={loading} style={payBtnStyle}>
-                {loading && <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />}
+              <button onClick={handleRazorpayPayment} disabled={loading} style={payBtnStyle}>
                 {loading ? 'Processing...' : 'Pay Now'}
               </button>
             </div>
@@ -139,120 +177,103 @@ export const PaymentTabs: React.FC<PaymentTabsProps> = ({
       case 'upi':
         return (
           <div style={baseStyle}>
-            <div style={{ ...infoBoxStyle, backgroundColor: '#fef3c7', border: '1px solid #fcd34d' }}>
+            <div style={{ ...infoBoxStyle, backgroundColor: '#f0fdf4', border: '1px solid #86efac' }}>
               <p style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', margin: 0 }}>
-                📱 UPI Payment
+                📲 UPI QR Code Payment
               </p>
-              <ol style={{ fontSize: '14px', color: '#666', margin: '8px 0 0 0', paddingLeft: '20px' }}>
-                <li>Generate QR Code</li>
-                <li>Scan with any UPI app</li>
-                <li>Enter amount & complete</li>
-              </ol>
-            </div>
-            <div style={{ textAlign: 'center', fontSize: '14px', color: '#999' }}>
-              ✓ Instant & Free transfers
+              <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
+                Scan with any UPI app and complete payment
+              </p>
             </div>
             <div style={buttonContainerStyle}>
-              <button onClick={onClose} style={cancelBtnStyle}>Close</button>
-              <button onClick={() => setActiveTab('cashfree')} style={{...payBtnStyle, backgroundColor: '#2563eb'}}>
-                Switch to Cashfree
+              <button onClick={onClose} disabled={loading} style={cancelBtnStyle}>Cancel</button>
+              <button onClick={() => {}} disabled={true} style={{...payBtnStyle, opacity: 0.7}}>
+                Coming Soon
               </button>
             </div>
           </div>
         );
-      
+
+      case 'upi-deeplink':
+        return (
+          <div style={baseStyle}>
+            <div style={{ ...infoBoxStyle, backgroundColor: '#f0fdf4', border: '1px solid #86efac' }}>
+              <p style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', margin: 0 }}>
+                📱 UPI App Payment
+              </p>
+              <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
+                Opens directly in your UPI app
+              </p>
+            </div>
+            <div style={buttonContainerStyle}>
+              <button onClick={onClose} disabled={loading} style={cancelBtnStyle}>Cancel</button>
+              <button onClick={() => {}} disabled={true} style={{...payBtnStyle, opacity: 0.7}}>
+                Coming Soon
+              </button>
+            </div>
+          </div>
+        );
+
       case 'cards':
         return (
           <div style={baseStyle}>
-            <div style={{ ...infoBoxStyle, backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+            <div style={{ ...infoBoxStyle, backgroundColor: '#fef3c7', border: '1px solid #fcd34d' }}>
               <p style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', margin: 0 }}>
-                🏧 Credit/Debit Cards
+                🏦 Card Payment
               </p>
-              <ul style={{ fontSize: '14px', color: '#666', margin: '8px 0 0 0', paddingLeft: '20px' }}>
-                <li>✓ Visa & Mastercard</li>
-                <li>✓ RuPay Cards</li>
-                <li>✓ Safe & Encrypted</li>
-                <li>✓ Instant Transaction</li>
-              </ul>
+              <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
+                Debit & Credit Cards
+              </p>
             </div>
             <div style={buttonContainerStyle}>
-              <button onClick={onClose} style={cancelBtnStyle}>Close</button>
-              <button onClick={handleCashfreePayment} disabled={loading} style={payBtnStyle}>
-                {loading ? 'Processing...' : 'Pay with Card'}
+              <button onClick={onClose} disabled={loading} style={cancelBtnStyle}>Cancel</button>
+              <button onClick={() => {}} disabled={true} style={{...payBtnStyle, opacity: 0.7}}>
+                Coming Soon
               </button>
             </div>
           </div>
         );
-      
+
       case 'wallet':
         return (
           <div style={baseStyle}>
-            <div style={{ ...infoBoxStyle, backgroundColor: '#fdf2f8', border: '1px solid #fbcfe8' }}>
+            <div style={{ ...infoBoxStyle, backgroundColor: '#f5e6ff', border: '1px solid #e9d5ff' }}>
               <p style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', margin: 0 }}>
-                👛 Digital Wallets
+                💰 Digital Wallet
               </p>
-              <ul style={{ fontSize: '14px', color: '#666', margin: '8px 0 0 0', paddingLeft: '20px' }}>
-                <li>✓ Google Pay</li>
-                <li>✓ PhonePe Wallet</li>
-                <li>✓ Paytm Wallet</li>
-                <li>✓ Amazon Pay</li>
-              </ul>
+              <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
+                PayPal, Google Pay, Apple Pay
+              </p>
             </div>
             <div style={buttonContainerStyle}>
-              <button onClick={onClose} style={cancelBtnStyle}>Close</button>
-              <button onClick={handleCashfreePayment} disabled={loading} style={payBtnStyle}>
-                {loading ? 'Processing...' : 'Pay with Wallet'}
+              <button onClick={onClose} disabled={loading} style={cancelBtnStyle}>Cancel</button>
+              <button onClick={() => {}} disabled={true} style={{...payBtnStyle, opacity: 0.7}}>
+                Coming Soon
               </button>
             </div>
           </div>
         );
-      
+
       case 'banking':
         return (
           <div style={baseStyle}>
-            <div style={{ ...infoBoxStyle, backgroundColor: '#f5f3ff', border: '1px solid #e9d5ff' }}>
+            <div style={{ ...infoBoxStyle, backgroundColor: '#f3e8ff', border: '1px solid #e9d5ff' }}>
               <p style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', margin: 0 }}>
-                🏦 Net Banking
+                🏧 Net Banking
               </p>
-              <ul style={{ fontSize: '14px', color: '#666', margin: '8px 0 0 0', paddingLeft: '20px' }}>
-                <li>✓ All Major Banks</li>
-                <li>✓ Secure Transfer</li>
-                <li>✓ Low Fees</li>
-                <li>✓ Direct Debit</li>
-              </ul>
+              <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
+                All major banks supported
+              </p>
             </div>
             <div style={buttonContainerStyle}>
-              <button onClick={onClose} style={cancelBtnStyle}>Close</button>
-              <button onClick={handleCashfreePayment} disabled={loading} style={payBtnStyle}>
-                {loading ? 'Processing...' : 'Pay via Bank'}
+              <button onClick={onClose} disabled={loading} style={cancelBtnStyle}>Cancel</button>
+              <button onClick={() => {}} disabled={true} style={{...payBtnStyle, opacity: 0.7}}>
+                Coming Soon
               </button>
             </div>
           </div>
         );
-      
-      case 'phonepe':
-        return (
-          <div style={baseStyle}>
-            <div style={{ ...infoBoxStyle, backgroundColor: '#fef2f2', border: '1px solid #fecaca' }}>
-              <p style={{ fontWeight: '600', color: '#1f2937', marginBottom: '8px', margin: 0 }}>
-                📞 PhonePe Payment
-              </p>
-              <ul style={{ fontSize: '14px', color: '#666', margin: '8px 0 0 0', paddingLeft: '20px' }}>
-                <li>✓ PhonePe App Payment</li>
-                <li>✓ Instant Settlement</li>
-                <li>✓ Cashback Available</li>
-                <li>✓ Direct UPI Link</li>
-              </ul>
-            </div>
-            <div style={buttonContainerStyle}>
-              <button onClick={onClose} style={cancelBtnStyle}>Close</button>
-              <button onClick={() => setActiveTab('upi')} style={{...payBtnStyle, backgroundColor: '#dc2626'}}>
-                Open PhonePe
-              </button>
-            </div>
-          </div>
-        );
-      
+
       default:
         return null;
     }
@@ -307,7 +328,7 @@ export const PaymentTabs: React.FC<PaymentTabsProps> = ({
           </p>
         </div>
 
-        {/* Payment Method Tabs - Horizontal Scroll for Mobile */}
+        {/* Payment Method Tabs */}
         <div style={{
           display: 'flex',
           gap: '8px',
@@ -361,12 +382,6 @@ export const PaymentTabs: React.FC<PaymentTabsProps> = ({
         {/* Tab Content */}
         {getTabContent()}
       </div>
-
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 };
