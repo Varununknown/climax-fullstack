@@ -32,7 +32,8 @@
     "mongoose": "^8.16.0",
     "multer": "^2.0.2",
     "multer-s3": "^3.0.1",
-    "multer-storage-cloudinary": "^4.0.0"
+    "multer-storage-cloudinary": "^4.0.0",
+    "razorpay": "^2.9.2"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
