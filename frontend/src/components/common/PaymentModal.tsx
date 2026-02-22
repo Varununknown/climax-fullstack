@@ -305,6 +305,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     justifyContent: 'center',
     zIndex: 9999,
     padding: '12px',
+    pointerEvents: 'auto',
+    touchAction: 'auto',
   };
 
   const modalStyle: React.CSSProperties = {
@@ -318,6 +320,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     overflowY: 'auto',
     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
     border: '1px solid rgb(51, 65, 85)',
+    pointerEvents: 'auto',
+    touchAction: 'pan-y',
+  };
   };
 
   const buttonStyle: React.CSSProperties = {

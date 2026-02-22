@@ -307,6 +307,7 @@ export const VideoPlayer: React.FC = () => {
       ref={containerRef}
       className="relative bg-black min-h-screen flex items-center justify-center"
       onMouseMove={handleMouseMove}
+      style={showPaymentModal ? { pointerEvents: 'none' } : {}}
     >
       {/* Video Element */}
       <video
