@@ -130,35 +130,38 @@ class RazorpayService {
       return;
     }
 
-    // Create invisible overlay to block background touches
-    const overlay = document.createElement('div');
-    overlay.style.position = 'fixed';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.width = '100%';
-    overlay.style.height = '100%';
-    overlay.style.backgroundColor = 'transparent';
-    overlay.style.zIndex = '999999';
-    overlay.style.pointerEvents = 'auto';
-    overlay.id = 'razorpay-overlay';
-    
-    // Prevent default touch behaviors on overlay
-    overlay.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
-    overlay.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
-    
-    document.body.appendChild(overlay);
-
-    // Disable scroll on body
     const body = document.body;
+    const html = document.documentElement;
     const originalOverflow = body.style.overflow;
-    body.style.overflow = 'hidden';
+    const originalHtmlOverflow = html.style.overflow;
 
-    const cleanupOverlay = () => {
-      const existingOverlay = document.getElementById('razorpay-overlay');
-      if (existingOverlay) {
-        existingOverlay.remove();
+    // Prevent scrolling
+    body.style.overflow = 'hidden';
+    html.style.overflow = 'hidden';
+
+    // Prevent scroll events
+    const preventScroll = (e: Event) => {
+      if ((e.target as HTMLElement).closest('.razorpay-container')) {
+        return; // Allow Razorpay modal to handle events
       }
+      // Only prevent if it's a scroll-related event on background
+      if (e.type === 'touchmove' && (e as TouchEvent).touches.length > 0) {
+        const touch = (e as TouchEvent).touches[0];
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (!element?.closest('.razorpay')) {
+          (e as TouchEvent).preventDefault();
+        }
+      }
+    };
+
+    document.addEventListener('touchmove', preventScroll, { passive: false });
+    document.addEventListener('wheel', preventScroll, { passive: false });
+
+    const cleanup = () => {
       body.style.overflow = originalOverflow;
+      html.style.overflow = originalHtmlOverflow;
+      document.removeEventListener('touchmove', preventScroll);
+      document.removeEventListener('wheel', preventScroll);
     };
 
     const options = {
@@ -178,13 +181,13 @@ class RazorpayService {
       },
       handler: function (response: any) {
         console.log('✅ Payment successful:', response);
-        cleanupOverlay();
+        cleanup();
         onSuccess(response);
       },
       modal: {
         ondismiss: function () {
           console.log('❌ Payment cancelled');
-          cleanupOverlay();
+          cleanup();
           onError(new Error('Payment cancelled by user'));
         }
       }
@@ -195,7 +198,7 @@ class RazorpayService {
       razorpay.open();
     } catch (err) {
       console.error('❌ Error opening Razorpay:', err);
-      cleanupOverlay();
+      cleanup();
       onError(err);
     }
   }
