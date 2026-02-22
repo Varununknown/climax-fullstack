@@ -66,7 +66,7 @@ export const waitForCashfree = async (timeoutMs = 10000): Promise<boolean> => {
   const startTime = Date.now();
 
   while (Date.now() - startTime < timeoutMs) {
-    if (window.Cashfree && window.Cashfree.checkout) {
+    if (window.Cashfree && typeof window.Cashfree.checkout === 'function') {
       console.log('✅ Cashfree.checkout() is ready!');
       return true;
     }

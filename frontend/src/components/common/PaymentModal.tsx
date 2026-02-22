@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { X, QrCode, CheckCircle, Copy, CreditCard, Loader2 } from 'lucide-react';
 import { Content } from '../../types';
 import { useAuth } from '../../context/AuthContext';
-import CashfreeService from '../../services/cashfreeService';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -202,95 +201,42 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   // ✅ CASHFREE PAYMENT HANDLER
-  const handleCashfreePayment = async () => {
+  const handleCashfreePayment = () => {
     if (!user) {
       setCashfreeError('Please login to make payment');
       return;
     }
 
-    try {
-      setIsProcessing(true);
-      setCashfreeError('');
+    setIsProcessing(true);
+    setCashfreeError('');
 
-      // Ensure all required fields have values
-      const userId = user._id || user.id || 'unknown-user';
-      const contentId = content._id || content.id || 'unknown-content';
-      const email = user.email || 'user@climax.com';
-      const phone = user.phone || '9999999999';
-      const userName = user.name || user.username || 'User';
+    try {
+      const userId = user.id || 'unknown-user';
+      const contentId = content._id || 'unknown-content';
       const amount = content.premiumPrice || 1;
 
-      console.log('💳 Initiating Cashfree payment...');
+      console.log('💳 Opening Cashfree Payment Link...');
+      console.log('📋 User:', userId, 'Content:', contentId, 'Amount:', amount);
 
-      // Call backend to create order
-      console.log('📤 Calling backend /initiate endpoint...');
-      const paymentResponse = await CashfreeService.initiatePayment(
-        userId,
-        contentId,
-        amount,
-        email,
-        phone,
-        userName
-      );
-
-      console.log('💳 Backend Response:', paymentResponse);
-
-      if (!paymentResponse.success) {
-        setCashfreeError('Failed: ' + (paymentResponse.message || 'Payment initiation failed'));
-        setIsProcessing(false);
-        return;
-      }
-
-      // Check for Payment Links API response (linkUrl)
-      if (paymentResponse.linkUrl) {
-        console.log('✅ Payment Links API available - redirecting to hosted checkout');
-        sessionStorage.setItem('cashfreeOrderId', paymentResponse.linkId);
-        sessionStorage.setItem('cashfreeContentId', contentId);
-        window.location.href = paymentResponse.linkUrl;
-        return;
-      }
-
-      // Fallback: Orders API response (orderId) - show payment methods
-      if (paymentResponse.orderId) {
-        console.log('✅ Order created via Orders API');
-        console.log('📋 Full response:', JSON.stringify(paymentResponse, null, 2));
-        console.log('🔑 SessionId:', paymentResponse.sessionId);
-        
-        sessionStorage.setItem('cashfreeOrderId', paymentResponse.orderId);
-        sessionStorage.setItem('cashfreeSessionId', paymentResponse.sessionId);
-        sessionStorage.setItem('cashfreeContentId', contentId);
-        
-        if (!paymentResponse.sessionId) {
-          console.error('❌ ERROR: No sessionId in response!');
-          setCashfreeError('❌ Payment session creation failed. Please try again.');
-          setIsProcessing(false);
-          return;
-        }
-        
-        console.log('🌐 Building checkout URL...');
-        const checkoutUrl = `https://sandbox.cashfree.com/pg/checkout/?sessionId=${encodeURIComponent(paymentResponse.sessionId)}`;
-        
-        console.log('📍 Checkout URL:', checkoutUrl);
-        console.log('⏳ Redirecting to Cashfree in 1 second...');
-        
-        // Show loading message before redirecting
-        setCashfreeError(`⏳ Opening Cashfree payment gateway...`);
-        
-        // Redirect to Cashfree checkout
-        setTimeout(() => {
-          console.log('🚀 Executing redirect now...');
-          window.location.href = checkoutUrl;
-        }, 1000);
-        
-        return;
-      }
-
-      setCashfreeError('No payment method available');
-      setIsProcessing(false);
+      // Store context for post-payment verification
+      sessionStorage.setItem('cashfreeContentId', contentId);
+      sessionStorage.setItem('cashfreeAmount', String(amount));
+      sessionStorage.setItem('cashfreeUserId', userId);
+      
+      // 🔗 Direct payment link
+      const paymentLink = 'https://payments.cashfree.com/links?code=s9vueqivuecg_AAAAAAARY5Y';
+      
+      console.log('🌐 Redirecting to:', paymentLink);
+      setCashfreeError('⏳ Opening Cashfree payment...');
+      
+      // Redirect to payment link
+      setTimeout(() => {
+        window.location.href = paymentLink;
+      }, 300);
       
     } catch (err: any) {
-      console.error('💳 Cashfree Payment Error:', err);
-      setCashfreeError(err.response?.data?.message || err.message || 'Payment failed');
+      console.error('❌ Cashfree Payment Error:', err);
+      setCashfreeError('Failed to open payment. Please try again.');
       setIsProcessing(false);
     }
   };
@@ -316,7 +262,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         console.log('✅ Fest payment transaction ID validated:', transactionId);
         setPaymentStep('success');
         setTimeout(() => {
-          onSuccess(transactionId);  // Pass transaction ID to parent component
+          onSuccess();  // Call success callback
           onClose();
         }, 2000);
         return;
@@ -837,8 +783,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                             background: '#ffffff',
                             transition: 'all 0.25s ease-out',
                             outline: 'none',
-                            color: '#1f2937',
-                            fontSize: '14px'
+                            color: '#1f2937'
                           }}
                           onFocus={(e) => {
                             e.target.style.borderColor = '#3b82f6';
