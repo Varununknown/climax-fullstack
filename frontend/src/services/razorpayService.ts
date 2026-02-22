@@ -113,7 +113,7 @@ class RazorpayService {
   }
 
   /**
-   * Open Razorpay checkout
+   * Open Razorpay checkout using modern hosted checkout
    */
   openCheckout(
     order: RazorpayOrder,
@@ -137,7 +137,6 @@ class RazorpayService {
       order_id: order.id,
       name: 'Climax OTT',
       description: 'Premium Content Access',
-      customer_id: `cust_${Date.now()}`,
       prefill: {
         name: userName,
         email: userEmail,
@@ -155,18 +154,16 @@ class RazorpayService {
           console.log('❌ Payment cancelled');
           onError(new Error('Payment cancelled by user'));
         }
-      },
-      notes: {
-        note_key: `climax_payment_${Date.now()}`
-      },
-      retry: {
-        enabled: true,
-        max_retries: 3
       }
     };
 
-    const razorpay = new (window as any).Razorpay(options);
-    razorpay.open();
+    try {
+      const razorpay = new (window as any).Razorpay(options);
+      razorpay.open();
+    } catch (err) {
+      console.error('❌ Error opening Razorpay:', err);
+      onError(err);
+    }
   }
 }
 
