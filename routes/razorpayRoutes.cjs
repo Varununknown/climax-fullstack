@@ -13,6 +13,10 @@ const User = require('../models/User.cjs');
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_live_SJFNtWf14PitN5';
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'vFIttis17pondhRDlh5X8yWH';
 
+console.log('🔑 Razorpay Configuration:');
+console.log('   Key ID:', RAZORPAY_KEY_ID ? '✅ Set' : '❌ Missing');
+console.log('   Key Secret:', RAZORPAY_KEY_SECRET ? '✅ Set' : '❌ Missing');
+
 const razorpay = new Razorpay({
   key_id: RAZORPAY_KEY_ID,
   key_secret: RAZORPAY_KEY_SECRET
@@ -62,10 +66,16 @@ router.post('/create-order', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Error creating Razorpay order:', error);
+    console.error('❌ Error creating Razorpay order:', {
+      message: error.message,
+      code: error.code,
+      statusCode: error.statusCode,
+      fullError: error
+    });
     res.status(500).json({ 
       success: false, 
-      error: error.message || 'Failed to create order' 
+      error: error.message || 'Failed to create order',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
