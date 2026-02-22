@@ -34,7 +34,7 @@ export interface RazorpayResponse {
 }
 
 class RazorpayService {
-  private keyId = 'rzp_live_SJFNtWf14PitN5';
+  private keyId = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SJFNtWf14PitN5';
 
   /**
    * Create payment order via backend
