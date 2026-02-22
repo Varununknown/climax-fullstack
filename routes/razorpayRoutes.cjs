@@ -23,6 +23,22 @@ const razorpay = new Razorpay({
 });
 
 /**
+ * GET /api/razorpay/health
+ * Diagnostic endpoint to check Razorpay configuration
+ */
+router.get('/health', (req, res) => {
+  res.json({
+    success: true,
+    razorpay: {
+      configured: !!RAZORPAY_KEY_ID && !!RAZORPAY_KEY_SECRET,
+      keyId: RAZORPAY_KEY_ID ? '✅ Set' : '❌ Missing',
+      keySecret: RAZORPAY_KEY_SECRET ? '✅ Set' : '❌ Missing',
+      environment: process.env.NODE_ENV || 'development'
+    }
+  });
+});
+
+/**
  * POST /api/razorpay/create-order
  * Create a Razorpay order
  */
