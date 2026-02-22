@@ -130,11 +130,13 @@ class RazorpayService {
       return;
     }
 
-    // Disable background interaction on mobile
+    // Disable background scroll on mobile
     const body = document.body;
     const originalOverflow = body.style.overflow;
+    const originalPosition = body.style.position;
     body.style.overflow = 'hidden';
-    body.style.touchAction = 'none';
+    body.style.position = 'fixed';
+    body.style.width = '100%';
 
     const options = {
       key: this.keyId,
@@ -153,17 +155,19 @@ class RazorpayService {
       },
       handler: function (response: any) {
         console.log('✅ Payment successful:', response);
-        // Restore background interaction
+        // Restore background
         body.style.overflow = originalOverflow;
-        body.style.touchAction = 'auto';
+        body.style.position = originalPosition;
+        body.style.width = 'auto';
         onSuccess(response);
       },
       modal: {
         ondismiss: function () {
           console.log('❌ Payment cancelled');
-          // Restore background interaction
+          // Restore background
           body.style.overflow = originalOverflow;
-          body.style.touchAction = 'auto';
+          body.style.position = originalPosition;
+          body.style.width = 'auto';
           onError(new Error('Payment cancelled by user'));
         }
       }
@@ -174,9 +178,10 @@ class RazorpayService {
       razorpay.open();
     } catch (err) {
       console.error('❌ Error opening Razorpay:', err);
-      // Restore background interaction on error
+      // Restore background on error
       body.style.overflow = originalOverflow;
-      body.style.touchAction = 'auto';
+      body.style.position = originalPosition;
+      body.style.width = 'auto';
       onError(err);
     }
   }
