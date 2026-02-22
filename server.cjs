@@ -17,7 +17,12 @@ const upiRoutes = require('./routes/upiRoutes.cjs'); // ✅ UPI DEEP LINK
 const phonepeRoutes = require('./routes/phonepeRoutes.cjs'); // ✅ PhonePe Gateway
 const bannerRoutes = require('./routes/bannerRoutes.cjs'); // ✅ NEW - Banners/Ads
 const cashfreeRoutes = require('./routes/cashfreeRoutes.cjs'); // ✅ NEW - Cashfree Payment Gateway
-const razorpayRoutes = require('./routes/razorpayRoutes.cjs'); // ✅ NEW - Razorpay Payment Gateway
+let razorpayRoutes = null;
+try {
+  razorpayRoutes = require('./routes/razorpayRoutes.cjs'); // ✅ NEW - Razorpay Payment Gateway
+} catch (err) {
+  console.warn('⚠️  Razorpay routes not available:', err.message);
+}
 // DISABLED: Old participation/quiz routes - keeping for backward compatibility but not mounted
 // const participationRoutes = require('./routes/participationRoutes.cjs'); // ✅ DISABLED
 // const quizRoutes = require('./routes/quizRoutes.cjs'); // ✅ DISABLED
@@ -402,7 +407,9 @@ app.use('/api/payments', paymentRoutes); // ✅ This now handles /api/payments/c
 app.use('/api/payment-settings', paymentSettingsRoutes); // ✅ NEW
 app.use('/api/phonepe', phonepeRoutes); // ✅ PhonePe Gateway
 app.use('/api/cashfree', cashfreeRoutes); // ✅ Cashfree Payment Gateway
-app.use('/api/razorpay', razorpayRoutes); // ✅ Razorpay Payment Gateway
+if (razorpayRoutes) {
+  app.use('/api/razorpay', razorpayRoutes); // ✅ Razorpay Payment Gateway
+}
 // DISABLED: Old participation/quiz routes - using new quiz-system only
 app.use('/api/contents', contentRoutes); // ✅ MAIN CONTENT ROUTES (with POST, PUT, DELETE)
 // app.use('/api/participation', participationRoutes); // ✅ DISABLED - Old Fans Fest
