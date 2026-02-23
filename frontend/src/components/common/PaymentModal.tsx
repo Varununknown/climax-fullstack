@@ -217,6 +217,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   // ==================== INLINE STYLES ====================
+  // Touch handler to prevent default behavior and ensure click propagation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
   const backdropStyle: React.CSSProperties = {
     position: 'fixed',
     inset: 0,
@@ -224,9 +234,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 9999,
+    zIndex: 99999,
     padding: '12px',
     pointerEvents: 'auto',
+    WebkitTouchCallout: 'none',
   };
 
   const modalStyle: React.CSSProperties = {
@@ -239,8 +250,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     maxHeight: '90vh',
     overflowY: 'auto',
     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-    pointerEvents: 'auto',
     border: '1px solid rgb(51, 65, 85)',
+    pointerEvents: 'auto',
+    WebkitTouchCallout: 'none',
   };
 
   const buttonStyle: React.CSSProperties = {
@@ -257,7 +269,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     WebkitUserSelect: 'none',
     userSelect: 'none',
     pointerEvents: 'auto',
-  };
+    WebkitTapHighlightColor: 'transparent',
+  } as React.CSSProperties;
 
   const closeButtonStyle: React.CSSProperties = {
     position: 'absolute',
@@ -387,8 +400,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   // ==================== RENDER ====================
   return (
-    <div style={backdropStyle}>
-      <div style={modalStyle}>
+    <div 
+      style={backdropStyle}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div 
+        style={modalStyle}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {/* Close Button */}
         {paymentStep !== 'waiting' && (
           <button
@@ -396,6 +417,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               const confirmed = window.confirm('Cancel payment?');
               if (confirmed) onClose();
             }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             style={closeButtonStyle}
           >
             <X size={24} />
@@ -416,6 +439,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               setPaymentStep('razorpay');
               setTxnError('');
             }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             style={paymentMethod === 'razorpay' ? tabButtonActiveStyle : tabButtonInactiveStyle}
           >
             <ExternalLink size={16} style={{ display: 'inline', marginRight: '6px' }} />
@@ -428,6 +453,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               setPaymentStep('qr');
               setTxnError('');
             }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             style={paymentMethod === 'upi' ? tabButtonActiveStyle : tabButtonInactiveStyle}
           >
             <QrCode size={16} style={{ display: 'inline', marginRight: '6px' }} />
@@ -440,6 +467,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               setPaymentStep('upi-deeplink');
               setTxnError('');
             }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             style={paymentMethod === 'upi-deeplink' ? tabButtonActiveStyle : tabButtonInactiveStyle}
           >
             📱 UPI App
@@ -474,13 +503,20 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
             <button
               onClick={() => window.open('https://razorpay.me/@new10solutions', '_blank')}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
               style={submitButtonStyle}
             >
               <ExternalLink size={16} style={{ display: 'inline', marginRight: '8px' }} />
               Open Razorpay Payment
             </button>
 
-            <button onClick={onClose} style={cancelButtonStyle}>Cancel</button>
+            <button 
+              onClick={onClose} 
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              style={cancelButtonStyle}
+            >Cancel</button>
           </>
         )}
 
@@ -540,6 +576,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
                 <button
                   onClick={handlePaymentSubmit}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
                   disabled={!transactionId.trim() || isProcessing}
                   style={transactionId.trim() && !isProcessing ? submitButtonStyle : disabledButtonStyle}
                 >
@@ -553,7 +591,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
             )}
 
-            <button onClick={onClose} style={cancelButtonStyle}>Cancel</button>
+            <button 
+              onClick={onClose} 
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              style={cancelButtonStyle}
+            >Cancel</button>
           </>
         )}
 
@@ -636,7 +679,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </button>
             </div>
 
-            <button onClick={onClose} style={cancelButtonStyle}>Cancel</button>
+            <button 
+              onClick={onClose} 
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              style={cancelButtonStyle}
+            >Cancel</button>
           </>
         )}
 
