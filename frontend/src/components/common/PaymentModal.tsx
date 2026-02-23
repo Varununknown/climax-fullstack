@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, QrCode, CheckCircle, Copy, CreditCard, Loader2 } from 'lucide-react';
+import { X, QrCode, CheckCircle, Copy, ExternalLink, Loader2 } from 'lucide-react';
 import { Content } from '../../types';
 import { useAuth } from '../../context/AuthContext';
-import RazorpayService from '../../services/razorpayService';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -27,14 +26,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   paymentType = 'premium-content'
 }) => {
   const { user } = useAuth();
-  const [paymentStep, setPaymentStep] = useState<'razorpay' | 'qr' | 'upi-deeplink' | 'waiting' | 'success'>('razorpay');
-  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'upi' | 'upi-deeplink'>('razorpay');
+  const [paymentStep, setPaymentStep] = useState<'qr' | 'upi-deeplink' | 'waiting' | 'success'>('qr');
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'upi-deeplink'>('upi');
   const [transactionId, setTransactionId] = useState('');
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [upiDeepLinkTxnId, setUpiDeepLinkTxnId] = useState('');
-  const [razorpayActive, setRazorpayActive] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -68,84 +66,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     alert('Copied!');
   };
 
-  // 💳 RAZORPAY PAYMENT HANDLER
-  const handleRazorpayPayment = async () => {
-    if (!user) {
-      setTxnError('Please login to make payment');
-      return;
-    }
-
-    setIsProcessing(true);
-    setTxnError('');
-
-    try {
-      const userId = user.id || 'unknown-user';
-      const contentId = content._id || 'unknown-content';
-      const amount = content.premiumPrice || 1;
-
-      // Create Razorpay order
-      const order = await RazorpayService.createOrder({
-        userId,
-        contentId,
-        amount,
-        email: user.email || 'user@climax.com',
-        phone: user.phone || '9999999999',
-        userName: user.name || 'User'
-      });
-
-      // Hide our modal so it doesn't block Razorpay on mobile
-      setRazorpayActive(true);
-
-      // Open Razorpay checkout
-      RazorpayService.openCheckout(
-        order,
-        user.email || 'user@climax.com',
-        user.name || 'User',
-        user.phone || '9999999999',
-        async (response: any) => {
-          try {
-            const verifyResponse = await RazorpayService.verifyPayment(
-              order.id,
-              response.razorpay_payment_id,
-              response.razorpay_signature,
-              userId,
-              contentId,
-              amount
-            );
-
-            if (verifyResponse.success) {
-              setRazorpayActive(false);
-              setPaymentStep('success');
-              setTimeout(() => {
-                onSuccess();
-                onClose();
-              }, 3000);
-            } else {
-              setRazorpayActive(false);
-              setTxnError(verifyResponse.message || 'Payment verification failed');
-              setIsProcessing(false);
-            }
-          } catch (err: any) {
-            console.error('Verification error:', err);
-            setTxnError('Payment verified but access update failed. Please refresh.');
-            setIsProcessing(false);
-          }
-        },
-        (error: any) => {
-          console.error('Payment error:', error);
-          setRazorpayActive(false);
-          setTxnError(error.message || 'Payment failed. Please try again.');
-          setIsProcessing(false);
-        }
-      );
-    } catch (err: any) {
-      console.error('❌ Razorpay Payment Error:', err);
-      setTxnError(err.message || 'Failed to create payment order');
-      setIsProcessing(false);
-    }
-  };
-
-  // 🔗 UPI DEEP LINK HANDLER
+  //  UPI DEEP LINK HANDLER
   const handleUpiDeepLink = async () => {
     if (!user?.id || !content._id) {
       alert('Missing user or content information');
@@ -487,14 +408,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         {/* Tabs */}
         <div style={tabsContainerStyle}>
           <button
-            onClick={() => {
-              setPaymentMethod('razorpay');
-              setPaymentStep('razorpay');
-              setTxnError('');
-            }}
-            style={paymentMethod === 'razorpay' ? tabButtonActiveStyle : tabButtonInactiveStyle}
+            onClick={() => window.open('https://razorpay.me/@new10solutions', '_blank')}
+            style={tabButtonInactiveStyle}
           >
-            <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
+            <ExternalLink size={16} style={{ display: 'inline', marginRight: '6px' }} />
             Razorpay
           </button>
 
@@ -539,37 +456,21 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               marginBottom: '16px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                <CreditCard size={18} style={{ color: '#1f2937', marginRight: '8px' }} />
-                <span style={{ color: '#1f2937', fontWeight: '700', fontSize: '15px' }}>Razorpay Secure Payment</span>
+                <ExternalLink size={18} style={{ color: '#1f2937', marginRight: '8px' }} />
+                <span style={{ color: '#1f2937', fontWeight: '700', fontSize: '15px' }}>Razorpay Payment Link</span>
               </div>
               <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
-                <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0' }}>✓ Cards • UPI • Net Banking</p>
-                <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0' }}>✓ Wallets • EMI Options</p>
+                <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0' }}>✓ Click below to pay securely</p>
+                <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0' }}>✓ Opens in a new window</p>
               </div>
             </div>
 
-            {txnError && (
-              <div style={{ marginBottom: '12px', padding: '10px 12px', background: 'rgba(220, 38, 38, 0.08)', borderLeft: '3px solid #dc2626', borderRadius: '4px' }}>
-                <p style={{ color: '#991b1b', fontSize: '13px', margin: '0', fontWeight: '600' }}>{txnError}</p>
-              </div>
-            )}
-
             <button
-              onClick={handleRazorpayPayment}
-              disabled={isProcessing}
-              style={isProcessing ? disabledButtonStyle : submitButtonStyle}
+              onClick={() => window.open('https://razorpay.me/@new10solutions', '_blank')}
+              style={submitButtonStyle}
             >
-              {isProcessing ? (
-                <>
-                  <Loader2 size={16} style={{ display: 'inline', marginRight: '8px', animation: 'spin 0.6s linear infinite' }} />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <CreditCard size={16} style={{ display: 'inline', marginRight: '8px' }} />
-                  Pay with Razorpay
-                </>
-              )}
+              <ExternalLink size={16} style={{ display: 'inline', marginRight: '8px' }} />
+              Open Razorpay Payment
             </button>
 
             <button onClick={onClose} style={cancelButtonStyle}>Cancel</button>
