@@ -305,8 +305,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     justifyContent: 'center',
     zIndex: 9999,
     padding: '12px',
-    pointerEvents: 'auto',
-    touchAction: 'auto',
   };
 
   const modalStyle: React.CSSProperties = {
@@ -320,8 +318,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     overflowY: 'auto',
     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
     border: '1px solid rgb(51, 65, 85)',
-    pointerEvents: 'auto',
-    touchAction: 'pan-y',
   };
 
   const buttonStyle: React.CSSProperties = {
@@ -333,6 +329,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     transition: 'all 0.2s',
     border: 'none',
     cursor: 'pointer',
+    touchAction: 'manipulation',
+    WebkitTouchCallout: 'none',
+    WebkitUserSelect: 'none',
+    userSelect: 'none',
   };
 
   const closeButtonStyle: React.CSSProperties = {
@@ -488,13 +488,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         <div style={tabsContainerStyle}>
           <button
             onClick={() => {
-              console.log('📱 Razorpay tab clicked');
               setPaymentMethod('razorpay');
               setPaymentStep('razorpay');
               setTxnError('');
             }}
             style={paymentMethod === 'razorpay' ? tabButtonActiveStyle : tabButtonInactiveStyle}
-            onTouchStart={() => console.log('📱 Razorpay tab touched')}
           >
             <CreditCard size={16} style={{ display: 'inline', marginRight: '6px' }} />
             Razorpay
@@ -560,8 +558,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               onClick={handleRazorpayPayment}
               disabled={isProcessing}
               style={isProcessing ? disabledButtonStyle : submitButtonStyle}
-              onTouchStart={() => console.log('📱 Razorpay button touched')}
-              onTouchEnd={() => console.log('📱 Razorpay touch ended')}
             >
               {isProcessing ? (
                 <>
