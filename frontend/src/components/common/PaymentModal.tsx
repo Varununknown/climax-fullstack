@@ -221,7 +221,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     position: 'fixed',
     inset: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    display: razorpayActive ? 'none' : 'flex',
+    display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 9999,
