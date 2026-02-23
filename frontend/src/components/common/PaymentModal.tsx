@@ -26,8 +26,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   paymentType = 'premium-content'
 }) => {
   const { user } = useAuth();
-  const [paymentStep, setPaymentStep] = useState<'qr' | 'upi-deeplink' | 'waiting' | 'success'>('qr');
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'upi-deeplink'>('upi');
+  const [paymentStep, setPaymentStep] = useState<'razorpay' | 'qr' | 'upi-deeplink' | 'waiting' | 'success'>('razorpay');
+  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'upi' | 'upi-deeplink'>('razorpay');
   const [transactionId, setTransactionId] = useState('');
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
@@ -226,6 +226,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     justifyContent: 'center',
     zIndex: 9999,
     padding: '12px',
+    pointerEvents: 'auto',
   };
 
   const modalStyle: React.CSSProperties = {
@@ -238,6 +239,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     maxHeight: '90vh',
     overflowY: 'auto',
     boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+    pointerEvents: 'auto',
     border: '1px solid rgb(51, 65, 85)',
   };
 
@@ -254,6 +256,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     WebkitTouchCallout: 'none',
     WebkitUserSelect: 'none',
     userSelect: 'none',
+    pointerEvents: 'auto',
   };
 
   const closeButtonStyle: React.CSSProperties = {
@@ -406,8 +409,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         </div>
 
         {/* Tabs */}
-        <div style={tabsContainerStyle}>
-          <button
+        <div style={tabsCon{
+              setPaymentMethod('razorpay');
+              setPaymentStep('razorpay');
+              setTxnError('');
+            }}
+            style={paymentMethod === 'razorpay' ? tabButtonActiveStyle : 
             onClick={() => window.open('https://razorpay.me/@new10solutions', '_blank')}
             style={tabButtonInactiveStyle}
           >
