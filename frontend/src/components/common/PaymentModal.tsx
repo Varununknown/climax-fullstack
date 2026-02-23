@@ -409,14 +409,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         </div>
 
         {/* Tabs */}
-        <div style={tabsCon{
+        <div style={tabsContainerStyle}>
+          <button
+            onClick={() => {
               setPaymentMethod('razorpay');
               setPaymentStep('razorpay');
               setTxnError('');
             }}
-            style={paymentMethod === 'razorpay' ? tabButtonActiveStyle : 
-            onClick={() => window.open('https://razorpay.me/@new10solutions', '_blank')}
-            style={tabButtonInactiveStyle}
+            style={paymentMethod === 'razorpay' ? tabButtonActiveStyle : tabButtonInactiveStyle}
           >
             <ExternalLink size={16} style={{ display: 'inline', marginRight: '6px' }} />
             Razorpay
