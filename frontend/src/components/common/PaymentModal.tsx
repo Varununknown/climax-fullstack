@@ -48,17 +48,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     fetchSettings();
   }, []);
 
-  // Auto-check Razorpay payment every 5 seconds when user returns
-  useEffect(() => {
-    if (paymentMethod !== 'razorpay' || paymentStep === 'success') return;
-
-    const checkInterval = setInterval(() => {
-      handleRazorpayVerify();
-    }, 5000); // Check every 5 seconds
-
-    return () => clearInterval(checkInterval);
-  }, [paymentMethod, paymentStep]);
-
   const qrCodeData = paymentSettings && {
     upiId: paymentSettings.upiId,
     amount: content.premiumPrice,
@@ -586,13 +575,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               </div>
               <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
                 <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0' }}>✓ Click to pay securely</p>
-                <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0' }}>✓ We'll auto-detect payment</p>
-                {razorpayCheckingPayment && <p style={{ color: '#3b82f6', fontSize: '12px', margin: '4px 0', fontWeight: 'bold' }}>⏳ Checking payment...</p>}
+                <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0' }}>✓ Returns to video after payment</p>
               </div>
             </div>
 
             <button
-              onClick={() => window.open('https://razorpay.me/@new10solutions', '_blank')}
+              onClick={() => {
+                // Open Razorpay link and close modal immediately
+                window.open('https://razorpay.me/@new10solutions', '_blank');
+                setTimeout(() => onClose(), 500); // Close modal right away
+              }}
               style={submitButtonStyle}
             >
               <ExternalLink size={16} style={{ display: 'inline', marginRight: '8px' }} />

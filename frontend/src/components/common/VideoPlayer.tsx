@@ -16,6 +16,7 @@ export const VideoPlayer: React.FC = () => {
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [paymentChecked, setPaymentChecked] = useState(false); // Prevent multiple checks
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [razorpayCheckCount, setRazorpayCheckCount] = useState(0); // Track auto-check attempts
   
   // Video states
   const [isPlaying, setIsPlaying] = useState(false);
@@ -107,6 +108,59 @@ export const VideoPlayer: React.FC = () => {
 
     checkPayment();
   }, [content, user, paymentChecked, hasPaid]);
+
+  // ===== AUTO-CHECK PAYMENT (for Razorpay after user returns) =====
+  // Only check for 5 seconds, 1 second intervals (5 checks max)
+  useEffect(() => {
+    if (!showPaymentModal || !content || !user || hasPaid) {
+      setRazorpayCheckCount(0); // Reset counter when conditions don't match
+      return;
+    }
+
+    // Only proceed if this is a Razorpay check attempt
+    if (razorpayCheckCount >= 5) {
+      // 5 seconds done, stop checking
+      console.log('⏱️ 5-second auto-check timeout reached. Stopping.');
+      setRazorpayCheckCount(0);
+      return;
+    }
+
+    // Check payment
+    const autoCheckTimeout = setTimeout(async () => {
+      try {
+        const userId = user.id || (user as any)._id;
+        if (!userId) return;
+
+        const res = await API.get(`/payments/check?userId=${userId}&contentId=${content._id}`);
+        
+        if (res.data.paid && res.data.payment) {
+          // Verify payment amount matches content price
+          const paymentAmount = res.data.payment.amount;
+          const requiredAmount = content.premiumPrice;
+
+          console.log('💰 Payment found! Verifying amount:', { paymentAmount, requiredAmount });
+
+          if (paymentAmount === requiredAmount) {
+            console.log('✅ AUTO-DETECTED PAYMENT WITH CORRECT AMOUNT! Unlocking content...');
+            setHasPaid(true);
+            setShowPaymentModal(false);
+            setRazorpayCheckCount(0);
+            return;
+          } else {
+            console.warn('❌ Payment amount mismatch!', { paymentAmount, requiredAmount });
+          }
+        }
+
+        // Payment not found yet, increment counter and try again
+        setRazorpayCheckCount(prev => prev + 1);
+      } catch (err) {
+        console.error('Auto-check error:', err);
+        setRazorpayCheckCount(prev => prev + 1);
+      }
+    }, 1000); // Check every 1 second
+
+    return () => clearTimeout(autoCheckTimeout);
+  }, [showPaymentModal, content, user, hasPaid, razorpayCheckCount]);
 
   // ===== VIDEO PROTECTION (matching your working logic) =====
   useEffect(() => {
