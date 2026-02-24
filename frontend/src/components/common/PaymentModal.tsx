@@ -33,6 +33,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [upiDeepLinkTxnId, setUpiDeepLinkTxnId] = useState('');
+  const [razorpayCheckingPayment, setRazorpayCheckingPayment] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -46,6 +47,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     };
     fetchSettings();
   }, []);
+
+  // Auto-check Razorpay payment every 5 seconds when user returns
+  useEffect(() => {
+    if (paymentMethod !== 'razorpay' || paymentStep === 'success') return;
+
+    const checkInterval = setInterval(() => {
+      handleRazorpayVerify();
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(checkInterval);
+  }, [paymentMethod, paymentStep]);
 
   const qrCodeData = paymentSettings && {
     upiId: paymentSettings.upiId,
@@ -64,6 +76,48 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     alert('Copied!');
+  };
+
+  // 💳 RAZORPAY VERIFICATION - Check if payment was received (AUTO)
+  const handleRazorpayVerify = async () => {
+    if (!user?.id || !content._id || razorpayCheckingPayment) return;
+
+    setRazorpayCheckingPayment(true);
+
+    try {
+      const userId = user.id || (user as any)._id;
+      const contentId = content._id;
+      const amount = content.premiumPrice;
+
+      // Backend will check Razorpay API to see if payment was received
+      const response = await fetch(`${BACKEND_URL}/api/payments/verify-razorpay`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          contentId,
+          amount
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success || result.paid) {
+        // Payment found! Auto-unlock
+        console.log('✅ Razorpay payment detected! Unlocking...');
+        setPaymentStep('success');
+        setTimeout(() => {
+          onSuccess();
+          onClose();
+        }, 2000);
+      } else {
+        // Payment not found yet, keep checking silently
+        setRazorpayCheckingPayment(false);
+      }
+    } catch (err: any) {
+      console.error('Razorpay verification error:', err);
+      setRazorpayCheckingPayment(false);
+    }
   };
 
   //  UPI DEEP LINK HANDLER
@@ -531,8 +585,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 <span style={{ color: '#1f2937', fontWeight: '700', fontSize: '15px' }}>Razorpay Payment Link</span>
               </div>
               <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
-                <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0' }}>✓ Click below to pay securely</p>
-                <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0' }}>✓ Opens in a new window</p>
+                <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0' }}>✓ Click to pay securely</p>
+                <p style={{ color: '#6b7280', fontSize: '12px', margin: '4px 0' }}>✓ We'll auto-detect payment</p>
+                {razorpayCheckingPayment && <p style={{ color: '#3b82f6', fontSize: '12px', margin: '4px 0', fontWeight: 'bold' }}>⏳ Checking payment...</p>}
               </div>
             </div>
 
@@ -541,7 +596,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               style={submitButtonStyle}
             >
               <ExternalLink size={16} style={{ display: 'inline', marginRight: '8px' }} />
-              Open Razorpay Payment
+              Click to Pay on Razorpay
             </button>
 
             <button 
