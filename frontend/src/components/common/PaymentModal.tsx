@@ -224,7 +224,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 99999,
+    zIndex: 999999,
     padding: '12px',
     pointerEvents: 'auto',
     WebkitTouchCallout: 'none',
@@ -424,13 +424,34 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     justifyContent: 'center',
   };
 
+  // ==================== EVENT HANDLERS ====================
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    // Prevent clicks on backdrop from reaching video
+    e.stopPropagation();
+  };
+
+  const handleBackdropTouch = (e: React.TouchEvent) => {
+    // Prevent touches on backdrop from reaching video
+    e.stopPropagation();
+  };
+
   // ==================== RENDER ====================
   return (
     <div 
       style={backdropStyle}
+      onClick={handleBackdropClick}
+      onTouchStart={handleBackdropTouch}
+      onTouchMove={handleBackdropTouch}
+      onTouchEnd={handleBackdropTouch}
+      onMouseDown={(e) => e.stopPropagation()}
     >
       <div 
         style={modalStyle}
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         {paymentStep !== 'waiting' && (
