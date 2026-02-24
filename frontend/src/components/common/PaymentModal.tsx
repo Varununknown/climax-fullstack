@@ -247,7 +247,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   const buttonStyle: React.CSSProperties = {
     flex: 1,
-    padding: '10px 12px',
+    padding: '12px 14px',
     borderRadius: '8px',
     fontWeight: '600',
     fontSize: '14px',
@@ -260,6 +260,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     userSelect: 'none',
     pointerEvents: 'auto',
     WebkitTapHighlightColor: 'transparent',
+    minHeight: '44px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   } as React.CSSProperties;
 
   const closeButtonStyle: React.CSSProperties = {
@@ -270,8 +274,15 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     background: 'none',
     border: 'none',
     cursor: 'pointer',
-    padding: '0',
+    padding: '8px',
     zIndex: 100,
+    pointerEvents: 'auto',
+    WebkitTapHighlightColor: 'transparent',
+    minHeight: '44px',
+    minWidth: '44px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -358,20 +369,39 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     background: 'linear-gradient(to right, #2563eb, #7c3aed)',
     color: 'white',
     fontWeight: 'bold',
-    padding: '10px 16px',
+    padding: '12px 16px',
     borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
     fontSize: '14px',
     transition: 'all 0.2s',
+    pointerEvents: 'auto',
+    WebkitTapHighlightColor: 'transparent',
+    minHeight: '44px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
   };
 
   const disabledButtonStyle: React.CSSProperties = {
-    ...submitButtonStyle,
+    width: '100%',
     background: '#6b7280',
     cursor: 'not-allowed',
     opacity: 0.6,
+    color: 'white',
+    fontWeight: 'bold',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    border: 'none',
+    fontSize: '14px',
+    transition: 'all 0.2s',
+    pointerEvents: 'auto',
+    WebkitTapHighlightColor: 'transparent',
+    minHeight: '44px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   };
 
   const cancelButtonStyle: React.CSSProperties = {
@@ -379,13 +409,19 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     backgroundColor: '#475569',
     color: '#e2e8f0',
     fontWeight: '600',
-    padding: '10px 16px',
+    padding: '12px 16px',
     borderRadius: '8px',
     border: 'none',
     cursor: 'pointer',
     fontSize: '14px',
     transition: 'all 0.2s',
     marginTop: '8px',
+    pointerEvents: 'auto',
+    WebkitTapHighlightColor: 'transparent',
+    minHeight: '44px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   };
 
   // ==================== RENDER ====================
