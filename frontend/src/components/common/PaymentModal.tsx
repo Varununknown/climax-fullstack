@@ -29,6 +29,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const [paymentStep, setPaymentStep] = useState<'razorpay' | 'qr' | 'upi-deeplink' | 'waiting' | 'success'>('razorpay');
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'upi' | 'upi-deeplink'>('razorpay');
   const [transactionId, setTransactionId] = useState('');
+  const [razorpayTxnId, setRazorpayTxnId] = useState(''); // Separate field for Razorpay
   const [txnError, setTxnError] = useState('');
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);

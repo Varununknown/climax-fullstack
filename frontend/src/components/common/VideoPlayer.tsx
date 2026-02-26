@@ -131,14 +131,15 @@ export const VideoPlayer: React.FC = () => {
         const userId = user.id || (user as any)._id;
         if (!userId) return;
 
-        const res = await API.get(`/payments/check?userId=${userId}&contentId=${content._id}`);
+        // 🔍 FIRST: Check if already in our database
+        let res = await API.get(`/payments/check?userId=${userId}&contentId=${content._id}`);
         
         if (res.data.paid && res.data.payment) {
           // Verify payment amount matches content price
           const paymentAmount = res.data.payment.amount;
           const requiredAmount = content.premiumPrice;
 
-          console.log('💰 Payment found! Verifying amount:', { paymentAmount, requiredAmount });
+          console.log('💰 Payment found in DB! Verifying amount:', { paymentAmount, requiredAmount });
 
           if (paymentAmount === requiredAmount) {
             console.log('✅ AUTO-DETECTED PAYMENT WITH CORRECT AMOUNT! Unlocking content...');
@@ -149,6 +150,22 @@ export const VideoPlayer: React.FC = () => {
           } else {
             console.warn('❌ Payment amount mismatch!', { paymentAmount, requiredAmount });
           }
+        }
+
+        // 🔍 SECOND: Query Razorpay API directly for recent payments
+        console.log('🔍 Checking Razorpay API for recent payments...');
+        const razorpayRes = await API.post(`/payments/auto-verify-razorpay`, {
+          userId,
+          contentId: content._id,
+          amount: content.premiumPrice
+        });
+
+        if (razorpayRes.data.paid) {
+          console.log('✅ RAZORPAY PAYMENT AUTO-DETECTED! Transaction:', razorpayRes.data.transactionId);
+          setHasPaid(true);
+          setShowPaymentModal(false);
+          setRazorpayCheckCount(0);
+          return;
         }
 
         // Payment not found yet, increment counter and try again
